@@ -1,6 +1,30 @@
 # README
 
-OpenGLFramework is a clean and easy-to-use wrapper for OpenGL. The motivation is that most of the code we write in OpenGL is drab and dreary and basically needs no or only slight changes, and also it's quite a painful course to install dependencies. You can customize it by rewriting inner OpenGL code as you need.
+Most of the code we write in OpenGL is drab and dreary and basically needs no or only slight changes. It's also quite a painful course to install dependencies. OpenGLFramework is a clean and easy-to-use wrapper for OpenGL.
+
+## Table of Contents
+
+* [Build](#build)
+* [Usage](#usage)
+  + [MainWindow](#mainwindow)
+  + [Framebuffer](#framebuffer)
+  + [Vertex](#vertex)
+  + [Transform](#transform)
+  + [Texture](#texture)
+  + [Mesh](#mesh)
+  + [Shader](#shader)
+  + [Camera](#camera)
+  + [IOExtension](#ioextension)
+  + [GPUExtension](#gpuextension)
+* [Advantages](#advantages)
+* [Build Tool](#build-tool)
+* [Customized Builder](#builder)
+* [Dependencies](#dependencies)
+* [Compiler requirements](#compiler-requirements)
+  + [C++20](#c++20)
+  + [C++17](#c++17)
+  + [cuda](#cuda)
+* [Copyrights](#copyrights)
 
 ## Build
 
@@ -46,6 +70,8 @@ Model credits : miHoYo and [观海子](https://space.bilibili.com/17466365?spm_i
 
 ## Usage
 
+> Preface : You can customize any part by rewriting inner OpenGL code as you need.
+
 You always need to call `InitContext()` first before using components of this projects, and `EndContext()` if you don't use them any more.
 
 ### MainWindow
@@ -67,6 +93,8 @@ You always need to call `InitContext()` first before using components of this pr
 + `BindKeyPressing/BindKeyPressed/BindKeyReleasing/BindKeyReleased<keycode> (func)`: when the key is pressing/ pressed once/ releasing/ released once, the binded function will be called automatically.
 
 Note that the logic of `MainWindow` assumes that there is only one object (and we express it by a singleton-detected bool) because ImGui only supports binding one GLFW window in its context. Besides, you can customized any needed functions in `MainWindow.h/.cpp` by imitating he code there.
+
+Also, `MainWindow` uses a lot of `unordered_map`; if the binded functions will not be changed, they can use `std::vector` to get slight performance improvement.
 
 ### Framebuffer
 
@@ -170,10 +198,6 @@ It has some variables indicating its state, like `movementSpeed`, `mouseSensitiv
 
 4. Support UTF-8 path : learnOpenGL only support Ascii path; we support UTF-8 path. In fact, the example model has textures that have Chinese characters.
 
-## Possible customized optimization
-
-1. 
-
 ## Build Tool
 
 We use XMake as our build tool. Because : 
@@ -193,9 +217,48 @@ You can check [XMake Github website](https://github.com/xmake-io/xmake) for more
 
 ## <span id="builder">Customized Builder</span>
 
+```lua
+set_project("OpenGLFramework")
+set_version("1.0.0")
+set_xmakever("2.6.1")
 
+-- here you can only use cxx17 if C++20 is not supported.
+set_languages("cxx20")
+-- here you can cancel it if your default g++ --version >= 11.1
+-- or you can replace it with possibly existing g++-12.
+if is_plat("linux") then
+    set_config("cxx", "g++-11")
+end
 
-## Depenencies
+set_config("cuflags", "-std=c++17")
+
+add_requires("glfw3", "glad", "glm", "assimp", "stb")
+add_requires("imgui", {configs={glfw_opengl3 = true}})
+add_packages("glfw3", "glad", "glm", "assimp", "imgui", "stb")
+
+target("main")
+    -- get executable file.
+    set_kind("binary")
+
+    -- set global config to generate config.h and use.
+    set_configvar("OPENGLFRAMEWORK_ENABLE_GPUEXTENSION", 0)
+    -- if your GPU is quite fast , replace code above with :
+    -- set_configvar("OPENGLFRAMEWORK_ENABLE_GPUEXTENSION", 1)
+    -- add_files("src/FrameCore/cu/*.cu")
+
+    set_configdir("src/FrameCore/config")
+    add_configfiles("src/FrameCore/config/config.h.in")
+    set_configvar("OPENGLFRAMEWORK_RESOURCE_DIR", "$(projectdir)/Resources/")
+    set_configvar("OPENGLFRAMEWORK_SHADER_DIR", "$(projectdir)/src/Shaders/")
+
+    -- determine files and paths.
+    add_includedirs("src/FrameCore/headers")
+    add_includedirs("src/FrameCore/config")
+    add_files("src/FrameCore/cpp/*.cpp")
+    add_files("src/main.cpp")
+```
+
+## Dependencies
 
 `opengl3.3`, `glfw3`, `glad`, `glm`, `assimp`, `stb`, `imgui`, `imgui-[glfw]` and `imgui-[opengl3]`.
 
