@@ -230,7 +230,7 @@ You can check [XMake Github website](https://github.com/xmake-io/xmake) for more
 
 ## <span id="builder">Customized Builder</span>
 
-TODO : 
+You can also use your existing vcpkg libraries or enable cuda.
 
 ```lua
 set_project("OpenGLFramework")
@@ -244,6 +244,8 @@ end
 
 set_config("cuflags", "-std=c++17")
 
+-- If you have vcpkg libs, you can change them with vcpkg::...
+-- for imgui, you should add imgui[opengl3] and imgui[glfw].
 add_requires("glfw", "glad", "glm", "assimp", "stb")
 add_requires("imgui", {configs={glfw_opengl3 = true}})
 add_packages("glfw", "glad", "glm", "assimp", "imgui", "stb")
@@ -278,9 +280,9 @@ target("main")
 
 ## Dependencies
 
-`opengl3.3`, `glfw3`, `glad`, `glm`, `assimp`, `stb`, `imgui`, `imgui-[glfw]` and `imgui-[opengl3]`.
+`opengl3.3`, `glfw`, `glad`, `glm`, `assimp`, `stb`, `imgui`, `imgui-[glfw]` and `imgui-[opengl3]`.
 
-If you use xmake, they will be installed automatically. Note that `assimp` installation needs some time because it's a little bit large.
+If you use xmake, they will be installed automatically. Note that `assimp` installation may need some time because it's a little bit large.
 
 ## Compiler requirements
 
