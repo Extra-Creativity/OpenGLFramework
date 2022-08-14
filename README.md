@@ -238,6 +238,7 @@ set_version("1.0.0")
 set_xmakever("2.6.1")
 
 set_languages("cxx20")
+-- use may change or delete it as you want.
 if is_plat("linux") then
     set_config("cxx", "g++-11")
 end
