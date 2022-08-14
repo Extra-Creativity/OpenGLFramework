@@ -32,7 +32,7 @@ Most of the code we write in OpenGL is drab and dreary and basically needs no or
 
 Linux : 
 
->  Here we requires to install g++-11; if you have later version, skip it and see [Customized Builder](#builder).
+>  Here we require to install g++-11; if you have the later version of gcc/g++, skip it and see [Customized Builder](#builder).
 
 ```bash
 sudo apt update && sudo apt install gcc-11 g++-11
@@ -83,15 +83,15 @@ Model credits : miHoYo and [观海子](https://space.bilibili.com/17466365?spm_i
 
 ## Usage
 
-> Preface : You can customize any part by rewriting inner OpenGL code as you need.
+> NOTE : You can customize any part by rewriting inner OpenGL code as you need. Besides, we strongly recommend you to read the code in `main.cpp` rather than read the usage directly, because we think the code is more intuitive.
 
-You always need to call `InitContext()` first before using components of this projects, and `EndContext()` if you don't use them any more.
+You always need to call `InitContext()` first before using components of this project, and `EndContext()` if you don't use them any more.
 
 ### MainWindow
 
 + Initialization : `size_t width, size_t height, const char* title`.
 
-+ `Register(func)` : It's recommended that you should use a lambda expression as parameter; any out-of-scope local variables that need to be used in the scope should be captured by the `[]`. The registered functions will be executed sequentially as if looped in main.
++ `Register(func)` : It's recommended that you should use a lambda expression as the parameter; any out-of-scope local variables that need to be used in the scope should be captured by the `[]`. The registered functions will be executed sequentially as if looped in main.
 
   We wrap the GLFW so that it can accept variables through captures rather than only static or global variables.
 
@@ -105,17 +105,17 @@ You always need to call `InitContext()` first before using components of this pr
 
 + `BindKeyPressing/BindKeyPressed/BindKeyReleasing/BindKeyReleased<keycode> (func)`: when the key is pressing/ pressed once/ releasing/ released once, the binded function will be called automatically.
 
-Note that the logic of `MainWindow` assumes that there is only one object (and we express it by a singleton-detected bool) because ImGui only supports binding one GLFW window in its context. Besides, you can customized any needed functions in `MainWindow.h/.cpp` by imitating he code there.
+Note that the logic of `MainWindow` assumes that there is only one instance (and we express it by a singleton-detected bool) because ImGui only supports binding a single GLFW window in its context. Besides, you can customize any needed functions in `MainWindow.h/.cpp` by imitating the code there.
 
-Also, `MainWindow` uses a lot of `unordered_map`; if the binded functions will not be changed, they can use `std::vector` to get slight performance improvement.
+Also, `MainWindow` uses a lot of `unordered_map`; if the binded functions will not be changed, you can use `std::vector` instead to get slight performance improvement.
 
 ### Framebuffer
 
-Framebuffer is used to render a off-screen scene.
+Framebuffer is used to render an off-screen scene.
 
-+ Initialization : `size_t width, size_t height bool needDepthTesting`, but optinal.
++ Initialization : `size_t width, size_t height bool needDepthTesting`, but optional.
 + `resize(size_t width, size_t height)`, resize the inner buffer.
-+ If you want to show the scene in a ImGui Window, call `ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.textureColorBuffer)), ImGuiWindowSize, { 0, 1 }, { 1, 0 });` in a ImGui context.
++ If you want to show the scene in an ImGui Window, call `ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.textureColorBuffer)), ImGuiWindowSize, { 0, 1 }, { 1, 0 });` in a ImGui context.
 
 ### Vertex
 
@@ -139,12 +139,14 @@ You can get its OpenGL ID through the member ` textureID`.
 
 ### Mesh
 
-It has some variables that represent the mesh, like vertices, triangles, textures. It may not be exposed to the users, because it's mainly used for assimp adjustment. However, you may call `Draw(shader)/ Draw(shader, framenbuffer)` to show a part of the model. Model
+It has some variables that represent the mesh, like vertices, triangles, textures. It may not be exposed to the users, because it's mainly used for assimp adjustment. However, you may call `Draw(shader)/ Draw(shader, framebuffer)` to show a part of the model.
 
-With a `Transform` variable to represent its state; sub-meshes that compose the model; 
+### Model
+
+With a `Transform` variable to represent its state; sub-meshes that compose the model and all their textures.
 
 + Initialization : `std::filesystem::path modelPath, bool textureNeedFlip`; any format of path will be accepted.
-+ `Draw(shader) / Draw(shader, framebuffer)`: use shader to draw the model; if you want to render it on a framebuffer, pass it as the second parameter.
++ `Draw(shader) / Draw(shader, framebuffer)`: use the shader to draw the model; if you want to render it on a framebuffer, pass it as the second parameter.
 
 ### Shader
 
@@ -152,7 +154,7 @@ With a `Transform` variable to represent its state; sub-meshes that compose the 
 + `Activate`: before you actually use the shader, you need to activate it.
 + `Set...` : set uniform variables in the shader.
 
-Besides, you need always write you actual shader files like this :
+Besides, you need always write your actual shader files like this :
 
 ```glsl
 // version should be at least 330.
@@ -171,18 +173,18 @@ uniform sampler2D specularTexture1;
 
 ### Camera
 
-It has some variables indicating its state, like `movementSpeed`, `mouseSensitivity`, `rotationSpeed`, `fov`. They are not really necessary to a camera and you can delete them if you want.
+It has some variables indicating its state, like `movementSpeed`, `mouseSensitivity`, `rotationSpeed`, `fov`. They are not actually necessary to a camera and you can delete them if you want.
 
 + Initilization : `vec3 position, vec3 up, vec3 front`; we don't require the `dot(up, front) = 0`, but just `cross(up, front) != {0,0,0}`. We will orthonormalize them in the process of initialization.
 
 + `Front()/Back()/Up()/Down()/Left()/Right()`
 + `GetViewMatrix()` : Get the view matrix determined by the camera paramters.
-+ `Rotate/Translate` : similar to `Transorm` `Rotate/Translate`, providing three methods to rotate the camera/ move the position.
++ `Rotate/Translate` : similar to `Transform` `Rotate/Translate`, providing three methods to rotate the camera/ move the position.
 
 ### IOExtension
 
 + `ReadAll(std::filesystem::path path)` : return all contents of a file in the path.
-+ `LogError(std::source_location location, std::string_view errorInfo)`: display the error information in the location; The first parameter is recommended to filled with `std::source_location::current()`.
++ `LogError(std::source_location location, std::string_view errorInfo)`: display the error information in the location; The first parameter is recommended to be set as `std::source_location::current()`.
 
 ### GPUExtension
 
@@ -190,8 +192,8 @@ It has some variables indicating its state, like `movementSpeed`, `mouseSensitiv
 + `GPUSynchronize()` : synchronize all kernels in GPU.
 + `size()` : get size.
 + `dataSymbol()` : get GPU ptr; actually it's not a valid address in CPU, so we call it a symbol.
-+ `ToCPUVector(T* cpuPtr)` : copy data back to cpuPtr.\
-+ `struct GPUconfig` : set the config of kernel, or in other words, a/ b in `<<<a, b>>>`. `m_needSynchronize` is to indicate whether the execution kernel should be synchronized.
++ `ToCPUVector(T* cpuPtr)` : copy data back to cpuPtr.
++ `struct GPUconfig` : set the configuration of the kernel, or in other words, a/ b in `<<<a, b>>>`. `m_needSynchronize` is to indicate whether the execution kernel should be synchronized.
 + `LoadVertices` : a test version of loading mesh through GPU.
 
 ## Advantages
@@ -205,11 +207,11 @@ It has some variables indicating its state, like `movementSpeed`, `mouseSensitiv
 
    Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it about three times faster than the baseline.
 
-2. Easier-to-use interface : We wrap the OpenGL code, hiding trivial and boring inner details for most common features. You can dive into wring proper shaders.
+2. Easier-to-use interface : We wrap the OpenGL code in RAII style, hiding trivial and boring inner details for most common features. You can dive into wring proper shaders.
 
-3. One-stop dependencies installation : It's widely known that OpenGL needs a bunch of dependencies which disturbs users a lot. Through XMake, we make it quite easy.
+3. One-stop dependencies installation : It's widely known that OpenGL needs a bunch of dependencies which disturb users a lot. Through XMake, we make it quite easy.
 
-4. Support UTF-8 path : learnOpenGL only support Ascii path; we support UTF-8 path. In fact, the example model has textures that have Chinese characters.
+4. Support UTF-8 path : learnOpenGL only supports Ascii path; we support UTF-8 path. In fact, the example model has textures that have Chinese characters.
 
 ## Build Tool
 
@@ -218,11 +220,11 @@ We use XMake as our build tool. Because :
 + For CMake, (we think) it's miserable to use convenient functions like `find_package` in Windows and usually third-party libraries need to be included in folders. 
 + For vcpkg & plug-ins, it's a really good choice in Windows but a little bit unsatisfying for cross-platform code.
 
-XMake is a lua-based convenient tool for cross-platform code written by a Chinese developer, @waruqi. It's equipped with a package manager, XRepo, which has most common libraries. After installing them, you can use `find_package`-like functions in `xmake.lua`. It combines the merits of CMake and vcpkg while having at least same building speed compared to other mainstream building tools.
+XMake is a lua-based convenient tool for cross-platform code written by a Chinese developer, [@waruqi](https://github.com/waruqi). It's equipped with a package manager, XRepo, which has most common libraries. After installing them, you can use `find_package`-like functions in `xmake.lua`. It combines the merits of CMake and vcpkg while having at least same building speed compared to other mainstream building tools.
 
 > In fact Lua knowledge is nearly unnecessary for basic build tasks.
 >
-> We believe that XMake is easier to code than CMake, but it's a pity that documents of XMake are still developing and not as satisfying as we expect. We are still struggling to study nows.
+> We believe that XMake is easier to code than CMake, but it's a pity that documents of XMake are still developing and not as satisfying as we expect. We are still struggling to study now.
 >
 > XMake can also generate IDE project files, see [here](https://xmake.io/#/plugin/builtin_plugins?id=generate-ide-project-files).
 
@@ -238,7 +240,7 @@ set_version("1.0.0")
 set_xmakever("2.6.1")
 
 set_languages("cxx20")
--- use may change or delete it as you want.
+-- you may change or delete it as you want.
 if is_plat("linux") then
     set_config("cxx", "g++-11")
 end
@@ -291,7 +293,7 @@ By default, we use `g++-11` as the compiler for Linux and default toolchains for
 
 ### C++20
 
-Considering that some core features (like `module`) in C++20 is not easy for those who haven't studied them to convert back to C++17 code (like header-style), we only use minor functions in C++20. If you cannot use C++20 features, you can detect and replace them easily.
+Considering that some core features (like `module`) in C++20 are not easy for those who haven't studied them to convert back to C++17 code (like header-style), we only use minor new properties in C++20. If you cannot use C++20 features, you can detect and replace them easily.
 
 What we use in C++20：
 
@@ -301,11 +303,11 @@ What we use in C++20：
 
   > Sadly gnu doesn't support `<format>` yet (even in the latest version), which we think is a really significant feature in C++20.
 
-+ `[[likely]]` and `[[unlikely]]` attributes, to clearly influence branch-predict policy.
++ `[[likely]]` and `[[unlikely]]` attributes, to clearly influence branch-predict policies.
 
 + `<source_location>`, to log error info.
 
-Those methods are trivial compared to other parts, and will not or only very slightly affect performance, so you can substitute them easily with other existing code.
+Those methods are trivial compared to other parts, and will not or only very slightly affect performance, so you can substitute them easily with C++17 code.
 
 ### C++17
 
@@ -313,9 +315,9 @@ There are also some C++17 features that may need extra libraries to support in o
 
 What we use in C++17：
 
-+ structure binding, for getting pair/tuple return value.
++ structured binding, for getting the pair/tuple return value.
 
-+ Class template argument deduction (CTAD), to reduce code of some unnecessary type.
++ Class template argument deduction (CTAD), to reduce code of some unnecessary types.
 
 + `std::unordered_map::insert_or_assign()`.
 
@@ -331,7 +333,7 @@ The bold parts represent that code with those features is crucial, and it's not 
 
 ### cuda
 
-CUDA is only optional in our code, and it's disabled by defauly. There are only some convenient wrappers in `GPUExtension.h/.cu`, and `Model.cpp` use them to load models. For slow memory transfer between CPU and GPU, enabling cuda performs even worse in our own platform. However, we still reserve that in case your GPU is dramatically fast. You can uncomment `chrono` code at the beginning of `main` to get a small benchmark.
+CUDA is only optional in our code, and it's disabled by default. There are only some convenient wrappers in `GPUExtension.h/.cu`, and `Model.cpp` use them to load models. For slow memory transfer between CPU and GPU, enabling cuda performs even worse in our own platform. However, we still reserve that in case your GPU is dramatically fast. You can uncomment `chrono` code at the beginning of `main` to get a small benchmark.
 
 > You may also need adding contents in ~/.bashrc in Linux if GUI crashes sometimes :  
 >
@@ -359,11 +361,11 @@ For the model :
 >
 > You should NOT : 
 >
-> + distribute again, dispatch parts for use in other models; 
+> + distribute again, dispatch parts to use in other models; 
 > + use for 18+ works, extreme religious propagandas, sanguinary grisly strange works, assault and battery, and so on.
-> + use for commercial purpose.
+> + use for commercial purposes.
 >
-> The responsibility of all possible negative outcomes resulted from others' use of this model will not be taken by HoYoverse and model releaser, but taken by the user.
+> The responsibility of all possible negative outcomes resulted from others' use of this model will not be taken by HoYoverse and the model releaser, but taken by the user.
 >
 > model provider : HoYoverse
 >
