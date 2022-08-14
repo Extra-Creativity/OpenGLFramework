@@ -9,6 +9,8 @@ end
 
 set_config("cuflags", "-std=c++17")
 
+-- If you have vcpkg libs, you can change them with vcpkg::...
+-- for imgui, you should add imgui[opengl3] and imgui[glfw].
 add_requires("glfw", "glad", "glm", "assimp", "stb")
 add_requires("imgui", {configs={glfw_opengl3 = true}})
 add_packages("glfw", "glad", "glm", "assimp", "imgui", "stb")
@@ -26,7 +28,7 @@ target("main")
     -- if your GPU is quite fast , replace code above with :
     -- set_configvar("OPENGLFRAMEWORK_ENABLE_GPUEXTENSION", 1)
     -- add_files("src/FrameCore/cu/*.cu")
-
+    
     -- set resource and shader directory config.
     dir, _ = path.join(os.projectdir(), "Resources"):gsub("\\", "/")
     set_configvar("OPENGLFRAMEWORK_RESOURCES_DIR", dir)
