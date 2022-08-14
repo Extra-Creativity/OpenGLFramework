@@ -220,9 +220,9 @@ Model::Model(const std::filesystem::path& modelPath, bool textureNeedFlip)
         for (unsigned int i = 0u, len = node->mNumMeshes; i < len; i++)
         {
             aiMesh* mesh = model->mMeshes[node->mMeshes[i]];
-            auto& pos = meshes.emplace_back(mesh, model);
+            meshes.emplace_back(mesh, model);
             aiMaterial* material = model->mMaterials[mesh->mMaterialIndex];
-            TransferTextureData_(resourcePath, material, *pos);
+            TransferTextureData_(resourcePath, material, meshes.back());
         }
         childNodes.pop();
         for (unsigned int i = 0u, len = node->mNumChildren; i < len; i++)

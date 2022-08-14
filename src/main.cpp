@@ -13,17 +13,13 @@
 
 #include "config.h"
 
-// Possible optimization : 
-// MainWindow : std::unordered_map can be changed to std::vector
-// when the element amount is small, the latter is faster.
-
 int main()
 {
 	// auto t1 = std::chrono::steady_clock::now(), t2 = t1;
 	InitContext();
 	MainWindow mainWindow { 800, 600, "OpenGL Test"};
-	Model model{ OPENGLFRAMEWORK_RESOURCE_DIR "Sucrose/Sucrose.pmx"};
-	Shader shader{ OPENGLFRAMEWORK_SHADER_DIR "Sucrose.vert", OPENGLFRAMEWORK_SHADER_DIR "Sucrose.frag" };
+	Model model{ OPENGLFRAMEWORK_RESOURCES_DIR  "/Sucrose"  "/Sucrose.pmx"};
+	Shader shader{ OPENGLFRAMEWORK_SHADERS_DIR "/Sucrose.vert", OPENGLFRAMEWORK_SHADERS_DIR  "/Sucrose.frag" };
 	Camera frontCamera{ {0, 10, 35}, {0, 1, 0}, {0, 0, -1} };
 	// t2 = std::chrono::steady_clock::now();
 	// std::cout << std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
@@ -79,7 +75,8 @@ int main()
 			model.Draw(shader, frameBuffer);
 		}
 
-		ImGui::Image(reinterpret_cast<ImTextureID>(frameBuffer.textureColorBuffer), subwindowSize, { 0, 1 }, { 1, 0 });
+		ImGui::Image( reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.textureColorBuffer)), 
+			subwindowSize, { 0, 1 }, { 1, 0 });
 		ImGui::End();
 	});
 

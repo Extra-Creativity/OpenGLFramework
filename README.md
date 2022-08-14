@@ -28,6 +28,8 @@ Most of the code we write in OpenGL is drab and dreary and basically needs no or
 
 ## Build
 
+> All platforms need git commands.
+
 Linux : 
 
 >  Here we requires to install g++-11; if you have later version, skip it and see [Customized Builder](#builder).
@@ -58,6 +60,17 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 brew install xmake
 cd framework/dir
 xmake
+```
+
+If XMake fails to install any of the packages, try the failed part of code below : 
+
+```bash
+xrepo install glfw
+xrepo install glm
+xrepo install glad
+xrepo install imgui
+xrepo install stb
+xrepo install assimp
 ```
 
 You can also refer to [this website](https://xmake.io/#/guide/installation) if you use other platforms or your installation fails with methods above.
@@ -102,7 +115,7 @@ Framebuffer is used to render a off-screen scene.
 
 + Initialization : `size_t width, size_t height bool needDepthTesting`, but optinal.
 + `resize(size_t width, size_t height)`, resize the inner buffer.
-+ If you want to show the scene in a ImGui Window, call `ImGui::Image(reinterpret_cast<ImTextureID>(frameBuffer.textureColorBuffer), ImGuiWindowSize, { 0, 1 }, { 1, 0 });` in a ImGui context.
++ If you want to show the scene in a ImGui Window, call `ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.textureColorBuffer)), ImGuiWindowSize, { 0, 1 }, { 1, 0 });` in a ImGui context.
 
 ### Vertex
 
@@ -187,8 +200,8 @@ It has some variables indicating its state, like `movementSpeed`, `mouseSensitiv
 
    |             | Windows 10 | Ubuntu 20.04 |
    | ----------- | ---------- | ------------ |
-   | LearnOpenGL |            | 1.93490s     |
-   | Ours        |            | 0.645622s    |
+   | LearnOpenGL | 3.26205s   | 1.93490s     |
+   | Ours        | 1.09038s   | 0.645622s    |
 
    Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it about three times faster than the baseline.
 
@@ -217,6 +230,8 @@ You can check [XMake Github website](https://github.com/xmake-io/xmake) for more
 
 ## <span id="builder">Customized Builder</span>
 
+TODO : 
+
 ```lua
 set_project("OpenGLFramework")
 set_version("1.0.0")
@@ -232,9 +247,11 @@ end
 
 set_config("cuflags", "-std=c++17")
 
-add_requires("glfw3", "glad", "glm", "assimp", "stb")
+-- here if you have these packages, you can use 
+-- 
+add_requires("glfw", "glad", "glm", "assimp", "stb")
 add_requires("imgui", {configs={glfw_opengl3 = true}})
-add_packages("glfw3", "glad", "glm", "assimp", "imgui", "stb")
+add_packages("glfw", "glad", "glm", "assimp", "imgui", "stb")
 
 target("main")
     -- get executable file.

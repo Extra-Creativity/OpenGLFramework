@@ -9,13 +9,17 @@ end
 
 set_config("cuflags", "-std=c++17")
 
-add_requires("glfw3", "glad", "glm", "assimp", "stb")
+add_requires("glfw", "glad", "glm", "assimp", "stb")
 add_requires("imgui", {configs={glfw_opengl3 = true}})
-add_packages("glfw3", "glad", "glm", "assimp", "imgui", "stb")
+add_packages("glfw", "glad", "glm", "assimp", "imgui", "stb")
 
 target("main")
     -- get executable file.
     set_kind("binary")
+
+    --set config directory.
+    set_configdir("src/FrameCore/config")
+    add_configfiles("src/FrameCore/config/config.h.in")
 
     -- set global config to use.
     set_configvar("OPENGLFRAMEWORK_ENABLE_GPUEXTENSION", 0)
@@ -23,10 +27,16 @@ target("main")
     -- set_configvar("OPENGLFRAMEWORK_ENABLE_GPUEXTENSION", 1)
     -- add_files("src/FrameCore/cu/*.cu")
 
+    -- set resource and shader directory.
+--path.join("$(projectdir)", "Resources"):gsub("\\", "/")
     set_configdir("src/FrameCore/config")
     add_configfiles("src/FrameCore/config/config.h.in")
-    set_configvar("OPENGLFRAMEWORK_RESOURCE_DIR", "$(projectdir)/Resources/")
-    set_configvar("OPENGLFRAMEWORK_SHADER_DIR", "$(projectdir)/src/Shaders/")
+    
+    dir, _ = path.join(os.projectdir(), "Resources"):gsub("\\", "/")
+    set_configvar("OPENGLFRAMEWORK_RESOURCES_DIR", dir)
+    
+    dir, _ = path.join(os.projectdir(), "src", "Shaders"):gsub("\\", "/") 
+    set_configvar("OPENGLFRAMEWORK_SHADERS_DIR", dir)
 
     -- determine files and paths.
     add_includedirs("src/FrameCore/headers")
