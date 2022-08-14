@@ -222,7 +222,7 @@ XMake is a lua-based convenient tool for cross-platform code written by a Chines
 
 > In fact Lua knowledge is nearly unnecessary for basic build tasks.
 >
-> We believe that XMake is easier to code than CMake, but it's a pity that documents of XMake are still developing and not as satisfying as we expect.
+> We believe that XMake is easier to code than CMake, but it's a pity that documents of XMake are still developing and not as satisfying as we expect. We are still struggling to study nows.
 >
 > XMake can also generate IDE project files, see [here](https://xmake.io/#/plugin/builtin_plugins?id=generate-ide-project-files).
 
@@ -237,18 +237,13 @@ set_project("OpenGLFramework")
 set_version("1.0.0")
 set_xmakever("2.6.1")
 
--- here you can only use cxx17 if C++20 is not supported.
 set_languages("cxx20")
--- here you can cancel it if your default g++ --version >= 11.1
--- or you can replace it with possibly existing g++-12.
 if is_plat("linux") then
     set_config("cxx", "g++-11")
 end
 
 set_config("cuflags", "-std=c++17")
 
--- here if you have these packages, you can use 
--- 
 add_requires("glfw", "glad", "glm", "assimp", "stb")
 add_requires("imgui", {configs={glfw_opengl3 = true}})
 add_packages("glfw", "glad", "glm", "assimp", "imgui", "stb")
@@ -257,16 +252,22 @@ target("main")
     -- get executable file.
     set_kind("binary")
 
-    -- set global config to generate config.h and use.
+    --set config directory.
+    set_configdir("src/FrameCore/config")
+    add_configfiles("src/FrameCore/config/config.h.in")
+
+    -- set global config to use.
     set_configvar("OPENGLFRAMEWORK_ENABLE_GPUEXTENSION", 0)
     -- if your GPU is quite fast , replace code above with :
     -- set_configvar("OPENGLFRAMEWORK_ENABLE_GPUEXTENSION", 1)
     -- add_files("src/FrameCore/cu/*.cu")
-
-    set_configdir("src/FrameCore/config")
-    add_configfiles("src/FrameCore/config/config.h.in")
-    set_configvar("OPENGLFRAMEWORK_RESOURCE_DIR", "$(projectdir)/Resources/")
-    set_configvar("OPENGLFRAMEWORK_SHADER_DIR", "$(projectdir)/src/Shaders/")
+    
+    -- set resource and shader directory.
+    dir, _ = path.join(os.projectdir(), "Resources"):gsub("\\", "/")
+    set_configvar("OPENGLFRAMEWORK_RESOURCES_DIR", dir)
+    
+    dir, _ = path.join(os.projectdir(), "src", "Shaders"):gsub("\\", "/") 
+    set_configvar("OPENGLFRAMEWORK_SHADERS_DIR", dir)
 
     -- determine files and paths.
     add_includedirs("src/FrameCore/headers")
