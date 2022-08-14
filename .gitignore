@@ -1,3 +1,4 @@
 /.xmake
 /vsxmake2019
 /build
+/src/FrameCore/config/config.h
