@@ -48,61 +48,27 @@ private:
     std::unique_ptr<SectionData> data = std::make_unique<SectionData>();
 
 public:
-    std::pair<bool, decltype(data->subsections.find(""))> 
-        FindAlongPath(const std::string& normalizedKey)
-    {
-        decltype(data->subsections.find("")) it;
-        std::reference_wrapper<Section> currSearchingSection = *this;
-
-        bool success = true;
-        std::string subsectionName;
-        subsectionName.reserve(16); // reduce re-allocate and copy.
-
-        for (auto&& subsectionNameView : normalizedKey |
-            std::views::lazy_split('.'))
-        {
-            if (subsectionNameView.empty())
-            {
-                success = false;
-                break;
-            }
-            // In C++23, this can be changed to | std::ranges::to<std::string>().
-            std::ranges::copy(subsectionNameView.begin(), subsectionNameView.end(),
-                std::back_inserter(subsectionName));
-
-            auto& candidateSections = currSearchingSection.get().data->subsections;
-            it = candidateSections.find(subsectionName);
-            if (it == candidateSections.end())
-            {
-                success = false;
-                break;
-            }
-            currSearchingSection = it->second;
-            subsectionName.clear();
-        }
-        return { success, it };
-    }
+    Section* FindAlongPath(const std::string& normalizedKey);
 
     NullableSectionRef GetSubsection(const std::string& key)&
     {
         std::string normalizedKey = IniFileNameNormalize(key);
-        auto [success, it] = FindAlongPath(normalizedKey);
-        return success ? NullableSectionRef{ it->second } : std::nullopt;
+        Section* result = FindAlongPath(normalizedKey);
+        return result ? NullableSectionRef{ *result } : std::nullopt;
     };
 
     NullableConstSectionRef GetSubsection(const std::string& key) const&
     {
         std::string normalizedKey = IniFileNameNormalize(key);
-        auto [success, it] = FindAlongPath(normalizedKey);
-        return success ? NullableConstSectionRef{ it->second } : std::nullopt;
+        Section* result = FindAlongPath(normalizedKey);
+        return result ? NullableSectionRef{ *result } : std::nullopt;
     };
 
     std::optional<Section> GetSubsection(const std::string& key)&&
     {
         std::string normalizedKey = IniFileNameNormalize(key);
-        auto [success, it] = FindAlongPath(normalizedKey);
-        return success ? std::optional<Section>{ std::move(it->second) } 
-            : std::nullopt;
+        Section* result = FindAlongPath(normalizedKey);
+        return result ? NullableSectionRef{ *result } : std::nullopt;
     };
 
     NullableEntryRef GetEntry(const std::string& key)&
@@ -170,6 +136,41 @@ public:
     Container<std::string, Section> subsections;
     Container<std::string, std::string> entries;
 };
+
+template<template<typename, typename> typename Container>
+auto Section<Container>::FindAlongPath(
+    const std::string& normalizedKey)-> Section*
+{
+    decltype(data->subsections.find("")) it;
+    Section* currSearchingSection = this;
+
+    std::string subsectionName;
+    subsectionName.reserve(16); // reduce re-allocate and copy.
+
+    for (auto&& subsectionNameView : normalizedKey |
+        std::views::split('.'))
+    {
+        if (subsectionNameView.empty())
+        {
+            return nullptr;
+        }
+        // In C++23, this can be changed to lazy_split('.) | 
+        // std::ranges::to<std::string>().
+        std::ranges::copy(subsectionNameView.begin(), subsectionNameView.end(),
+            std::back_inserter(subsectionName));
+
+        auto& candidateSections = currSearchingSection->data->subsections;
+        it = candidateSections.find(subsectionName);
+        if (it == candidateSections.end())
+        {
+            return nullptr;
+        }
+        currSearchingSection = &(it->second);
+        subsectionName.clear();
+    }
+    return currSearchingSection;
+}
+
 
 template<template<typename, typename> typename Container = std::unordered_map>
 class IniFile
@@ -294,7 +295,7 @@ private:
         sectionPartialName.reserve(16);
 
         for (auto&& sectionPartialNameView : sectionFullName 
-            | std::views::lazy_split('.'))
+            | std::views::split('.'))
         {
             if (sectionPartialNameView.empty())
             {
