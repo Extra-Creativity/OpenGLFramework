@@ -1,4 +1,6 @@
 /.xmake
+/.vscode
 /vsxmake2019
 /build
+/Testament
 /src/FrameCore/config/config.h
