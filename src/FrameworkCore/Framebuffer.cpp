@@ -1,5 +1,6 @@
 #include "Framebuffer.h"
 #include "Utility/IO/IOExtension.h"
+
 #include <glad/glad.h>
 
 namespace OpenGLFramework::Core

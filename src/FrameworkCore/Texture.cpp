@@ -57,6 +57,7 @@ Texture::Texture(const std::filesystem::path& path) : ID(0)
         IOExtension::LogError(
             "Unknown image channel type : " + std::to_string(channels));
 #   endif
+        format = GL_RGBA;
         break;
     }
 

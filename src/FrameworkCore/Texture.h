@@ -14,7 +14,7 @@ public:
     Texture(const std::filesystem::path& path);
     ~Texture();
     Texture(Texture&) = delete;
-    Texture(Texture&& another) noexcept : ID(another.ID) { another.ID = 0; };
+    Texture(Texture&& another) noexcept : ID(another.ID) { if(&another != this) another.ID = 0; };
 };
 
 } // namespace OpenGLFramework::Core

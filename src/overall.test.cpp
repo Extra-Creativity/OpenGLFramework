@@ -22,9 +22,9 @@ int main()
 	Core::InitContext();
 	
 	std::filesystem::path configPath = 
-	//R"(D:\111\University\Course\CS\Computer Graphics\)"
-    //    R"(OpenGL\OpenGLFramework\Resources\config.ini)"
-		"/media/jiaming/Data/111/University/Course/CS/Computer Graphics/OpenGL/OpenGLFramework/Resources/config2.ini";
+	R"(D:\111\University\Course\CS\Computer Graphics\)"
+        R"(OpenGL\OpenGLFramework\Resources\Configs\config.ini)";
+		//"/media/jiaming/Data/111/University/Course/CS/Computer Graphics/OpenGL/OpenGLFramework/Resources/Configs/config2.ini";
 	IOExtension::IniFile file{ configPath };
 	
 	std::string pathSectionName = "path", nameSectionName = "name";
@@ -41,7 +41,7 @@ int main()
 	std::string windowName = nameSection("window_name");
 
 	Core::MainWindow mainWindow { 800, 600, windowName.c_str() };
-	Core::Model model{ pathSection("resource_dir") };
+	Core::BasicTriRenderModel model{ pathSection("resource_dir") };
 	Core::Shader shader{ pathSection("vertex_shader_dir"), pathSection("fragment_shader_dir")};
 	Core::Camera frontCamera{ {0, 10, 35}, {0, 1, 0}, {0, 0, -1} };
 	// t2 = std::chrono::steady_clock::now();

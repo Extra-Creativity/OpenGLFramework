@@ -4,61 +4,66 @@
 
 #include "Shader.h"
 #include "Texture.h"
+#include "Mesh.h"
 #include "Transform.h"
 #include "Framebuffer.h"
 
-#include <vector>
-#include <unordered_map>
 #include <glm/glm.hpp>
-#include <filesystem>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <vector>
+#include <filesystem>
+#include <stack>
+
 namespace OpenGLFramework::Core 
 {
 
-struct Vertex
+template<typename T, typename ...Args>
+void LoadResourcesDecorator_(const aiScene* model, T processFunc, Args&&... args)
 {
-public:
-    glm::vec3 position;
-    glm::vec3 normalCoord;
-    glm::vec2 textureCoord;
-};
-
-class Mesh
-{
-public:
-    std::vector<Vertex> vertices;
-    std::vector<glm::ivec3> triangles;
-    std::vector<std::reference_wrapper<Texture>> diffuseTextures;
-    std::vector<std::reference_wrapper<Texture>> specularTextures;
-    Mesh(aiMesh* mesh, const aiScene* model);
-    void Draw(Shader& shader);
-    void Draw(Shader& shader, Framebuffer& buffer);
-private:
-    GLuint VAO, VBO, IBO;
-    void SetupMesh_();
-};
-
-class Model
-{
-private:
-    struct PathHash {
-        size_t operator()(const std::filesystem::path& path) const {
-            return std::filesystem::hash_value(path);
+    aiNode* node = nullptr;
+    std::stack<aiNode*> childNodes;
+    childNodes.push(model->mRootNode);
+    while (!childNodes.empty())
+    {
+        node = childNodes.top();
+        for (unsigned int i = 0u, len = node->mNumMeshes; i < len; i++)
+        {
+            aiMesh* mesh = model->mMeshes[node->mMeshes[i]];
+            processFunc(mesh, std::forward<Args>(args)...);
         }
-    };
+        childNodes.pop();
+        for (unsigned int i = 0u, len = node->mNumChildren; i < len; i++)
+        {
+            childNodes.push(node->mChildren[i]);
+        }
+    }
+};
+
+class BasicTriModel
+{
 public:
-    std::unordered_map<std::filesystem::path, Texture, PathHash> textures;
-    std::vector<Mesh> meshes;
+    BasicTriModel(const std::filesystem::path& modelPath);
+    std::vector<BasicTriMesh> meshes;
     Transform transform;
-    Model(const std::filesystem::path& modelPath, bool textureNeedFlip = false);
+private:
+    void LoadResources_(const aiScene* model);
+};
+
+class BasicTriRenderModel
+{
+public:
+    TexturePool texturePool;
+    std::vector<BasicRenderTriMesh> meshes;
+    Transform transform;
+    BasicTriRenderModel(const std::filesystem::path& modelPath, bool textureNeedFlip = false);
     void Draw(Shader& shader);
     void Draw(Shader& shader, Framebuffer& buffer);
 private:
-    void TransferTextureData_(const std::filesystem::path& resourcePath, aiMaterial* material, Mesh& fillMesh);
-    void LoadTextureWithType_(const std::filesystem::path& resourcePath, aiMaterial* material, aiTextureType type, std::vector<std::reference_wrapper<Texture>>& meshTextures);
+    void LoadResources_(const aiScene* model, const std::filesystem::path& 
+        resourceRootPath, bool textureNeedFlip);
 };
 
 } // namespace OpenGLFramework::Core

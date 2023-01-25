@@ -11,9 +11,29 @@ TEST_CASE("Cube")
     std::vector<glm::vec3> vertices;
     SECTION("WithoutNormal")
     {
-        Model model{ R"(D:\111\University\Course\CS\Computer Graphics\OpenGL)"
-                R"(\OpenGLFramework\Resources\Models\Cube\CubeWithoutNormal)" };
-        REQUIRE(model.meshes.size() == 1);
+        BasicTriModel model{ R"(D:\111\University\Course\CS\Computer Graphics\OpenGL)"
+                R"(\OpenGLFramework\Resources\Models\Cube\CubeWithoutNormal.obj)" };
+        auto size = model.meshes.size();
+        REQUIRE(1 == size);
+        auto& mesh = model.meshes[0];
+        for (auto i = 0; i < mesh.vertices.size(); i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                std::cout << mesh.vertices[i][j] << " ";
+            }
+            std::cout << "\n";
+        }
+        REQUIRE_THAT(mesh.vertices, Catch::Matchers::UnorderedEquals(std::vector<glm::vec3>{
+            { 0.0 , 0.0 , 0.0},
+            { 0.0 , 0.0 , 1.0 },
+            { 0.0 , 1.0 , 0.0 },
+            { 0.0 , 1.0 , 1.0 },
+            { 1.0 , 0.0 , 0.0 },
+            { 1.0 , 0.0 , 1.0 },
+            { 1.0 , 1.0 , 0.0 },
+            { 1.0 , 1.0 , 1.0 }
+        }));
     }
 }
 
