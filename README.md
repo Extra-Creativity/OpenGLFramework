@@ -1,4 +1,7 @@
 # README
+---
+This project is upgrading to version 1.1, which fixs a bunch of bugs, makes the code style uniform, adds dynamic configuration and so on. The README will be updated once the code is refactored completely, so the v1.0 doc below is temporarily obselete.
+---
 
 Most of the code we write in OpenGL is drab and dreary and basically needs no or only slight changes. It's also quite a painful course to install dependencies. OpenGLFramework is a clean and easy-to-use wrapper for OpenGL.
 
