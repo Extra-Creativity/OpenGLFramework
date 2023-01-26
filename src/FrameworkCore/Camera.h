@@ -2,7 +2,7 @@
 #ifndef OPENGLFRAMEWORK_CORE_CAMERA_H_
 #define OPENGLFRAMEWORK_CORE_CAMERA_H_
 
-#include "Utility/IO/IOExtension.h"
+#include "../Utility/IO/IOExtension.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -59,13 +59,24 @@ public:
 
     void Rotate(float angle, glm::vec3 axis)
     {
-        glm::quat rotation = glm::angleAxis(glm::radians(angle), axis);
+        glm::quat rotation = 
+            glm::angleAxis(glm::radians(angle), glm::normalize(axis));
         Rotate(rotation);
     }
 
     void Translate(glm::vec3 vec)
     {
         position_ += vec;
+        return;
+    }
+
+    void RotateAroundCenter(float angle, glm::vec3 axis, const glm::vec3& center)
+    {
+        glm::vec3 distanceVec = position_ - center;
+        glm::quat rotation =
+            glm::angleAxis(glm::radians(angle), glm::normalize(axis));
+        Rotate(rotation);
+        position_ = rotation * distanceVec + center;
         return;
     }
 

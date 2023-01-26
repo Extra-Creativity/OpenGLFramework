@@ -1,4 +1,4 @@
-#include "PrepareContext.h"
+#include "ContextManager.h"
 #include "Utility/IO/IOExtension.h"
 
 #include <glad/glad.h>
@@ -12,9 +12,26 @@ namespace OpenGLFramework::Core
 {
 
 using namespace OpenGLFramework;
-void InitContext()
+
+ContextManager& ContextManager::GetInstance()
 {
-    
+    static ContextManager manager{};
+    return manager;
+}
+
+ContextManager::ContextManager()
+{
+    InitGLFWContext_();
+    InitImGuiContext_();
+}
+
+ContextManager::~ContextManager()
+{
+    EndAllContext_();
+}
+
+void ContextManager::InitGLFWContext_()
+{   
     auto initResult = glfwInit();
     if (initResult == GLFW_FALSE) [[unlikely]]
         IOExtension::LogError("Fail to initialize GLFW.");
@@ -26,7 +43,11 @@ void InitContext()
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
+    return;
+};
 
+void ContextManager::InitImGuiContext_()
+{
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     [[maybe_unused]] ImGuiIO& io = ImGui::GetIO();
@@ -37,9 +58,9 @@ void InitContext()
 
     io.IniFilename = NULL;
     return;
-};
+}
 
-void EndContext()
+void ContextManager::EndAllContext_()
 {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

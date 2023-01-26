@@ -1,11 +1,13 @@
-#include "PrepareContext.h"
+#include "ContextManager.h"
 #include "MainWindow.h"
 #include <iostream>
 
+using namespace OpenGLFramework::Core;
+
 int main()
 {
-    OpenGLFramework::Core::InitContext();
-    OpenGLFramework::Core::MainWindow mainWindow{ 800, 600, "Title test" };
+    ContextManager& manager = ContextManager::GetInstance();
+    MainWindow mainWindow{ 800, 600, "Title test" };
     mainWindow.Register([]() {
         static int i = 0;
         if(i < 10)
@@ -18,6 +20,5 @@ int main()
     });
 
     mainWindow.MainLoop({ 0, 0, 0, 1 });
-    OpenGLFramework::Core::EndContext();
     return 0;
 }

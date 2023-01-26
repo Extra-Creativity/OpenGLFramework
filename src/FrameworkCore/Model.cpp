@@ -13,7 +13,8 @@ BasicTriModel::BasicTriModel(const std::filesystem::path& modelPath)
 {
     Assimp::Importer importer;
     const aiScene* model = importer.ReadFile(modelPath.string(),
-        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs
+        | aiProcess_JoinIdenticalVertices);
     if (model == nullptr || (model->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 ||
         model->mRootNode == nullptr) [[unlikely]]
     {
