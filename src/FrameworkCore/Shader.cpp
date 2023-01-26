@@ -1,8 +1,6 @@
 #include "Shader.h"
 #include "Utility/IO/IOExtension.h"
 
-#include <iostream>
-
 namespace OpenGLFramework::Core
 {
 

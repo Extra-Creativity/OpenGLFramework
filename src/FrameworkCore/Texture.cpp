@@ -82,7 +82,7 @@ GLenum Texture::GetGPUChannelFromCPUChannel_(int cpuChannel)
             std::format("Unknown image channel type : {}", cpuChannel));
 #   else
         IOExtension::LogError(
-            "Unknown image channel type : " + std::to_string(channels));
+            "Unknown image channel type : " + std::to_string(cpuChannel));
 #   endif
         gpuChannel = GL_RGBA;
         break;

@@ -2,11 +2,10 @@
 #include <catch2/catch_session.hpp>
 #include "IniFile.h"
 
-#include <stdio.h>
 #include <filesystem>
 using namespace OpenGLFramework::IOExtension;
 
-static std::atomic<int> g_tempFileID = 0;
+static std::atomic<int> g_tempFileID{0};
 static std::string fileNamePrefix = "OPENGLFRAMEWORK_IOEXTENSION_INIFILE_temp";
 
 TEST_CASE("WrongIni")

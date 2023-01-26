@@ -1,5 +1,6 @@
 #include "ContextManager.h"
 #include "MainWindow.h"
+
 #include <iostream>
 
 using namespace OpenGLFramework::Core;

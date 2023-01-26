@@ -8,11 +8,10 @@
 #include <sstream>
 #include <filesystem>
 #include <fstream>
-
-#include <stdio.h>
+#include <atomic>
 
 using namespace OpenGLFramework::IOExtension;
-static std::atomic<int> g_tempFileID = 0;
+static std::atomic<int> g_tempFileID{0};
 
 TEST_CASE("LogErrorTest")
 {

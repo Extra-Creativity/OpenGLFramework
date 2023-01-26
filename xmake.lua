@@ -22,7 +22,7 @@ on_load(function (target)
 end)
 
 -- disable other sources.
-add_requires("catch2", { system = false })
+add_requires("catch2", { system = false, optional = true })
 -- add opengl-related library.
 add_requires("glfw", "glad", "glm", "assimp", "stb")
 add_requires("imgui", {configs={glfw_opengl3 = true}})
