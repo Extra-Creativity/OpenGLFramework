@@ -233,13 +233,13 @@ Only ASCII and UTF-8 are supported.
 
 1. Faster loading speed: The most common code for OpenGL framework is in [learnOpenGL](https://github.com/JoeyDeVries/LearnOpenGL), so we benchmark the total cost of creating Window, loading models, loading shaders and establishing the camera of ours and learnOpenGL's.
 
-   |             | Windows 10 | Ubuntu 20.04 |
-   | ----------- | ---------- | ------------ |
-   | LearnOpenGL | 3.26205s   | 1.93490s     |
-   | Ours, v1.0  | 1.09038s   | 0.645622s    |
-   | Ours, v1.1  |            | 0.521885s    |
+   |                       | Windows 10 | Ubuntu 20.04 |
+   | --------------------- | ---------- | ------------ |
+   | LearnOpenGL, release  | 3.26205s   | 1.93490s     |
+   | Ours, v1.0, debug     | 1.09038s   | 0.645622s    |
+   | Ours, latest, release | 0.662553s  | 0.521885s    |
 
-   Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it about four times faster than the baseline in the latest version.
+   Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it about four to five times faster than the baseline in the latest version.
 
 2. Easier-to-use interface: We wrap the OpenGL code in RAII style, hiding trivial and boring inner details for the most common features. You can dive into writing proper shaders.
 
@@ -334,7 +334,7 @@ The bold parts represent that code with those features is crucial, and it's not 
 
 + `std::optional` is unnecessary if `std::reference_wrapper` is nullable(but in fact it isn't). We kind of regard it as an artifact of the standard library, and we may change them to pointers.
 + We may try to load meshes in parallel. This is not trivial for meshes will share textures so that `TexturePool` that uses STL is not thread-safe.
-+ We may try to load data for every single mesh in parallel. This is not deterministic for huge models are likely to be divided into relatively medium-level meshes, so that the cost of each mesh is not worthwhile to create threads. However, we still reserve such possibilities because we use many `std::for_each` so that `std::execution` may benefit the range-based loop when [P2408R5](#https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2408r5.html) for C++23 is implemented by all mainstream compilers.
++ We may try to load data for every single mesh in parallel. This is not deterministic for huge models are likely to be divided into relatively medium-level meshes, so that the cost of each mesh is not worthwhile to create threads. However, we still reserve such possibilities because we use many `std::for_each` so that `std::execution` may benefit the range-based loop when [P2408R5](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2408r5.html) for C++23 is implemented by all mainstream compilers.
 + `z` suffix for `size_t` and `std::ranges::to<>` for convenient range conversion in C++23.
 + More features like sky box and more complex example shaders.
 

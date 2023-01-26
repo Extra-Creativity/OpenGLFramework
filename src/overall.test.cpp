@@ -35,9 +35,6 @@ void SetMVP(float width, float height, float near, float far,
 int main()
 {
 	std::filesystem::path configPath = "../../../../../Resources/Configs/config2.ini";
-	// R"(D:\111\University\Course\CS\Computer Graphics\)"
-    //     R"(OpenGL\OpenGLFramework\Resources\Configs\config.ini)";
-	// 	//"/media/jiaming/Data/111/University/Course/CS/Computer Graphics/OpenGL/OpenGLFramework/Resources/Configs/config2.ini";
 	IOExtension::IniFile file{ configPath };
 	
 	std::string pathSectionName = "path", nameSectionName = "name";
