@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+
 #include <functional>
 #include <vector>
 #include <unordered_map>
@@ -26,7 +27,7 @@ public:
     std::pair<unsigned int, unsigned int> GetWidthAndHeight()
     {
         int width, height;
-        glfwGetWindowSize(m_window, &width, &height);
+        glfwGetWindowSize(window_, &width, &height);
         return { width, height };
     }
 
@@ -34,9 +35,9 @@ public:
     void BindKeyPressed(UpdateFunc&& func)
     {
         static bool lastPress = true;
-        m_keyPressedList.insert_or_assign(keyCode, [func, this]()
-            {
-                if (glfwGetKey(m_window, keyCode) == GLFW_PRESS)
+        keyPressedList_.insert_or_assign(keyCode, 
+            [func, this]() {
+                if (glfwGetKey(window_, keyCode) == GLFW_PRESS)
                 {
                     if (!lastPress)
                     {
@@ -53,9 +54,9 @@ public:
     template<int keyCode>
     void BindKeyPressing(UpdateFunc&& func)
     {
-        m_keyPressingList.insert_or_assign(keyCode, [func, this]()
-            {
-                if (glfwGetKey(m_window, keyCode) == GLFW_PRESS)
+        keyPressingList_.insert_or_assign(keyCode, 
+            [func, this]() {
+                if (glfwGetKey(window_, keyCode) == GLFW_PRESS)
                     std::invoke(func);
             });
         return;
@@ -65,9 +66,9 @@ public:
     void BindKeyReleased(UpdateFunc&& func)
     {
         static bool lastRelease = true;
-        m_keyReleasedList.insert_or_assign(keyCode, [func, this]()
-            {
-                if (glfwGetKey(m_window, keyCode) == GLFW_RELEASE)
+        keyReleasedList_.insert_or_assign(keyCode, 
+            [func, this](){
+                if (glfwGetKey(window_, keyCode) == GLFW_RELEASE)
                 {
                     if (!lastRelease)
                     {
@@ -78,15 +79,16 @@ public:
                 else // Press.
                     lastRelease = false;
             });
+
         return;
     };
     
     template<int keyCode>
     void BindKeyReleasing(UpdateFunc&& func)
     {
-        m_keyReleasingList.insert_or_assign(keyCode, [func, this]()
-            {
-                if (glfwGetKey(m_window, keyCode) == GLFW_RELEASE)
+        keyReleasingList_.insert_or_assign(keyCode, 
+            [func, this]() {
+                if (glfwGetKey(window_, keyCode) == GLFW_RELEASE)
                     std::invoke(func);
             });
         return;
@@ -94,29 +96,26 @@ public:
 
     void BindScrollCallback(std::function<void(double, double)> callback);
     void BindCursorPosCallback(std::function<void(double, double)> callback);
-    int GetKeyState(int keycode) { return glfwGetKey(m_window, keycode); }
-    void SetInputMode(int mode, int value) { glfwSetInputMode(m_window, mode, value); }
-    void Close() { glfwSetWindowShouldClose(m_window, true); }
+    int GetKeyState(int keycode) { return glfwGetKey(window_, keycode); }
+    void SetInputMode(int mode, int value) { 
+        glfwSetInputMode(window_, mode, value); 
+    }
+    void Close() { glfwSetWindowShouldClose(window_, true); }
     float deltaTime, currTime;
 
 private:
-    GLFWwindow* m_window;
-    std::vector<UpdateFunc> m_routineList;
-    std::unordered_map<int, UpdateFunc> m_keyPressedList;
-    std::unordered_map<int, UpdateFunc> m_keyPressingList;
-    std::unordered_map<int, UpdateFunc> m_keyReleasedList;
-    std::unordered_map<int, UpdateFunc> m_keyReleasingList;
-    std::unordered_map<int, UpdateFunc> m_mouseList;
-
-    // here we do not set mutex, so multi-threading may be dangerous.
-    //static std::unordered_map<GLFWwindow*, std::function<void(double, double)>> ms_scrollCallbacks;
-    //static std::unordered_map<GLFWwindow*, std::function<void(double, double)>> ms_cursorPosCallbacks;
-    //static std::unordered_map<GLFWwindow*, std::function<void(double, double)>> ms_mouseCallbacks;
+    GLFWwindow* window_;
+    std::vector<UpdateFunc> routineList_;
+    std::unordered_map<int, UpdateFunc> keyPressedList_;
+    std::unordered_map<int, UpdateFunc> keyPressingList_;
+    std::unordered_map<int, UpdateFunc> keyReleasedList_;
+    std::unordered_map<int, UpdateFunc> keyReleasingList_;
+    std::unordered_map<int, UpdateFunc> mouseList_;
  
-    static std::function<void(double, double)> ms_scrollCallback;
-    static std::function<void(double, double)> ms_cursorPosCallback;
-    static std::function<void(double, double)> ms_mouseCallback;
-    static bool m_singleton;
+    static std::function<void(double, double)> s_scrollCallback_;
+    static std::function<void(double, double)> s_cursorPosCallback_;
+    static std::function<void(double, double)> s_mouseCallback_;
+    static bool singletonFlag_;
 };
 
 }

@@ -53,7 +53,8 @@ void BasicTriRenderModel::LoadResources_(const aiScene* model,
     stbi_set_flip_vertically_on_load(false);
 }
 
-BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath, bool textureNeedFlip)
+BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath, 
+    bool textureNeedFlip)
 {
     Assimp::Importer importer;
     const aiScene* model = importer.ReadFile(modelPath.string(), 
@@ -81,8 +82,8 @@ void BasicTriRenderModel::Draw(Shader& shader)
 
 void BasicTriRenderModel::Draw(Shader& shader, Framebuffer& buffer)
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
-    if (buffer.renderBuffer != 0)
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer.GetFramebuffer());
+    if (buffer.NeedDepthTesting())
     {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT);

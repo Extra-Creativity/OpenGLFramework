@@ -127,10 +127,10 @@ void BasicRenderTriMesh::SetupRenderResource_()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     AllocateAndMemcpyTrianglesData_();
 
+    // NOTICE: Unbind sequence MUST be VAO->VBO&IBO
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    std::cout << VAO << " " << VBO << " " << IBO << "\n";
 }
 
 void BasicRenderTriMesh::CopyAttributes_(const aiMesh* mesh)
@@ -183,9 +183,9 @@ void BasicRenderTriMesh::AddAllTexturesToPoolAndFillRefs_(
     const std::filesystem::path& rootPath)
 {
     AddTexturesToPoolAndFillRefsByType_(material, aiTextureType_DIFFUSE,
-        diffuseTextures, texturePool, rootPath);
+        diffuseTextureRefs, texturePool, rootPath);
     AddTexturesToPoolAndFillRefsByType_(material, aiTextureType_SPECULAR,
-        specularTextures, texturePool, rootPath);
+        specularTextureRefs, texturePool, rootPath);
 }
 
 BasicRenderTriMesh::BasicRenderTriMesh(const aiMesh* mesh,
@@ -199,17 +199,52 @@ BasicRenderTriMesh::BasicRenderTriMesh(const aiMesh* mesh,
     return;
 };
 
+void BasicRenderTriMesh::ReleaseRenderResources_()
+{
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &IBO);
+    glDeleteVertexArrays(1, &VAO);
+    return;
+}
+
+BasicRenderTriMesh::BasicRenderTriMesh(BasicRenderTriMesh&& another) noexcept:
+    BasicTriMesh{ std::move(another) }, 
+    verticesAttributes{ std::move(another.verticesAttributes)},
+    diffuseTextureRefs{ std::move(another.diffuseTextureRefs)},
+    specularTextureRefs{ std::move(another.specularTextureRefs)},
+    VAO{ another.VAO }, VBO{ another.VBO }, IBO{ another.IBO }
+{
+    another.VAO = another.VBO = another.IBO = 0;
+    return;
+}
+
+BasicRenderTriMesh& BasicRenderTriMesh::operator=(BasicRenderTriMesh&& another)
+    noexcept
+{
+    if (&another == this) [[unlikely]]
+        return *this;
+    ReleaseRenderResources_();
+
+    BasicTriMesh::operator=(std::move(another));
+    verticesAttributes = std::move(another.verticesAttributes);
+    diffuseTextureRefs = std::move(another.diffuseTextureRefs);
+    specularTextureRefs = std::move(another.specularTextureRefs);
+
+    VAO = another.VAO, VBO = another.VBO, IBO = another.IBO;
+    another.VAO = another.VBO = another.IBO = 0;
+    return *this;
+}
+
 BasicRenderTriMesh::~BasicRenderTriMesh()
 {
-    //glDeleteBuffers(1, &VBO);
-    //glDeleteBuffers(1, &IBO);
-    //glDeleteVertexArrays(1, &VAO);
+    ReleaseRenderResources_();
 }
 
 void BasicRenderTriMesh::Draw(Shader& shader)
 {
     int textureCnt = 0;
-    auto SetTexture = [&textureCnt, &shader](const std::string& namePrefix, decltype(diffuseTextures) textures) 
+    auto SetTexture = [&textureCnt, &shader]
+    (const std::string& namePrefix, decltype(diffuseTextureRefs) textures)
     {
         int currTypeID = 1;
         for (auto& texture : textures)
@@ -221,12 +256,13 @@ void BasicRenderTriMesh::Draw(Shader& shader)
         }
         return;
     };
-    SetTexture("diffuseTexture", diffuseTextures);
-    SetTexture("specularTexture", specularTextures);
+    SetTexture("diffuseTexture", diffuseTextureRefs);
+    SetTexture("specularTexture", specularTextureRefs);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(triangles.size() * 3), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(triangles.size() * 3), 
+        GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     return;
@@ -234,8 +270,8 @@ void BasicRenderTriMesh::Draw(Shader& shader)
 
 void BasicRenderTriMesh::Draw(Shader& shader, Framebuffer& buffer)
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer.frameBuffer);
-    if (buffer.renderBuffer != 0)
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer.GetFramebuffer());
+    if (buffer.NeedDepthTesting())
     {
         glEnable(GL_DEPTH_TEST);
         glClear(GL_DEPTH_BUFFER_BIT);

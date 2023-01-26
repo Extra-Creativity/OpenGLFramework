@@ -1,14 +1,16 @@
 #include "Shader.h"
 #include "Utility/IO/IOExtension.h"
+
 #include <iostream>
 
 namespace OpenGLFramework::Core
 {
 
-Shader::Shader(const std::filesystem::path& vertexShaderFilePath, const std::filesystem::path& fragmentShaderPath)
+Shader::Shader(const std::filesystem::path& vertexShaderFilePath, 
+    const std::filesystem::path& fragmentShaderPath)
 {
     constexpr int shaderNum = 2;
-    m_shaders.reserve(shaderNum);
+    shaders_.reserve(shaderNum);
 
     std::string fileContent = IOExtension::ReadAll(vertexShaderFilePath);
     CompileShader_(fileContent, GL_VERTEX_SHADER);
@@ -20,10 +22,12 @@ Shader::Shader(const std::filesystem::path& vertexShaderFilePath, const std::fil
     return;
 };
 
-Shader::Shader(const std::filesystem::path& vertexShaderFilePath, const std::filesystem::path& geometryShaderPath, const std::filesystem::path& fragmentShaderPath)
+Shader::Shader(const std::filesystem::path& vertexShaderFilePath, 
+    const std::filesystem::path& geometryShaderPath, 
+    const std::filesystem::path& fragmentShaderPath)
 {
     constexpr int shaderNum = 3;
-    m_shaders.reserve(shaderNum);
+    shaders_.reserve(shaderNum);
 
     std::string fileContent = IOExtension::ReadAll(vertexShaderFilePath);
     CompileShader_(fileContent, GL_VERTEX_SHADER);
@@ -38,7 +42,7 @@ Shader::Shader(const std::filesystem::path& vertexShaderFilePath, const std::fil
     return;
 };
 
-void Shader::CompileShader_(const std::string& shaderContent, GLenum shaderType)
+void Shader::CompileShader_(const std::string& shaderContent, const GLenum shaderType)
 {
     GLuint newShader = glCreateShader(shaderType);
     const char* contentPtr = shaderContent.c_str();
@@ -49,7 +53,7 @@ void Shader::CompileShader_(const std::string& shaderContent, GLenum shaderType)
     glGetShaderiv(newShader, GL_COMPILE_STATUS, &compileSuccess);
     if (compileSuccess == GL_TRUE) [[likely]]
     {
-        m_shaders.push_back(newShader);
+        shaders_.push_back(newShader);
         return;
     }
     // Else compile fails.
@@ -66,18 +70,18 @@ void Shader::CompileShader_(const std::string& shaderContent, GLenum shaderType)
 
 void Shader::ClearShader_()
 {
-    for (auto& shader : m_shaders)
+    for (auto& shader : shaders_)
     {
         glDeleteShader(shader);
     }
-    m_shaders.resize(0);
+    shaders_.resize(0);
     return;
 }
 
 void Shader::LinkShader_()
 {
     GLuint newShaderAssembly = glCreateProgram();
-    for (auto& shader : m_shaders)
+    for (auto& shader : shaders_)
     {
         glAttachShader(newShaderAssembly, shader);
     }
@@ -87,7 +91,7 @@ void Shader::LinkShader_()
     glGetProgramiv(newShaderAssembly, GL_LINK_STATUS, &linkSuccess);
     if (linkSuccess == GL_TRUE)[[likely]]
     {
-        shaderID = newShaderAssembly;
+        shaderID_ = newShaderAssembly;
         ClearShader_();
         return;
     }
@@ -106,7 +110,7 @@ void Shader::LinkShader_()
 
 Shader::~Shader()
 {
-    glDeleteProgram(shaderID);
+    glDeleteProgram(shaderID_);
     return;
 }
 

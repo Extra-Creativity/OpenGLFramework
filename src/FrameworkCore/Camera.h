@@ -2,10 +2,11 @@
 #ifndef OPENGLFRAMEWORK_CORE_CAMERA_H_
 #define OPENGLFRAMEWORK_CORE_CAMERA_H_
 
+#include "Utility/IO/IOExtension.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
-#include <iostream>
 
 namespace OpenGLFramework::Core
 {
@@ -14,17 +15,18 @@ class Camera
 {
 public:
     Camera(const glm::vec3& init_pos, const glm::vec3& init_up, 
-        const glm::vec3& init_front) : m_position(init_pos), m_gaze(
-            glm::normalize(init_front)), m_up(glm::normalize(init_up - 
-            m_gaze * glm::dot(m_gaze, init_up)) ) 
+        const glm::vec3& init_front) : position_(init_pos), gaze_(
+            glm::normalize(init_front)), up_(glm::normalize(init_up - 
+            gaze_ * glm::dot(gaze_, init_up)) ) 
     {
         if (init_up == glm::zero<glm::vec3>() ||
             init_front == glm::zero<glm::vec3>()) [[unlikely]]
         {
-            std::cout << "Detect zero vec in up or front for camera initialization,"
-                "making up = (0, 1, 0) and gaze = (0, 0, -1)\n";
-            m_up = { 0, 1, 0 };
-            m_gaze = { 0, 0, -1 };
+            OpenGLFramework::IOExtension::LogError(
+                "Detect zero vec in up or front for camera initialization,"
+                "making up = (0, 1, 0) and gaze = (0, 0, -1)\n");
+            up_ = { 0, 1, 0 };
+            gaze_ = { 0, 0, -1 };
         }
     };
 
@@ -33,15 +35,15 @@ public:
     float rotationSpeed = 30.0f;
     float fov = 45.0f;
 
-    glm::vec3 Front() { return m_gaze; }
-    glm::vec3 Back() { return -m_gaze; }
-    glm::vec3 Up() { return m_up; }
-    glm::vec3 Down() { return -m_up; }
-    glm::vec3 Left() { return glm::cross(m_up, m_gaze); };
-    glm::vec3 Right() { return glm::cross(m_gaze, m_up); };
+    glm::vec3 Front() { return gaze_; }
+    glm::vec3 Back() { return -gaze_; }
+    glm::vec3 Up() { return up_; }
+    glm::vec3 Down() { return -up_; }
+    glm::vec3 Left() { return glm::cross(up_, gaze_); };
+    glm::vec3 Right() { return glm::cross(gaze_, up_); };
 
     glm::mat4 GetViewMatrix() { 
-        return glm::lookAt(m_position, m_position + m_gaze, m_up); };
+        return glm::lookAt(position_, position_ + gaze_, up_); };
 
     void Rotate(glm::vec3 eulerAngles) {
         glm::quat rotation = glm::quat(eulerAngles);
@@ -51,8 +53,8 @@ public:
 
     inline void Rotate(glm::quat rotation)
     {
-        m_gaze = rotation * m_gaze;
-        m_up = rotation * m_up;
+        gaze_ = rotation * gaze_;
+        up_ = rotation * up_;
     }
 
     void Rotate(float angle, glm::vec3 axis)
@@ -63,16 +65,16 @@ public:
 
     void Translate(glm::vec3 vec)
     {
-        m_position += vec;
+        position_ += vec;
         return;
     }
 
-    glm::vec3 GetPosition() { return m_position; };
+    glm::vec3 GetPosition() { return position_; };
 private:
     // Note that this sequence is deliberate, so that up will be initialized after front.
-    glm::vec3 m_position;
-    glm::vec3 m_gaze;
-    glm::vec3 m_up;
+    glm::vec3 position_;
+    glm::vec3 gaze_;
+    glm::vec3 up_;
 };
 
 }

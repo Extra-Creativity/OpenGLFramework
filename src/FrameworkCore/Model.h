@@ -58,7 +58,8 @@ public:
     TexturePool texturePool;
     std::vector<BasicRenderTriMesh> meshes;
     Transform transform;
-    BasicTriRenderModel(const std::filesystem::path& modelPath, bool textureNeedFlip = false);
+    BasicTriRenderModel(const std::filesystem::path& modelPath, 
+        bool textureNeedFlip = false);
     void Draw(Shader& shader);
     void Draw(Shader& shader, Framebuffer& buffer);
 private:

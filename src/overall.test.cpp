@@ -87,7 +87,7 @@ int main()
 		{
 			glViewport(0, 0, static_cast<size_t>(subwindowSize.x), static_cast<size_t>(subwindowSize.y));
 
-			frameBuffer.resize(static_cast<size_t>(subwindowSize.x), static_cast<size_t>(subwindowSize.y));
+			frameBuffer.Resize(static_cast<size_t>(subwindowSize.x), static_cast<size_t>(subwindowSize.y));
 
 			viewMat = sideCamera.GetViewMatrix();
 			shader.SetMat4("view", viewMat);
@@ -98,7 +98,7 @@ int main()
 			model.Draw(shader, frameBuffer);
 		}
 
-		ImGui::Image( reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.textureColorBuffer)), 
+		ImGui::Image( reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.GetTextureColorBuffer())), 
 			subwindowSize, { 0, 1 }, { 1, 0 });
 		ImGui::End();
 	});

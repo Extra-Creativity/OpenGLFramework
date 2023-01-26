@@ -8,9 +8,12 @@
 
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <glm/glm.hpp>
 
 #include <unordered_map>
 #include <filesystem>
+#include <functional>
+#include <vector>
 
 namespace OpenGLFramework::Core
 {
@@ -43,18 +46,25 @@ class BasicRenderTriMesh : public BasicTriMesh
 {
 public:
     std::vector<VertexAttribute> verticesAttributes;
-    std::vector<std::reference_wrapper<Texture>> diffuseTextures;
-    std::vector<std::reference_wrapper<Texture>> specularTextures;
+    std::vector<std::reference_wrapper<Texture>> diffuseTextureRefs;
+    std::vector<std::reference_wrapper<Texture>> specularTextureRefs;
+
     BasicRenderTriMesh(const aiMesh* mesh, const aiMaterial* material, 
         TexturePool& texturePool, const std::filesystem::path& rootPath);
+    BasicRenderTriMesh(const BasicRenderTriMesh&) = delete;
+    BasicRenderTriMesh& operator=(const BasicRenderTriMesh&) = delete;
+    BasicRenderTriMesh(BasicRenderTriMesh&&) noexcept;
+    BasicRenderTriMesh& operator=(BasicRenderTriMesh&&) noexcept;
+    ~BasicRenderTriMesh();
+
     void Draw(Shader& shader);
     void Draw(Shader& shader, Framebuffer& buffer);
-    ~BasicRenderTriMesh();
 private:
     GLuint VAO, VBO, IBO;
     void AllocateAndMemcpyVerticesData_();
     void BindVerticesAttributeSequence_();
     void AllocateAndMemcpyTrianglesData_();
+    void ReleaseRenderResources_();
 
     void SetupRenderResource_();
     void CopyAttributes_(const aiMesh* mesh);

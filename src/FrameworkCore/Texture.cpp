@@ -1,78 +1,114 @@
 #include "Texture.h"
 #include "Utility/IO/IOExtension.h"
+
+#define STBI_WINDOWS_UTF8
+#include <stb_image.h>
+
 #include <version>
 #ifdef __cpp_lib_format	
 #include <format>
 #endif
-#include <glad/glad.h>
-#define STBI_WINDOWS_UTF8
-#include <stb_image.h>
 
-const int fileMaxLen = 1024;
+static const int g_fileMaxLen = 1024;
 
 namespace OpenGLFramework::Core
 {
-Texture::Texture(const std::filesystem::path& path) : ID(0)
+
+CPUTextureData::CPUTextureData(const std::filesystem::path& path)
 {
-    glGenTextures(1, &ID);
-    int width = 0, height = 0, channels = 0;
 #ifdef _WIN32
-    std::string stbiPath(fileMaxLen, '\0');
-    stbi_convert_wchar_to_utf8(const_cast<char*>(stbiPath.c_str()), fileMaxLen, path.c_str());
+    std::string stbiPath(g_fileMaxLen, '\0');
+    stbi_convert_wchar_to_utf8(stbiPath.data(), g_fileMaxLen, path.c_str());
     const char* validPath = stbiPath.c_str();
 #else
-     const char* validPath = path.c_str();
+    const char* validPath = path.c_str();
 #endif // _WIN32
 
-    unsigned char* imageData = stbi_load(validPath, &width, &height, &channels, 0);
-    if (imageData == nullptr) [[unlikely]]
+    texturePtr = stbi_load(validPath, &width, &height, &channels, 0);
+    if (texturePtr == nullptr) [[unlikely]]
     {
 #   ifdef __cpp_lib_format	
         IOExtension::LogError(std::format("Fail to load texture image at "
             "path {} for reason : {}", path.string(), stbi_failure_reason()));
 #   else
-        IOExtension::LogError("Fail to load texture image at path " 
+        IOExtension::LogError("Fail to load texture image at path "
             + path.string() + " for reason : " + stbi_failure_reason());
 #   endif
-        stbi_image_free(imageData);
-        return;
     }
-    GLenum format;
-    switch (channels)
+    return;
+}
+
+CPUTextureData::CPUTextureData(CPUTextureData&& another) noexcept:
+    texturePtr{ another.texturePtr }, width{ another.width },
+    height{ another.height }, channels{ another.channels }
+{
+    another.texturePtr = nullptr;
+    return;
+}
+
+CPUTextureData& CPUTextureData::operator=(CPUTextureData&& another) noexcept
+{
+    if (&another == this) [[unlikely]]
+        return *this;
+    texturePtr = another.texturePtr;
+    width = another.width, height = another.height, channels = another.channels;
+
+    another.texturePtr = nullptr;
+    return *this;
+}
+
+CPUTextureData::~CPUTextureData()
+{
+    stbi_image_free(texturePtr);
+}
+
+GLenum Texture::GetGPUChannelFromCPUChannel_(int cpuChannel)
+{
+    GLenum gpuChannel;
+    switch (cpuChannel)
     {
-    case 1:
-        format = GL_RED;
+    case STBI_grey:
+        gpuChannel = GL_RED;
         break;
-    case 3:
-        format = GL_RGB;
+    case STBI_rgb:
+        gpuChannel = GL_RGB;
         break;
-    case 4:
-        format = GL_RGBA;
+    case STBI_rgb_alpha:
+        gpuChannel = GL_RGBA;
         break;
     default: [[unlikely]]
 #   ifdef __cpp_lib_format	
         IOExtension::LogError(
-            std::format("Unknown image channel type : {}", channels));
+            std::format("Unknown image channel type : {}", cpuChannel));
 #   else
         IOExtension::LogError(
             "Unknown image channel type : " + std::to_string(channels));
 #   endif
-        format = GL_RGBA;
+        gpuChannel = GL_RGBA;
         break;
     }
+    return gpuChannel;
+}
 
+Texture::Texture(const std::filesystem::path& path) : ID(0)
+{
+    CPUTextureData cpuTextureData{ path };
+    if (cpuTextureData.texturePtr == nullptr) [[unlikely]]
+        return;
+    GLenum gpuChannel = GetGPUChannelFromCPUChannel_(cpuTextureData.channels);
+
+    glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
+    glTexImage2D(GL_TEXTURE_2D, 0, gpuChannel, cpuTextureData.width, 
+        cpuTextureData.height, 0, gpuChannel, GL_UNSIGNED_BYTE, 
+        cpuTextureData.texturePtr);
     glGenerateMipmap(GL_TEXTURE_2D);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    stbi_image_free(imageData);
     return;
 };
 
