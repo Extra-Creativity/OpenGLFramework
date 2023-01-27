@@ -7,7 +7,7 @@ using namespace OpenGLFramework::Core;
 
 int main()
 {
-    ContextManager& manager = ContextManager::GetInstance();
+    [[maybe_unused]]ContextManager& manager = ContextManager::GetInstance();
     MainWindow mainWindow{ 800, 600, "Title test" };
     mainWindow.Register([]() {
         static int i = 0;

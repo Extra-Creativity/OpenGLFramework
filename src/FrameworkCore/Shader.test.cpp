@@ -28,7 +28,7 @@ void SetMVP(float width, float height, float near, float far,
 
 int main()
 {
-    ContextManager& manager = ContextManager::GetInstance();
+    [[maybe_unused]] ContextManager& manager = ContextManager::GetInstance();
     MainWindow window{ 800, 600, "Test" };
 
     BasicTriRenderModel model{ R"(D:\111\University\Course\CS\Computer Graphics\OpenGL)"

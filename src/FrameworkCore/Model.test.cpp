@@ -51,7 +51,7 @@ TEST_CASE("Cube")
 
 int main()
 {
-    ContextManager& manager = ContextManager::GetInstance();
+    [[maybe_unused]] ContextManager& manager = ContextManager::GetInstance();
     MainWindow useForContextWindow{0, 0, "test"};
     auto result = Catch::Session().run();
     return result;

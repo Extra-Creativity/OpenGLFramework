@@ -33,8 +33,8 @@ public:
     Texture& operator=(const Texture&) = delete;
     Texture(Texture&& another) noexcept : ID(another.ID) { another.ID = 0; };
     Texture& operator=(Texture&& another) noexcept { 
-        ID = another.ID;
-        another.ID = 0;
+        ID = std::exchange(another.ID, 0);
+        return *this;
     };
     ~Texture();
 private:

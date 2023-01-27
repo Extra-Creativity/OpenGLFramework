@@ -1,6 +1,6 @@
 # README
 
-Most of the code we write in OpenGL is drab and dreary and basically needs no or only slight changes. It's also quite a painful course to install dependencies. OpenGLFramework is a clean and easy-to-use wrapper for OpenGL.
+In simple scenes, most of the code we write in OpenGL is drab and dreary and basically needs no or only slight changes. It's also quite a painful course to install dependencies. OpenGLFramework is a clean and easy-to-use wrapper for OpenGL.
 
 ## Table of Contents
 
@@ -15,6 +15,8 @@ Most of the code we write in OpenGL is drab and dreary and basically needs no or
   + [Shader](#shader)
   + [Camera](#camera)
   + [IOExtension](#ioextension)
+  + [IniFile](#IniFile)
+  + [StringExtension](#StringExtension)
 * [Advantages](#advantages)
 * [Build Tool](#build-tool)
 * [Customized Builder](#builder)
@@ -30,32 +32,31 @@ Most of the code we write in OpenGL is drab and dreary and basically needs no or
 
 > All platforms need git commands.
 
-Linux :
+First, you need to install [xmake](https://github.com/xmake-io/xmake)(You can visit the website when you want to get up-to-date installation methods or use other platforms):
+
++ Linux :
+
+    ```bash
+    sudo apt update && sudo apt install gcc-11 g++-11
+    sudo apt install libxi-dev
+    (wget https://xmake.io/shget.text -O -)
+    ```
+    
+    > Maybe `export MESA_GL_VERSION_OVERRIDE=3.3`  is needed in`~/.bashrc` to use OpenGL 3.3.
+
+
++ Windows: Download xmake at https://github.com/xmake-io/xmake/releases, and run `...-install.exe`.
+
++ MacOS : 
+
+    ```bash
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    brew install xmake
+    ```
+
+Then build the `overall.test` target:
 
 ```bash
-sudo apt update && sudo apt install gcc-11 g++-11
-sudo apt install libxi-dev
-(wget https://xmake.io/shget.text -O -)
-cd framework/dir
-xmake overall.test
-```
-
-> Maybe `export MESA_GL_VERSION_OVERRIDE=3.3`  is needed in`~/.bashrc` to use opengl 3.3.
-
-Windows:
-
-Download xmake at https://github.com/xmake-io/xmake/releases, and run `...-install.exe`, then :
-
-```bash
-cd framework/dir
-xmake overall.test
-```
-
-MacOS : 
-
-```bash
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install xmake
 cd framework/dir
 xmake overall.test
 ```
@@ -73,8 +74,6 @@ xrepo install assimp
 
 > Catch2 is optional if you want to run unit tests.
 
-You can also refer to [this website](https://xmake.io/#/guide/installation) if you use other platforms or your installation fails with the methods above. You should also change the `.ini` configuration files in `Resources/Configs` to your path configurations.
-
 After it prompts `build ok!`, you can enter `xmake run overall.test` to run the program and you get : 
 
 ![](result.png)
@@ -89,7 +88,7 @@ You always need to call `[[maybe_unused]] auto& contextManager = ContextManager:
 
 ----
 
-**Components below are in namespace `OpenGLFramework::Core`, and headers are in `FrameworkCore/`.**
+**Components below are in namespace `OpenGLFramework::Core`, and headers are in `FrameworkCore/`.** They will not try to catch exceptions, and the thrown exceptions are all caused by the standard library. When OpenGL errors occur, it will continue to run while logging the error information rather than throw exceptions.
 
 ### MainWindow
 
@@ -111,15 +110,17 @@ You always need to call `[[maybe_unused]] auto& contextManager = ContextManager:
 
 Note that the logic of `MainWindow` assumes that there is only one instance (and we express it by a thread-unsafe singleton-detected bool) because ImGui only supports binding a single GLFW window in its context. Besides, you can customize any needed functions in `MainWindow.h/.cpp` by imitating the code there.
 
-Also, `MainWindow` uses a lot of `unordered_map`; if the bound functions will not be changed, you can use `std::vector` instead to get a slight performance improvement.
+Also, `MainWindow` uses a lot of `std::unordered_map`; if the bound functions will not be changed, you can use `std::vector` instead to get a slight performance improvement.
 
 ### Framebuffer
 
 Framebuffer is used to render an off-screen scene.
 
-+ Initialization: `size_t width, size_t height bool needDepthTesting`, but optional.
++ Initialization: `size_t width, size_t height bool needDepthTesting`, but optional. The default parameters are `(1000, 1000, true)`.
 + `Resize(size_t width, size_t height)`, resize the inner buffer.
 + If you want to show the scene in an ImGui Window, call `ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.textureColorBuffer)), ImGuiWindowSize, { 0, 1 }, { 1, 0 });` in a ImGui context.
+
+You can also adjust the member variable `backgroundColor` to use different color for the framebuffer.
 
 ### Transform
 
@@ -164,7 +165,7 @@ Array of `BasicTriRenderMesh` and all their textures. `Transform transform` is a
 + `Activate`: before you actually use the shader, you need to activate it.
 + `Set...`: set uniform variables in the shader.
 
-Besides, you need always write your actual shader files like this :
+Besides, you always need to write your actual shader files like this :
 
 ```glsl
 // version should be at least 330.
@@ -202,16 +203,16 @@ It has some variables indicating its state, like `movementSpeed`, `mouseSensitiv
 + `LogError(std::source_location location, std::string_view errorInfo)`: display the error information in the location; The first parameter is recommended to be set as `std::source_location::current()`.
 + `LogStreamStatus`: log the status of the file stream and throw `std::runtime_error` if it's bad.
 
-### IniFile
+### <span id="IniFile">IniFile</span>
 
-You can use `.ini` file for dynamic configuration so the burden of re-compiling will be released. For `.ini` format, please refer to [wiki](https://en.wikipedia.org/wiki/INI_file). For the optional features of `.ini`, we support `#` as comments and sub-sections. Notice that `;` or `#` must be the first non-blank character to denote the line as a comment line.
+You can use `.ini` file for dynamic configuration so the burden of re-compiling will be released. For `.ini` format, please refer to [wiki](https://en.wikipedia.org/wiki/INI_file). For the optional features of `.ini`, we support `#` as comments and we also support sub-sections. Notice that `;` or `#` must be the first non-blank character to denote the line as a comment line.
 
 `IniFile` is initialized by its path. The only member variable you can use is `Section rootSection`. 
 
 `Section` is just an implementation of section in `.ini` file. We provide two kinds of data-getter:
 
-+ `operator[]/()`: The former is for the section index, and the latter is for the entry index. These two APIs don't check the existence of the key and don't normalize(i.e. trim and make string case-insensitive required by `.ini`). Subsections are not supported. For example, if you want to index `A.B.C`, you need to use `["a"]["b"]("c")`.
-+ `GetSubsection/GetEntry`: These two APIs will normalize the key, divide the subsection indices and check existence. The return value is `std::optional<>` so that you need to check `std::nullopt`. We may change it to pointer in the future so that you need to check `nullptr`. For example, if you want to index `A.B.C`, you need to use `GetSubsection("A.B")->get().GetEntry("C")`(here we don't check null).
++ `operator[]/()`: The former is for the section index, and the latter is for the entry index. These two APIs don't check the existence of the key and don't normalize(i.e. trim and make string case-insensitive required by `.ini`). Subsections are not supported. For example, if you want to index entry `C` in  `A.B`, you need to use `["a"]["b"]("c")`.
++ `GetSubsection/GetEntry`: These two APIs will normalize the key, divide the subsection indices and check existence of the key. The return value is `std::optional<>` so that you need to check `std::nullopt`. We may change it to pointers in the future so that you need to check `nullptr`. For example, if you want to index entry `C` in  `A.B`, you need to use (here we don't check null) `GetSubsection("A.B")->get().GetEntry("C")`.
 
 Other utility functions like `std::string IniFileNameNormalize(std::string_view)` in the global scope and `GetSubsectionSize/GetEntrySize` in the `Section` scope are also provided.
 
@@ -221,7 +222,7 @@ Besides, we use template so that you can use `std::map` to replace the default `
 
 **Components below are in namespace `OpenGLFramework::StringExtension`, and headers are in `Utility/String`**.
 
-### StringExtension
+### <span id="StringExtension">StringExtension</span>
 
 Only ASCII and UTF-8 are supported.
 
@@ -235,11 +236,12 @@ Only ASCII and UTF-8 are supported.
    |             | Windows 10 | Ubuntu 20.04 |
    | ----------- | ---------- | ------------ |
    | LearnOpenGL | 3.26205s   | 1.93490s     |
-   | Ours        | 1.09038s   | 0.645622s    |
+   | Ours, v1.0  | 1.09038s   | 0.645622s    |
+   | Ours, v1.1  |            | 0.521885s    |
 
-   Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it about three times faster than the baseline.
+   Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it about four times faster than the baseline in the latest version.
 
-2. Easier-to-use interface: We wrap the OpenGL code in RAII style, hiding trivial and boring inner details for the most common features. You can dive into wring proper shaders.
+2. Easier-to-use interface: We wrap the OpenGL code in RAII style, hiding trivial and boring inner details for the most common features. You can dive into writing proper shaders.
 
 3. One-stop dependencies installation: It's widely known that OpenGL needs a bunch of dependencies which disturbs users a lot. Through XMake, we make it quite easy.
 
@@ -302,12 +304,12 @@ What we use in C++17：
 
 + structured binding, for getting the pair/tuple return value.
 + Class template argument deduction (CTAD), to reduce code of some unnecessary types.
-+ `std::unordered_map::insert_or_assign(), std::unordered_map::try_emplace`.
++ `std::unordered_map::insert_or_assign()`, **`std::unordered_map::try_emplace()`**.
 + ~~**`<execution>`, to load models in parallel in multi-core machines.**~~ **Temporarily not used, see TODO**.
 + **`<filesystem>`.**
 + `[[maybe_unused]]` attributes, to eliminate not-used warnings for ImGui needs `auto& io = ImGui::GetIO()` to monitor some events even though `io` is not used in the user's code block.
-+ `[[fall_through]]` to indicate
-+ `<string_view>`, to replace some of the `const char*` in modern C++.
++ `[[fall_through]]` to indicate deliberate no ending `break` in switch-cases.
++ **`<string_view>`, to replace some of the `const char*` in modern C++.**
 + `<optional>` and `std::reference_wrapper`.
 
 The bold parts represent that code with those features is crucial, and it's not easy to re-code. Thus, we recommend you to use a compiler that at least supports C++17.

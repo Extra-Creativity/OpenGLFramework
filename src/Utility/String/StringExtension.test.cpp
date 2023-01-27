@@ -53,7 +53,7 @@ TEST_CASE("AsciiToLowerTest")
 
         for (int _ = 0; _ < testNum; _++)
         {
-            for (int i = 0; i < currStr.size(); i++)
+            for (int i = 0; i < static_cast<int>(currStr.size()); i++)
             {
                 char ch = distribution(engine);
                 if (ch >= 'A' && ch <= 'Z')
@@ -77,8 +77,8 @@ TEST_CASE("Trim")
     REQUIRE(TrimBegin(testStr) == "Luke, I'm your father.\t    ");
     REQUIRE(TrimEnd(testStr) == "   \t  Luke, I'm your father.");
 
-    std::u8string u8testStr = u8"  \t  ÎÒ²»ÈçÀîus¡¢ÁõÉñºÍÁõÊ¥Ñ§Ï°ºÃ . \t  ";
-    REQUIRE(Trim(u8testStr) == u8"ÎÒ²»ÈçÀîus¡¢ÁõÉñºÍÁõÊ¥Ñ§Ï°ºÃ .");
-    REQUIRE(TrimBegin(u8testStr) == u8"ÎÒ²»ÈçÀîus¡¢ÁõÉñºÍÁõÊ¥Ñ§Ï°ºÃ . \t  ");
-    REQUIRE(TrimEnd(u8testStr) == u8"  \t  ÎÒ²»ÈçÀîus¡¢ÁõÉñºÍÁõÊ¥Ñ§Ï°ºÃ .");
+    std::u8string u8testStr = u8"  \t  ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½usï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¥Ñ§Ï°ï¿½ï¿½ . \t  ";
+    REQUIRE(Trim(u8testStr) == u8"ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½usï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¥Ñ§Ï°ï¿½ï¿½ .");
+    REQUIRE(TrimBegin(u8testStr) == u8"ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½usï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¥Ñ§Ï°ï¿½ï¿½ . \t  ");
+    REQUIRE(TrimEnd(u8testStr) == u8"  \t  ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½usï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¥Ñ§Ï°ï¿½ï¿½ .");
 }

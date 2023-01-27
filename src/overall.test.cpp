@@ -34,10 +34,10 @@ void SetMVP(float width, float height, float near, float far,
 
 int main()
 {
-	std::filesystem::path configPath = 
-	R"(D:\111\University\Course\CS\Computer Graphics\)"
-        R"(OpenGL\OpenGLFramework\Resources\Configs\config.ini)";
-		//"/media/jiaming/Data/111/University/Course/CS/Computer Graphics/OpenGL/OpenGLFramework/Resources/Configs/config2.ini";
+	std::filesystem::path configPath = "../../../../../Resources/Configs/config2.ini";
+	// R"(D:\111\University\Course\CS\Computer Graphics\)"
+    //     R"(OpenGL\OpenGLFramework\Resources\Configs\config.ini)";
+	// 	//"/media/jiaming/Data/111/University/Course/CS/Computer Graphics/OpenGL/OpenGLFramework/Resources/Configs/config2.ini";
 	IOExtension::IniFile file{ configPath };
 	
 	std::string pathSectionName = "path", nameSectionName = "name";
@@ -53,7 +53,7 @@ int main()
 	auto& nameSection = nullableSection->get();
 	std::string windowName = nameSection("window_name");
 
-	// auto t1 = std::chrono::steady_clock::now(), t2 = t1;
+	auto t1 = std::chrono::steady_clock::now(), t2 = t1;
 	[[maybe_unused]] auto& contextManager = Core::ContextManager::GetInstance();
 
 	Core::MainWindow mainWindow { 800, 600, windowName.c_str() };
@@ -63,8 +63,8 @@ int main()
 		pathSection("fragment_shader_dir")
 	};
 	Core::Camera frontCamera{ {0, 10, 35}, {0, 1, 0}, {0, 0, -1} };
-	// t2 = std::chrono::steady_clock::now();
-	// std::cout << std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
+	t2 = std::chrono::steady_clock::now();
+	std::cout << std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
 
 	Core::Camera sideCamera{ {-30, 10, 18}, {0, 1, 0}, {30, 0, -18} };
 	Core::Framebuffer frameBuffer;
