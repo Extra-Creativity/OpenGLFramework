@@ -24,7 +24,7 @@ In simple scenes, most of the code we write in OpenGL is drab and dreary and bas
 * [Compiler requirements](#compiler-requirements)
   + [C++20](#cpp20)
   + [C++17](#cpp17)
-* [Update Information](#Update Information)
+* [Update Information](#Update-Information)
 * [TODO](#TODO)
 * [Copyrights](#copyrights)
 
@@ -314,7 +314,7 @@ What we use in C++17：
 
 The bold parts represent that code with those features is crucial, and it's not easy to re-code. Thus, we recommend you to use a compiler that at least supports C++17.
 
-## <span id="Update Information">Update Information</span>
+## <span id="Update-Information">Update Information</span>
 
 ### v1.1 - 2023.1.26
 
