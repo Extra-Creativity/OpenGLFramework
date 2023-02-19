@@ -106,10 +106,4 @@ void Shader::LinkShader_()
     return;
 }
 
-Shader::~Shader()
-{
-    glDeleteProgram(shaderID_);
-    return;
-}
-
 } // namespace OpenGLFramework::Core

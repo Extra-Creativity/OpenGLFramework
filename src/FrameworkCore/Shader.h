@@ -29,10 +29,14 @@ public:
         if (&another == this) [[unlikely]]
             return *this;
         
+        glDeleteProgram(shaderID_);
         shaderID_ = another.shaderID_;
         another.shaderID_ = 0;
     }
-    ~Shader();
+    ~Shader() {
+        glDeleteProgram(shaderID_);
+        return;
+    };
 
     void Activate() { glUseProgram(shaderID_); };
 

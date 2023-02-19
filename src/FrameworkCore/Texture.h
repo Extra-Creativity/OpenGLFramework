@@ -33,10 +33,17 @@ public:
     Texture& operator=(const Texture&) = delete;
     Texture(Texture&& another) noexcept : ID(another.ID) { another.ID = 0; };
     Texture& operator=(Texture&& another) noexcept { 
+        if (&another == this)
+            return *this;
+
+        glDeleteTextures(1, &ID);
         ID = std::exchange(another.ID, 0);
         return *this;
     };
-    ~Texture();
+    ~Texture() {
+        glDeleteTextures(1, &ID);
+        return;
+    };
 private:
     GLenum GetGPUChannelFromCPUChannel_(int cpuChannel);
 };

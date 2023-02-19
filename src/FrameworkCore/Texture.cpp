@@ -50,6 +50,8 @@ CPUTextureData& CPUTextureData::operator=(CPUTextureData&& another) noexcept
 {
     if (&another == this) [[unlikely]]
         return *this;
+
+    stbi_image_free(texturePtr);
     texturePtr = another.texturePtr;
     width = another.width, height = another.height, channels = another.channels;
 
@@ -111,10 +113,5 @@ Texture::Texture(const std::filesystem::path& path) : ID(0)
     glBindTexture(GL_TEXTURE_2D, 0);
     return;
 };
-
-Texture::~Texture()
-{
-    glDeleteTextures(1, &ID);
-}
 
 } // namespace OpenGLFramework::Core
