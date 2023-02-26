@@ -9,7 +9,7 @@ We're excited to announce that we're forging ahead to update to v1.2! These are 
 + More flexible framebuffer, e.g. you can attach more buffers and use them as textures.
 + More examples rather than only a thorough test and many minor unit tests. Do you want to see how to draw a shadow map(both perspective and orthogonal) in 80 LOC with our framework?
 + Skybox texture.
-+ More powerful `MainWindow`, supporting for more mouse events.
++ More powerful `MainWindow`, supporting more mouse events.
 + and so on...
 
 Wait for us!
