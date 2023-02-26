@@ -9,6 +9,7 @@
 #include <functional>
 #include <vector>
 #include <unordered_map>
+#include <array>
 
 namespace OpenGLFramework::Core
 {
@@ -16,33 +17,39 @@ namespace OpenGLFramework::Core
 class MainWindow
 {
     using UpdateFunc = std::function<void(void)>;
+    constexpr static int handleAmount_ = 2;
+    enum class InputHandleBindType { Key = 0, MouseButton = 1 };
+    using InputHandleFunc = decltype(glfwGetKey);
+    using InputToUpdateFuncMap = std::unordered_map<int, UpdateFunc>;
 public:
-    MainWindow(int m_height, int m_width, const char* title);
+    MainWindow(unsigned int m_height, unsigned int m_width, const char* title);
     ~MainWindow();
     MainWindow(MainWindow&) = delete;
     void MainLoop(const glm::vec4& backgroundColor);
     int Register(UpdateFunc&& func);
     int Register(UpdateFunc& func);
-
-    std::pair<unsigned int, unsigned int> GetWidthAndHeight()
+    void BindScrollCallback(std::function<void(double, double)> callback);
+    void BindCursorPosCallback(std::function<void(double, double)> callback);
+private:
+    template<int keyCode, InputHandleBindType type>
+    void BindPressed_(UpdateFunc&& func, InputHandleFunc handleFunc)
     {
-        int width, height;
-        glfwGetWindowSize(window_, &width, &height);
-        return { width, height };
-    }
+        auto& currList = pressedList_[static_cast<int>(type)];
+        if (func == nullptr) [[unlikely]]
+        { 
+            currList.erase(keyCode);
+            return;
+        }
 
-    template<int keyCode>
-    void BindKeyPressed(UpdateFunc&& func)
-    {
         static bool lastPress = true;
-        keyPressedList_.insert_or_assign(keyCode, 
-            [func, this]() {
-                if (glfwGetKey(window_, keyCode) == GLFW_PRESS)
+        currList.insert_or_assign(keyCode,
+            [func, handleFunc, this]() {
+                if (handleFunc(window_, keyCode) == GLFW_PRESS)
                 {
                     if (!lastPress)
                     {
                         lastPress = true;
-                        std::invoke(func);                        
+                        std::invoke(func);
                     }
                 }
                 else // Release.
@@ -50,25 +57,39 @@ public:
             });
         return;
     }
-    
-    template<int keyCode>
-    void BindKeyPressing(UpdateFunc&& func)
+
+    template<int keyCode, InputHandleBindType type>
+    void BindPressing_(UpdateFunc&& func, InputHandleFunc handleFunc)
     {
-        keyPressingList_.insert_or_assign(keyCode, 
-            [func, this]() {
-                if (glfwGetKey(window_, keyCode) == GLFW_PRESS)
+        auto& currList = pressingList_[static_cast<int>(type)];
+        if (func == nullptr) [[unlikely]]
+        {
+            currList.erase(keyCode);
+            return;
+        }
+
+        currList.insert_or_assign(keyCode,
+            [func, handleFunc, this]() {
+                if (handleFunc(window_, keyCode) == GLFW_PRESS)
                     std::invoke(func);
             });
         return;
     }
-    
-    template<int keyCode>
-    void BindKeyReleased(UpdateFunc&& func)
+
+    template<int keyCode, InputHandleBindType type>
+    void BindReleased_(UpdateFunc&& func, InputHandleFunc handleFunc)
     {
+        auto& currList = releasedList_[static_cast<int>(type)];
+        if (func == nullptr) [[unlikely]]
+        {
+            currList.erase(keyCode);
+            return;
+        }
+
         static bool lastRelease = true;
-        keyReleasedList_.insert_or_assign(keyCode, 
-            [func, this](){
-                if (glfwGetKey(window_, keyCode) == GLFW_RELEASE)
+        currList.insert_or_assign(keyCode,
+            [func, handleFunc, this]() {
+                if (handleFunc(window_, keyCode) == GLFW_RELEASE)
                 {
                     if (!lastRelease)
                     {
@@ -82,35 +103,106 @@ public:
 
         return;
     };
-    
-    template<int keyCode>
-    void BindKeyReleasing(UpdateFunc&& func)
+
+    template<int keyCode, InputHandleBindType type>
+    void BindReleasing_(UpdateFunc&& func, InputHandleFunc handleFunc)
     {
-        keyReleasingList_.insert_or_assign(keyCode, 
-            [func, this]() {
-                if (glfwGetKey(window_, keyCode) == GLFW_RELEASE)
+        auto& currList = releasingList_[static_cast<int>(type)];
+        if (func == nullptr) [[unlikely]]
+        {
+            currList.erase(keyCode);
+            return;
+        }
+
+        currList.insert_or_assign(keyCode,
+            [func, handleFunc, this]() {
+                if (handleFunc(window_, keyCode) == GLFW_RELEASE)
                     std::invoke(func);
             });
         return;
     };
 
-    void BindScrollCallback(std::function<void(double, double)> callback);
-    void BindCursorPosCallback(std::function<void(double, double)> callback);
+public:
+    template<int keyCode>
+    void BindKeyPressed(UpdateFunc&& func)
+    {
+        BindPressed_<keyCode, InputHandleBindType::Key>(std::move(func), glfwGetKey);
+    }
+
+    template<int keyCode>
+    void BindKeyPressing(UpdateFunc&& func)
+    {
+        BindPressing_<keyCode, InputHandleBindType::Key>(std::move(func), glfwGetKey);
+    }
+
+    template<int keyCode>
+    void BindKeyReleased(UpdateFunc&& func)
+    {
+        BindReleased_<keyCode, InputHandleBindType::Key>(std::move(func), glfwGetKey);
+    }
+
+    template<int keyCode>
+    void BindKeyReleasing(UpdateFunc&& func)
+    {
+        BindReleasing_<keyCode, InputHandleBindType::Key>(std::move(func), glfwGetKey);
+    }
+
+    template<int mouseButtonCode>
+    void BindMouseButtonPressed(UpdateFunc&& func)
+    {
+        BindPressed_<mouseButtonCode, InputHandleBindType::MouseButton>(
+            std::move(func), glfwGetMouseButton);
+    }
+
+    template<int mouseButtonCode>
+    void BindMouseButtonPressing(UpdateFunc&& func)
+    {
+        BindPressing_<mouseButtonCode, InputHandleBindType::MouseButton>(
+            std::move(func), glfwGetMouseButton);
+    }
+
+    template<int mouseButtonCode>
+    void BindMouseButtonReleased(UpdateFunc&& func)
+    {
+        BindReleased_<mouseButtonCode, InputHandleBindType::MouseButton>(
+            std::move(func), glfwGetMouseButton);
+    }
+
+    template<int mouseButtonCode>
+    void BindMouseButtonReleasing(UpdateFunc&& func)
+    {
+        BindReleasing_<mouseButtonCode, InputHandleBindType::MouseButton>(
+            std::move(func), glfwGetMouseButton);
+    }
+
+    std::pair<unsigned int, unsigned int> GetWidthAndHeight()
+    {
+        int width, height;
+        glfwGetWindowSize(window_, &width, &height);
+        return { width, height };
+    }
+
+    std::pair<float, float> GetCursorPos()
+    {
+        double xPos, yPos;
+        glfwGetCursorPos(window_, &xPos, &yPos);
+        return { static_cast<float>(xPos), static_cast<float>(yPos) };
+    }
+
     int GetKeyState(int keycode) { return glfwGetKey(window_, keycode); }
-    void SetInputMode(int mode, int value) { 
-        glfwSetInputMode(window_, mode, value); 
+    void SetInputMode(int mode, int value) {
+        glfwSetInputMode(window_, mode, value);
     }
     void Close() { glfwSetWindowShouldClose(window_, true); }
-    float deltaTime, currTime;
 
+    float deltaTime, currTime;
 private:
     GLFWwindow* window_;
     std::vector<UpdateFunc> routineList_;
-    std::unordered_map<int, UpdateFunc> keyPressedList_;
-    std::unordered_map<int, UpdateFunc> keyPressingList_;
-    std::unordered_map<int, UpdateFunc> keyReleasedList_;
-    std::unordered_map<int, UpdateFunc> keyReleasingList_;
-    std::unordered_map<int, UpdateFunc> mouseList_;
+    std::array<InputToUpdateFuncMap, handleAmount_> pressedList_;
+    std::array<InputToUpdateFuncMap, handleAmount_> pressingList_;
+    std::array<InputToUpdateFuncMap, handleAmount_> releasedList_;
+    std::array<InputToUpdateFuncMap, handleAmount_> releasingList_;
  
     static std::function<void(double, double)> s_scrollCallback_;
     static std::function<void(double, double)> s_cursorPosCallback_;

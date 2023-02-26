@@ -3,6 +3,7 @@
 
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <limits>
 
 namespace OpenGLFramework::Core
 {
@@ -13,9 +14,12 @@ std::function<void(double, double)> MainWindow::s_cursorPosCallback_;
 
 bool MainWindow::singletonFlag_ = true;
 
-MainWindow::MainWindow(int init_width, int init_height, const char* title) :
+MainWindow::MainWindow(unsigned int init_width, unsigned int init_height, const char* title) :
     deltaTime(0.0f), currTime(0.0f), window_(nullptr)
 {
+    assert((init_width < std::numeric_limits<int>::max() 
+        && init_height < std::numeric_limits<int>::max()));
+
     // note that this is not thread-safe.
     if (!singletonFlag_) [[unlikely]]
     {
@@ -24,8 +28,8 @@ MainWindow::MainWindow(int init_width, int init_height, const char* title) :
     }
     singletonFlag_ = false;
 
-    GLFWwindow* newWindow = glfwCreateWindow(init_width, init_height, title,
-        nullptr, nullptr);
+    GLFWwindow* newWindow = glfwCreateWindow(static_cast<int>(init_width), 
+        static_cast<int>(init_height), title, nullptr, nullptr);
     if (newWindow == nullptr) [[unlikely]]
     { 
         IOExtension::LogError("Fail to create GLFW window.");
@@ -72,25 +76,39 @@ void MainWindow::MainLoop(const glm::vec4& backgroundColor)
         {
             std::invoke(func);
         }
-        for (auto& func : keyPressedList_)
+
+        for (auto& list : pressedList_)
         {
-            std::invoke(func.second);
+            for (auto& func : list)
+            {
+                std::invoke(func.second);
+            }
         }
 
-        for (auto& func : keyPressingList_)
+        for (auto& list : pressingList_)
         {
-            std::invoke(func.second);
+            for (auto& func : list)
+            {
+                std::invoke(func.second);
+            }
         }
 
-        for (auto& func : keyReleasedList_)
+        for (auto& list : releasedList_)
         {
-            std::invoke(func.second);
+            for (auto& func : list)
+            {
+                std::invoke(func.second);
+            }
         }
 
-        for (auto& func : keyReleasingList_)
+        for (auto& list : releasingList_)
         {
-            std::invoke(func.second);
+            for (auto& func : list)
+            {
+                std::invoke(func.second);
+            }
         }
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window_);

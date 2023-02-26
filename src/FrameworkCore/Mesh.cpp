@@ -66,7 +66,7 @@ std::vector<glm::vec3> BasicTriMesh::GetRealVertexNormals()
     return normals;
 };
 
-void BasicRenderTriMesh::AllocateAndMemcpyVerticesData_()
+void BasicTriRenderMesh::AllocateAndMemcpyVerticesData_()
 {
     size_t elementSize = sizeof(glm::vec3) + sizeof(VertexAttribute);
     // allocate memory.
@@ -83,7 +83,7 @@ void BasicRenderTriMesh::AllocateAndMemcpyVerticesData_()
     return;
 }
 
-void BasicRenderTriMesh::BindVerticesAttributeSequence_()
+void BasicTriRenderMesh::BindVerticesAttributeSequence_()
 {
     size_t verticeSizeOffset = sizeof(glm::vec3) * vertices.size();
 
@@ -105,14 +105,14 @@ void BasicRenderTriMesh::BindVerticesAttributeSequence_()
     return;
 }
 
-void BasicRenderTriMesh::AllocateAndMemcpyTrianglesData_()
+void BasicTriRenderMesh::AllocateAndMemcpyTrianglesData_()
 {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(glm::ivec3),
         triangles.data(), GL_STATIC_DRAW);
     return;
 };
 
-void BasicRenderTriMesh::SetupRenderResource_()
+void BasicTriRenderMesh::SetupRenderResource_()
 {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -134,7 +134,7 @@ void BasicRenderTriMesh::SetupRenderResource_()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void BasicRenderTriMesh::CopyAttributes_(const aiMesh* mesh)
+void BasicTriRenderMesh::CopyAttributes_(const aiMesh* mesh)
 {
     std::ranges::iota_view vertexIDView{ size_t(0), vertices.size() };
     std::for_each(vertexIDView.begin(), vertexIDView.end(),
@@ -157,7 +157,7 @@ void BasicRenderTriMesh::CopyAttributes_(const aiMesh* mesh)
     return;
 }
 
-void BasicRenderTriMesh::AddTexturesToPoolAndFillRefsByType_(
+void BasicTriRenderMesh::AddTexturesToPoolAndFillRefsByType_(
     const aiMaterial* material, const aiTextureType type, 
     std::vector<std::reference_wrapper<Texture>>& refs, 
     TexturePool& texturePool, const std::filesystem::path& rootPath)
@@ -179,7 +179,7 @@ void BasicRenderTriMesh::AddTexturesToPoolAndFillRefsByType_(
     return;
 }
 
-void BasicRenderTriMesh::AddAllTexturesToPoolAndFillRefs_(
+void BasicTriRenderMesh::AddAllTexturesToPoolAndFillRefs_(
     const aiMaterial* material, TexturePool& texturePool,
     const std::filesystem::path& rootPath)
 {
@@ -189,7 +189,7 @@ void BasicRenderTriMesh::AddAllTexturesToPoolAndFillRefs_(
         specularTextureRefs, texturePool, rootPath);
 }
 
-BasicRenderTriMesh::BasicRenderTriMesh(const aiMesh* mesh,
+BasicTriRenderMesh::BasicTriRenderMesh(const aiMesh* mesh,
     const aiMaterial* material, TexturePool& texturePool,
     const std::filesystem::path& rootPath):
     BasicTriMesh{mesh}, verticesAttributes(mesh->mNumVertices)
@@ -200,7 +200,7 @@ BasicRenderTriMesh::BasicRenderTriMesh(const aiMesh* mesh,
     return;
 };
 
-void BasicRenderTriMesh::ReleaseRenderResources_()
+void BasicTriRenderMesh::ReleaseRenderResources_()
 {
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &IBO);
@@ -208,7 +208,7 @@ void BasicRenderTriMesh::ReleaseRenderResources_()
     return;
 }
 
-BasicRenderTriMesh::BasicRenderTriMesh(BasicRenderTriMesh&& another) noexcept:
+BasicTriRenderMesh::BasicTriRenderMesh(BasicTriRenderMesh&& another) noexcept:
     BasicTriMesh{ std::move(another) }, 
     verticesAttributes{ std::move(another.verticesAttributes)},
     diffuseTextureRefs{ std::move(another.diffuseTextureRefs)},
@@ -219,7 +219,7 @@ BasicRenderTriMesh::BasicRenderTriMesh(BasicRenderTriMesh&& another) noexcept:
     return;
 }
 
-BasicRenderTriMesh& BasicRenderTriMesh::operator=(BasicRenderTriMesh&& another)
+BasicTriRenderMesh& BasicTriRenderMesh::operator=(BasicTriRenderMesh&& another)
     noexcept
 {
     if (&another == this) [[unlikely]]
@@ -236,29 +236,29 @@ BasicRenderTriMesh& BasicRenderTriMesh::operator=(BasicRenderTriMesh&& another)
     return *this;
 }
 
-BasicRenderTriMesh::~BasicRenderTriMesh()
+BasicTriRenderMesh::~BasicTriRenderMesh()
 {
     ReleaseRenderResources_();
 }
 
-void BasicRenderTriMesh::Draw(Shader& shader)
+void BasicTriRenderMesh::SetTextures_(Shader& shader, const std::string& namePrefix,
+    const decltype(diffuseTextureRefs)& textures, int& beginID)
+{
+    int currTypeID = 1;
+    for (auto& texture : textures)
+    {
+        glActiveTexture(GL_TEXTURE0 + beginID);
+        shader.SetInt(namePrefix + std::to_string(currTypeID), beginID);
+        glBindTexture(GL_TEXTURE_2D, texture.get().ID);
+        ++beginID, ++currTypeID;
+    }
+};
+
+void BasicTriRenderMesh::Draw(Shader& shader)
 {
     int textureCnt = 0;
-    auto SetTexture = [&textureCnt, &shader]
-    (const std::string& namePrefix, decltype(diffuseTextureRefs) textures)
-    {
-        int currTypeID = 1;
-        for (auto& texture : textures)
-        {
-            glActiveTexture(GL_TEXTURE0 + textureCnt);
-            shader.SetInt(namePrefix + std::to_string(currTypeID), textureCnt);
-            glBindTexture(GL_TEXTURE_2D, texture.get().ID);
-            ++textureCnt, ++currTypeID;
-        }
-        return;
-    };
-    SetTexture("diffuseTexture", diffuseTextureRefs);
-    SetTexture("specularTexture", specularTextureRefs);
+    SetTextures_(shader, "diffuseTexture", diffuseTextureRefs, textureCnt);
+    SetTextures_(shader, "specularTexture", specularTextureRefs, textureCnt);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -269,7 +269,27 @@ void BasicRenderTriMesh::Draw(Shader& shader)
     return;
 };
 
-void BasicRenderTriMesh::Draw(Shader& shader, Framebuffer& buffer)
+void BasicTriRenderMesh::Draw(Shader& shader, const std::function<void(int, Shader&)>& preprocess,
+    const std::function<void(void)>& postprocess)
+{
+    int textureCnt = 0;
+    SetTextures_(shader, "diffuseTexture", diffuseTextureRefs, textureCnt);
+    SetTextures_(shader, "specularTexture", specularTextureRefs, textureCnt);
+    if(preprocess) [[likely]]
+        preprocess(textureCnt, shader);
+    
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(triangles.size() * 3),
+        GL_UNSIGNED_INT, 0);
+    if (postprocess)
+        postprocess();
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    return;
+};
+
+void BasicTriRenderMesh::Draw(Shader& shader, Framebuffer& buffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, buffer.GetFramebuffer());
     if (buffer.NeedDepthTesting())

@@ -72,6 +72,28 @@ BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
     return;
 }
 
+void BasicTriRenderModel::InitiateFramebufferContext_(Framebuffer& buffer)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, buffer.GetFramebuffer());
+    if (buffer.NeedDepthTesting())
+    {
+        glEnable(GL_DEPTH_TEST);
+        if(buffer.needDepthClear)
+            glClear(GL_DEPTH_BUFFER_BIT);
+    }
+    auto& color = buffer.backgroundColor;
+    glClearColor(color.r, color.g, color.b, color.a);
+    glClear(GL_COLOR_BUFFER_BIT);
+    return;
+};
+
+void BasicTriRenderModel::EndFramebufferContext_()
+{
+    glDisable(GL_DEPTH_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return;
+};
+
 void BasicTriRenderModel::Draw(Shader& shader)
 {
     for (auto& mesh : meshes)
@@ -83,24 +105,36 @@ void BasicTriRenderModel::Draw(Shader& shader)
 
 void BasicTriRenderModel::Draw(Shader& shader, Framebuffer& buffer)
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer.GetFramebuffer());
-    if (buffer.NeedDepthTesting())
-    {
-        glEnable(GL_DEPTH_TEST);
-        glClear(GL_DEPTH_BUFFER_BIT);
-    }
-    auto& color = buffer.backgroundColor;
-    glClearColor(color.r, color.g, color.b, color.a);
-    glClear(GL_COLOR_BUFFER_BIT);
-
+    InitiateFramebufferContext_(buffer);
     for (auto& mesh : meshes)
     {
         mesh.Draw(shader);
     }
-
-    glDisable(GL_DEPTH_TEST);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    EndFramebufferContext_();
     return;
+};
+
+void BasicTriRenderModel::Draw(Shader& shader, 
+    const std::function<void(int, Shader&)>& preprocess,
+    const std::function<void(void)>& postprocess)
+{
+    for (auto& mesh : meshes)
+    {
+        mesh.Draw(shader, preprocess, postprocess);
+    }
+    return;
+};
+
+void BasicTriRenderModel::Draw(Shader& shader, Framebuffer& buffer,
+    const std::function<void(int, Shader&)>& preprocess,
+    const std::function<void(void)>& postprocess)
+{
+    InitiateFramebufferContext_(buffer);
+    for (auto& mesh : meshes)
+    {
+        mesh.Draw(shader, preprocess, postprocess);
+    }
+    EndFramebufferContext_();
 };
 
 } // namespace OpenGLFramework::Core

@@ -42,23 +42,25 @@ public:
     std::vector<glm::vec3> GetRealVertexNormals();
 };
 
-class BasicRenderTriMesh : public BasicTriMesh
+class BasicTriRenderMesh : public BasicTriMesh
 {
 public:
     std::vector<VertexAttribute> verticesAttributes;
     std::vector<std::reference_wrapper<Texture>> diffuseTextureRefs;
     std::vector<std::reference_wrapper<Texture>> specularTextureRefs;
 
-    BasicRenderTriMesh(const aiMesh* mesh, const aiMaterial* material, 
+    BasicTriRenderMesh(const aiMesh* mesh, const aiMaterial* material, 
         TexturePool& texturePool, const std::filesystem::path& rootPath);
-    BasicRenderTriMesh(const BasicRenderTriMesh&) = delete;
-    BasicRenderTriMesh& operator=(const BasicRenderTriMesh&) = delete;
-    BasicRenderTriMesh(BasicRenderTriMesh&&) noexcept;
-    BasicRenderTriMesh& operator=(BasicRenderTriMesh&&) noexcept;
-    ~BasicRenderTriMesh();
+    BasicTriRenderMesh(const BasicTriRenderMesh&) = delete;
+    BasicTriRenderMesh& operator=(const BasicTriRenderMesh&) = delete;
+    BasicTriRenderMesh(BasicTriRenderMesh&&) noexcept;
+    BasicTriRenderMesh& operator=(BasicTriRenderMesh&&) noexcept;
+    ~BasicTriRenderMesh();
 
     void Draw(Shader& shader);
     void Draw(Shader& shader, Framebuffer& buffer);
+    void Draw(Shader& shader, const std::function<void(int, Shader&)>& preprocess,
+        const std::function<void(void)>& postprocess);
 private:
     GLuint VAO, VBO, IBO;
     void AllocateAndMemcpyVerticesData_();
@@ -73,6 +75,9 @@ private:
     void AddTexturesToPoolAndFillRefsByType_(const aiMaterial* material,
         const aiTextureType type, std::vector<std::reference_wrapper<Texture>>& refs,
         TexturePool& texturePool, const std::filesystem::path& rootPath);
+
+    void SetTextures_(Core::Shader& shader, const std::string& namePrefix,
+        const decltype(diffuseTextureRefs)& textures, int& beginID);
 };
 
 }

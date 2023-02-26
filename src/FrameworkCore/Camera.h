@@ -31,7 +31,7 @@ public:
     };
 
     float movementSpeed = 5.0f;
-    float mouseSensitivity = 0.01f;
+    float mouseSensitivity = 0.1f;
     float rotationSpeed = 30.0f;
     float fov = 45.0f;
 

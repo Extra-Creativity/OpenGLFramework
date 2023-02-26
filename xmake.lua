@@ -3,6 +3,7 @@ set_version("1.1")
 set_xmakever("2.6.1")
 
 add_rules("mode.debug", "mode.release")
+add_rules("plugin.vsxmake.autoupdate")
 set_languages("cxx20")
 add_cxxflags("-Wall")
 
@@ -31,3 +32,4 @@ add_requires("imgui", {configs={glfw_opengl3 = true}})
 add_packages("catch2", "glfw", "glad", "glm", "assimp", "imgui", "stb")
 
 includes("src")
+includes("examples")
