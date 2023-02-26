@@ -33,6 +33,9 @@ public:
     unsigned int GetFramebuffer() const { return frameBuffer_; }
     unsigned int GetDepthBuffer() const { return depthBuffer_; }
     unsigned int GetTextureColorBuffer() const { return textureColorBuffer_; }
+    unsigned int GetAddtionalBuffer(size_t index) const { 
+        return additionalBuffers_[index]; 
+    }
     bool NeedDepthTesting() const { return depthBuffer_ != 0; }
 private:
     unsigned int frameBuffer_ = 0;

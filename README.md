@@ -2,6 +2,20 @@
 
 In simple scenes, most of the code we write in OpenGL is drab and dreary and basically needs no or only slight changes. It's also quite a painful course to install dependencies. OpenGLFramework is a clean and easy-to-use wrapper for OpenGL.
 
+## Annoucement
+
+We're excited to announce that we're forging ahead to update to v1.2! These are some features we'll add:
+
++ More flexible framebuffer, e.g. you can attach more buffers and use them as textures.
++ More examples rather than only a thorough test and many minor unit tests. Do you want to see how to draw a shadow map(both perspective and orthogonal) in 80 LOC with our framework?
++ Skybox texture.
++ More powerful `MainWindow`, supporting for more mouse events.
++ and so on...
+
+Wait for us!
+
+> Also, we're thrilling to announce that a postgraduate in the University of Utah has utilized our framework in his/her simulation project! Congratulations on our first star!
+
 ## Table of Contents
 
 * [Build](#build)
@@ -72,7 +86,7 @@ xrepo install stb
 xrepo install assimp
 ```
 
-> Catch2 is optional if you want to run unit tests.
+> Catch2 is needed only if you want to run unit tests.
 
 After it prompts `build ok!`, you can enter `xmake run overall.test` to run the program and you get : 
 
@@ -82,13 +96,13 @@ Model credits : miHoYo and [观海子](https://space.bilibili.com/17466365?spm_i
 
 ## Usage
 
-> NOTE : You can customize any part by rewriting the inner OpenGL code as you need. Besides, we strongly recommend you to read the code in `main.cpp` rather than read the usage directly because we think the code is more intuitive.
+> NOTE : You can customize any part by rewriting the inner OpenGL code as you need. Besides, we strongly recommend you to read the code in `main.cpp` and other examples in `examples/` rather than read the usage directly, because we think the code is more intuitive.
 
 You always need to call `[[maybe_unused]] auto& contextManager = ContextManager::GetInstance()` first before using the components of this project. It will initialize context when the first time this function is called and end context when the whole program ends.
 
 ----
 
-**Components below are in namespace `OpenGLFramework::Core`, and headers are in `FrameworkCore/`.** They will not try to catch exceptions, and the thrown exceptions are all caused by the standard library. When OpenGL errors occur, it will continue to run while logging the error information rather than throw exceptions.
+**Components below are in namespace `OpenGLFramework::Core`, and headers are in `FrameworkCore/`. You can use `Core_All.h` to include all headers.** They will not try to catch exceptions, and the thrown exceptions are all caused by the standard library. When OpenGL errors occur, it will continue to run while logging the error information rather than throw exceptions.
 
 ### MainWindow
 
@@ -108,17 +122,37 @@ You always need to call `[[maybe_unused]] auto& contextManager = ContextManager:
 
 + `BindKeyPressing/BindKeyPressed/BindKeyReleasing/BindKeyReleased<keycode> (func)`: when the key is pressing/ pressed once/ releasing/ released once, the bound function will be called automatically.
 
++ `BindMouseButtonPressing/BindMouseButtonPressed/BindMouseButtonReleasing/BindMouseButtonReleased<keycode> (func)`: similar as above, but use mouse button.
+
++ `GetWidthAndHeight/GetCursorPos/Close`: as its name.
+
++ `GetKeyState(key)`: return `GLFW_PRESS/GLFW_RELEASE` if key is pressed/released.
+
++ `SetInputMode(mode, value)`: same as `glfwSetInputMode(thisWindow, mode, value)`.
+
++ `float deltaTime/currTime`: data members, representing delta time between this frame and the last and the total time.
+
 Note that the logic of `MainWindow` assumes that there is only one instance (and we express it by a thread-unsafe singleton-detected bool) because ImGui only supports binding a single GLFW window in its context. Besides, you can customize any needed functions in `MainWindow.h/.cpp` by imitating the code there.
 
-Also, `MainWindow` uses a lot of `std::unordered_map`; if the bound functions will not be changed, you can use `std::vector` instead to get a slight performance improvement.
+Also, `MainWindow` uses a lot of `std::unordered_map`; if the bound functions will not be changed, you can use `std::vector` instead to get a slight performance improvement(or in C++23, `std::flat_map` to get better space locality).
 
 ### Framebuffer
 
 Framebuffer is used to render an off-screen scene.
 
-+ Initialization: `size_t width, size_t height bool needDepthTesting`, but optional. The default parameters are `(1000, 1000, true)`.
-+ `Resize(size_t width, size_t height)`, resize the inner buffer.
++ `enum class BasicBufferType`: there are four types of buffer configuration currently;
+  + `OnlyColorBuffer`: Don't need depth testing, only a normal texture buffer for shading.
+  + `OnlyReadableDepthBuffer`: Only a depth buffer, while this buffer can be used as a texture in a shader.
+  + `ColorBufferAndWriteOnlyDepthBuffer`: A normal texture buffer with depth testing, while the depth buffer cannot be used as a texture.
+  + `ColorBufferAndReadableDepthBuffer`: A normal texture buffer with depth testing, while the depth buffer can be used as a texture.
+
++ Initialization: `size_t width, size_t height, BasicBufferType type, int additionalBufferAmount`. The default parameters are `(1000, 1000, BasicBufferType::ColorBufferAndWriteOnlyDepthBuffer, 0)`. The additional buffers will be texture buffer.
++ `Resize(unsigned int width, unsigned int height)`, resize the inner buffer. Notice that if there are lots of buffers in your framebuffer, it would be costy to call `Resize`.
 + If you want to show the scene in an ImGui Window, call `ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.textureColorBuffer)), ImGuiWindowSize, { 0, 1 }, { 1, 0 });` in a ImGui context.
++ `GetFramebuffer/GetDepthBuffer/GetTextureColorBuffer/GetName/GetHeight/NeedDepthTesting`: as its name.
++ `GetAdditionalBuffer(i)`: get the `i`th additional texture buffer.
++ `bool needDepthClear`: when depth testing is needed, you can use this option to enable/disable depth clearing.
++ `backgroundColor`: the color used to clear the screen.
 
 You can also adjust the member variable `backgroundColor` to use different color for the framebuffer.
 
@@ -144,7 +178,7 @@ Only stores vertices and triangles. It's pure model without rendering resources.
 
 #### BasicTriRenderMesh
 
-Derived from `BasicTriMesh`, owning `vertesAttributes` for texture coordinates and normals and rendering resources. It may not be exposed to the users, because it's mainly used for assimp adjustment. However, you may call `Draw(shader)/ Draw(shader, framebuffer)` to show a part of the model.
+Derived from `BasicTriMesh`, owning `vertesAttributes` for texture coordinates and normals and rendering resources. It may not be exposed to the users, because it's mainly used for assimp adjustment. However, you may call `Draw(shader)/ Draw(shader, framebuffer)/...` to show a part of the model, just the same as `BasicTriRenderModel`.
 
 ### Model
 
@@ -157,7 +191,7 @@ Just an array of `BasicTriMesh` and its transformation. It should be initialized
 Array of `BasicTriRenderMesh` and all their textures. `Transform transform` is also provided.
 
 + Initialization : `std::filesystem::path modelPath, bool textureNeedFlip`; any format of path will be accepted.
-+ `Draw(shader) / Draw(shader, framebuffer)`: use the shader to draw the model; if you want to render it on a framebuffer, pass it as the second parameter.
++ `Draw(shader, preprocess, postprocess) / Draw(shader, framebuffer, preprocess, postprocess)`: use the shader to draw the model; if you want to render it on a framebuffer, pass it as the second parameter. `preprocess` and `postprocess` are default `nullptr` and used to help you to control in finer granularity. The former should accept `int, Shader&`(meaning the beginning ID of your possible new textures and the shader) and will be called after attaching known textures and before drawing; the latter will be called after drawing.
 
 ### Shader
 
@@ -205,14 +239,15 @@ It has some variables indicating its state, like `movementSpeed`, `mouseSensitiv
 
 ### <span id="IniFile">IniFile</span>
 
-You can use `.ini` file for dynamic configuration so the burden of re-compiling will be released. For `.ini` format, please refer to [wiki](https://en.wikipedia.org/wiki/INI_file). For the optional features of `.ini`, we support `#` as comments and we also support sub-sections. Notice that `;` or `#` must be the first non-blank character to denote the line as a comment line.
+You can use `.ini` file for dynamic configuration so the burden of re-compiling will be released. To reduce complexity, we only support UTF-8 or ascii characters in the file(however, the path can also be other types, e.g. UTF-16). For `.ini` format, please refer to [wiki](https://en.wikipedia.org/wiki/INI_file). **But we notice that `.ini` file is case-insensitive, so you may prefer `_` in you key.** For the optional features of `.ini`, we support `#` as comments and we also support sub-sections. Notice that `;` or `#` must be the first non-blank character to denote the line as a comment line. The spaces or tabs in two ends of the key or value will be trimmed.
 
-`IniFile` is initialized by its path. The only member variable you can use is `Section rootSection`. 
+`IniFile` is initialized by its path. The only member variable you can use is `Section rootSection`. `FormatError` may be thrown if there are unrecognized format in the file.
 
 `Section` is just an implementation of section in `.ini` file. We provide two kinds of data-getter:
 
 + `operator[]/()`: The former is for the section index, and the latter is for the entry index. These two APIs don't check the existence of the key and don't normalize(i.e. trim and make string case-insensitive required by `.ini`). Subsections are not supported. For example, if you want to index entry `C` in  `A.B`, you need to use `["a"]["b"]("c")`.
 + `GetSubsection/GetEntry`: These two APIs will normalize the key, divide the subsection indices and check existence of the key. The return value is `std::optional<>` so that you need to check `std::nullopt`. We may change it to pointers in the future so that you need to check `nullptr`. For example, if you want to index entry `C` in  `A.B`, you need to use (here we don't check null) `GetSubsection("A.B")->get().GetEntry("C")`.
++ `GetSubsectionSize/GetEntrySize`: Get the number of subsections/entries in current section.
 
 Other utility functions like `std::string IniFileNameNormalize(std::string_view)` in the global scope and `GetSubsectionSize/GetEntrySize` in the `Section` scope are also provided.
 
@@ -233,11 +268,11 @@ Only ASCII and UTF-8 are supported.
 
 1. Faster loading speed: The most common code for OpenGL framework is in [learnOpenGL](https://github.com/JoeyDeVries/LearnOpenGL), so we benchmark the total cost of creating Window, loading models, loading shaders and establishing the camera of ours and learnOpenGL's.
 
-   |                       | Windows 10 | Ubuntu 20.04 |
-   | --------------------- | ---------- | ------------ |
-   | LearnOpenGL, release  | 3.26205s   | 1.93490s     |
-   | Ours, v1.0, debug     | 1.09038s   | 0.645622s    |
-   | Ours, latest, release | 0.662553s  | 0.521885s    |
+   |                      | Windows 10 | Ubuntu 20.04 |
+   | -------------------- | ---------- | ------------ |
+   | LearnOpenGL, release | 3.26205s   | 1.93490s     |
+   | Ours, v1.0, release  | 0.72038s   | 0.645622s    |
+   | Ours, v1.1, release  | 0.662553s  | 0.521885s    |
 
    Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it about four to five times faster than the baseline in the latest version.
 
@@ -246,6 +281,8 @@ Only ASCII and UTF-8 are supported.
 3. One-stop dependencies installation: It's widely known that OpenGL needs a bunch of dependencies which disturbs users a lot. Through XMake, we make it quite easy.
 
 4. Support UTF-8 path : learnOpenGL may only supports ASCII path; we support UTF-8 path. In fact, the example model has textures that have Chinese characters.
+
+5. Dynamic configuration: we support `.ini` configuration file format, so you can load them in run time and minimize the re-compilation when you want to change them.
 
 ## Build Tool
 
@@ -294,6 +331,8 @@ What we use in C++20：
 
 + Concept, but only `StringExtension` uses very simple concept. You can relatively easy to remove them as you want.
 
++ `using enum`.
+
 Those methods are trivial compared to other parts, and will not or only very slightly affect performance, so you can substitute them easily with C++17 code.
 
 ### <span id="cpp17">C++17</span>
@@ -311,6 +350,7 @@ What we use in C++17：
 + `[[fall_through]]` to indicate deliberate no ending `break` in switch-cases.
 + **`<string_view>`, to replace some of the `const char*` in modern C++.**
 + `<optional>` and `std::reference_wrapper`.
++ Nested namespace.
 
 The bold parts represent that code with those features is crucial, and it's not easy to re-code. Thus, we recommend you to use a compiler that at least supports C++17.
 
@@ -335,7 +375,7 @@ The bold parts represent that code with those features is crucial, and it's not 
 + `std::optional` is unnecessary if `std::reference_wrapper` is nullable(but in fact it isn't). We kind of regard it as an artifact of the standard library, and we may change them to pointers.
 + We may try to load meshes in parallel. This is not trivial for meshes will share textures so that `TexturePool` that uses STL is not thread-safe.
 + We may try to load data for every single mesh in parallel. This is not deterministic for huge models are likely to be divided into relatively medium-level meshes, so that the cost of each mesh is not worthwhile to create threads. However, we still reserve such possibilities because we use many `std::for_each` so that `std::execution` may benefit the range-based loop when [P2408R5](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2408r5.html) for C++23 is implemented by all mainstream compilers.
-+ `z` suffix for `size_t` and `std::ranges::to<>` for convenient range conversion in C++23.
++ `std::ranges::to<>` for convenient range conversion in C++23.
 + More features like sky box and more complex example shaders.
 
 ## <span id="copyrights">Copyrights</span>
