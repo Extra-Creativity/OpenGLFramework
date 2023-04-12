@@ -43,15 +43,16 @@ int main()
 	mainWindow.Register(
 		[&shadowMapShader, &sucroseModel, &floor, &buffer, &lightSpaceMat, 
 		 near, far]() {
+			using enum Core::Framebuffer::BasicClearMode;
 			shadowMapShader.Activate();
 			shadowMapShader.SetMat4("lightSpaceMat", lightSpaceMat);
 
 			shadowMapShader.SetMat4("modelMat", sucroseModel.transform.GetModelMatrix());
-			buffer.needDepthClear = true;
+			buffer.SetClearMode({ DepthClear});
 			sucroseModel.Draw(shadowMapShader, buffer);
 
 			shadowMapShader.SetMat4("modelMat", floor.transform.GetModelMatrix());
-			buffer.needDepthClear = false;
+			buffer.SetClearMode({ None });
 			floor.Draw(shadowMapShader, buffer);
 		});
 

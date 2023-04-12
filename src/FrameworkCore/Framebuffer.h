@@ -12,9 +12,10 @@ class Framebuffer
 {
 public:
     glm::vec4 backgroundColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-    bool needDepthClear = true;
     enum class BasicBufferType { OnlyColorBuffer, OnlyReadableDepthBuffer,
        ColorBufferAndWriteOnlyDepthBuffer, ColorBufferAndReadableDepthBuffer};
+    enum class BasicClearMode : std::uint32_t { 
+        None = 0, ColorClear = 1, DepthClear = 2 };
 
     Framebuffer(unsigned int init_width = s_randomLen_,
         unsigned int init_height = s_randomLen_, BasicBufferType type =
@@ -28,8 +29,8 @@ public:
 
     void Resize(unsigned int width, unsigned int height);
 
-    size_t GetWidth() const { return width_; }
-    size_t GetHeight() const { return height_; }
+    unsigned int GetWidth() const { return width_; }
+    unsigned int GetHeight() const { return height_; }
     unsigned int GetFramebuffer() const { return frameBuffer_; }
     unsigned int GetDepthBuffer() const { return depthBuffer_; }
     unsigned int GetTextureColorBuffer() const { return textureColorBuffer_; }
@@ -37,6 +38,14 @@ public:
         return additionalBuffers_[index]; 
     }
     bool NeedDepthTesting() const { return depthBuffer_ != 0; }
+    void SetClearMode(std::initializer_list<BasicClearMode> modes) { 
+        clearMode_ = 0;
+        for (auto mode : modes)
+            clearMode_ |= static_cast<decltype(clearMode_)>(mode);
+        return;
+    }
+    void UseAsRenderTarget();
+    static void RestoreDefaultRenderTarget();
 private:
     unsigned int frameBuffer_ = 0;
     unsigned int depthBuffer_ = 0;
@@ -47,6 +56,8 @@ private:
     unsigned int width_;
     unsigned int height_;
     static const unsigned int s_randomLen_ = 1000u;
+    // Note: this will be reset to all enabled in the ctor.
+    typename std::underlying_type<BasicClearMode>::type clearMode_ = 0;
 
     void GenerateAndAttachWriteOnlyDepthBuffer_();
     void GenerateAndAttachReadableDepthBuffer_();

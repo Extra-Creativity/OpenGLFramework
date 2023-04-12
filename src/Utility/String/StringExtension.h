@@ -37,7 +37,7 @@ template<EnableSubstr StringType>
 StringType TrimBegin(const StringType& str)
 {
     auto chIsBlank = [](decltype(*str.begin()) ch) -> bool { 
-        return std::isblank(ch, std::locale::classic());
+        return static_cast<int>(ch) < 128 && !std::isgraph(ch, std::locale::classic());
     };
     auto beginPosIt = std::find_if_not(str.begin(), str.end(), chIsBlank);
 
@@ -49,7 +49,7 @@ template<EnableSubstr StringType>
 StringType TrimEnd(const StringType& str)
 {
     auto chIsBlank = [](decltype(*str.begin()) ch) -> bool {
-        return std::isblank(ch, std::locale::classic());
+        return static_cast<int>(ch) < 128 && !std::isgraph(ch, std::locale::classic());
     };
     auto endPosIt = std::find_if_not(str.rbegin(), str.rend(), chIsBlank);
 
@@ -61,7 +61,7 @@ template<EnableSubstr StringType>
 StringType Trim(const StringType& str)
 {
     auto chIsBlank = [](decltype(*str.begin()) ch) -> bool {
-        return std::isblank(ch, std::locale::classic());
+        return static_cast<int>(ch) < 128 && !std::isgraph(ch, std::locale::classic());
     };
     auto beginPosIt = std::find_if_not(str.begin(), str.end(), chIsBlank);
     auto endPosIt = std::find_if_not(str.rbegin(), str.rend(), chIsBlank);

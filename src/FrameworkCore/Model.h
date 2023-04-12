@@ -70,8 +70,6 @@ public:
 private:
     void LoadResources_(const aiScene* model, const std::filesystem::path& 
         resourceRootPath, bool textureNeedFlip);
-    void InitiateFramebufferContext_(Framebuffer& framebuffer);
-    void EndFramebufferContext_();
 };
 
 } // namespace OpenGLFramework::Core

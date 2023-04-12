@@ -72,28 +72,6 @@ BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
     return;
 }
 
-void BasicTriRenderModel::InitiateFramebufferContext_(Framebuffer& buffer)
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer.GetFramebuffer());
-    if (buffer.NeedDepthTesting())
-    {
-        glEnable(GL_DEPTH_TEST);
-        if(buffer.needDepthClear)
-            glClear(GL_DEPTH_BUFFER_BIT);
-    }
-    auto& color = buffer.backgroundColor;
-    glClearColor(color.r, color.g, color.b, color.a);
-    glClear(GL_COLOR_BUFFER_BIT);
-    return;
-};
-
-void BasicTriRenderModel::EndFramebufferContext_()
-{
-    glDisable(GL_DEPTH_TEST);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    return;
-};
-
 void BasicTriRenderModel::Draw(Shader& shader)
 {
     for (auto& mesh : meshes)
@@ -105,12 +83,12 @@ void BasicTriRenderModel::Draw(Shader& shader)
 
 void BasicTriRenderModel::Draw(Shader& shader, Framebuffer& buffer)
 {
-    InitiateFramebufferContext_(buffer);
+    buffer.UseAsRenderTarget();
     for (auto& mesh : meshes)
     {
         mesh.Draw(shader);
     }
-    EndFramebufferContext_();
+    Framebuffer::RestoreDefaultRenderTarget();
     return;
 };
 
@@ -129,12 +107,12 @@ void BasicTriRenderModel::Draw(Shader& shader, Framebuffer& buffer,
     const std::function<void(int, Shader&)>& preprocess,
     const std::function<void(void)>& postprocess)
 {
-    InitiateFramebufferContext_(buffer);
+    buffer.UseAsRenderTarget();
     for (auto& mesh : meshes)
     {
         mesh.Draw(shader, preprocess, postprocess);
     }
-    EndFramebufferContext_();
+    Framebuffer::RestoreDefaultRenderTarget();
 };
 
 } // namespace OpenGLFramework::Core

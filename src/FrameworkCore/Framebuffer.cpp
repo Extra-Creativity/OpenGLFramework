@@ -116,6 +116,8 @@ Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
         [[unlikely]]
         IOExtension::LogError("Framebuffer is not complete.");
 
+    using enum BasicClearMode;
+    SetClearMode({ DepthClear, ColorClear });
     // restore default option.
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return;
@@ -126,7 +128,7 @@ Framebuffer::Framebuffer(Framebuffer&& another) noexcept:
     textureColorBuffer_(another.textureColorBuffer_), 
     basicBufferType_(another.basicBufferType_), 
     additionalBuffers_(std::move(another.additionalBuffers_)),
-    width_(another.width_), height_(another.height_)
+    width_(another.width_), height_(another.height_), clearMode_(another.clearMode_)
 {
     another.frameBuffer_ = another.textureColorBuffer_ = another.depthBuffer_ = 0;
     return;
@@ -208,4 +210,28 @@ Framebuffer::~Framebuffer()
     return;
 }
 
+void Framebuffer::UseAsRenderTarget()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
+    if (NeedDepthTesting())
+    {
+        glEnable(GL_DEPTH_TEST);
+        if (clearMode_ & static_cast<decltype(clearMode_)>(BasicClearMode::DepthClear))
+            glClear(GL_DEPTH_BUFFER_BIT);
+    }
+    if (clearMode_ & static_cast<decltype(clearMode_)>(BasicClearMode::ColorClear))
+    {
+        auto& color = backgroundColor;
+        glClearColor(color.r, color.g, color.b, color.a);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+    return;
+};
+
+void Framebuffer::RestoreDefaultRenderTarget()
+{
+    glDisable(GL_DEPTH_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return;
+};
 } // namespace OpenGLFramework::Core

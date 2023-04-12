@@ -61,6 +61,9 @@ public:
     void Draw(Shader& shader, Framebuffer& buffer);
     void Draw(Shader& shader, const std::function<void(int, Shader&)>& preprocess,
         const std::function<void(void)>& postprocess);
+    void Draw(Shader& shader, Framebuffer& buffer, 
+        const std::function<void(int, Shader&)>& preprocess,
+        const std::function<void(void)>& postprocess);
 private:
     GLuint VAO, VBO, IBO;
     void AllocateAndMemcpyVerticesData_();

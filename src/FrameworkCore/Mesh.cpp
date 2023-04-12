@@ -269,7 +269,8 @@ void BasicTriRenderMesh::Draw(Shader& shader)
     return;
 };
 
-void BasicTriRenderMesh::Draw(Shader& shader, const std::function<void(int, Shader&)>& preprocess,
+void BasicTriRenderMesh::Draw(Shader& shader, 
+    const std::function<void(int, Shader&)>& preprocess,
     const std::function<void(void)>& postprocess)
 {
     int textureCnt = 0;
@@ -291,20 +292,19 @@ void BasicTriRenderMesh::Draw(Shader& shader, const std::function<void(int, Shad
 
 void BasicTriRenderMesh::Draw(Shader& shader, Framebuffer& buffer)
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, buffer.GetFramebuffer());
-    if (buffer.NeedDepthTesting())
-    {
-        glEnable(GL_DEPTH_TEST);
-        glClear(GL_DEPTH_BUFFER_BIT);
-    }
-    auto& color = buffer.backgroundColor;
-    glClearColor(color.r, color.g, color.b, color.a);
-    glClear(GL_COLOR_BUFFER_BIT);
-
+    buffer.UseAsRenderTarget();
     Draw(shader);
+    Framebuffer::RestoreDefaultRenderTarget();
+    return;
+};
 
-    glDisable(GL_DEPTH_TEST);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+void BasicTriRenderMesh::Draw(Shader& shader, Framebuffer& buffer,
+    const std::function<void(int, Shader&)>& preprocess,
+    const std::function<void(void)>& postprocess)
+{
+    buffer.UseAsRenderTarget();
+    Draw(shader, preprocess, postprocess);
+    Framebuffer::RestoreDefaultRenderTarget();
     return;
 };
 
