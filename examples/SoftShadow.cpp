@@ -6,6 +6,7 @@
 #include "Utility/IO/IOExtension.h"
 
 #include <ranges>
+#include <array>
 
 using OpenGLFramework::Coroutine::Generator;
 
@@ -61,7 +62,7 @@ Generator<int> SetLightPosition(Core::Camera& lightSpaceCamera)
 	co_yield 0;
 
 	ImGui::Begin("Light Adjustment");
-	ImGui::SetWindowPos({ 50, 150 });
+	ImGui::SetWindowPos({ 50, 50 });
 	ImGui::SetWindowSize({ 250, 100 });
 	while (true)
 	{
@@ -87,6 +88,55 @@ Generator<int> SetLightPosition(Core::Camera& lightSpaceCamera)
 		ImGui::Begin("Light Adjustment");
 	}
 	co_return;
+}
+
+Generator<int> SetShadowOption(int& option)
+{
+	std::array<const char*, 3> optionList{
+		"Hard Shadow(No bias)",
+		"Hard Shadow(Add bias)",
+		"PCF Shadow",
+	};
+	co_yield 0;
+
+	ImGui::Begin("Options");
+	ImGui::SetWindowPos({ 50, 200 });
+	ImGui::SetWindowSize({ 300, 150 });
+
+	while (true)
+	{
+		ImGui::Combo("filters", &option, optionList.data(),
+			static_cast<int>(optionList.size()));
+		ImGui::End();
+		co_yield 0;
+
+		ImGui::Begin("Options");
+	}
+	co_return;
+}
+
+Generator<int> ShowBasicInfo(Core::MainWindow& mainWindow)
+{
+	int frameCnt = 0;
+	float lastFPS = 0;
+	co_yield 0;
+
+	ImGui::Begin("Basic Info");
+	ImGui::SetWindowPos({ 50, 500 });
+	ImGui::SetWindowSize({ 150, 50 });
+
+	while (true)
+	{
+		if (frameCnt % 100 == 0)
+		{
+			lastFPS = 1 / mainWindow.deltaTime;
+		}
+		ImGui::Text("FPS: %f", lastFPS);
+		ImGui::End();
+		frameCnt++;
+		co_yield 0;
+		ImGui::Begin("Basic Info");
+	}
 }
 
 void RenderShadowMap(Core::MainWindow& mainWindow,
@@ -135,7 +185,7 @@ void ResizeBufferToScreen(Core::MainWindow& mainWindow,
 
 void RenderScreen(Core::MainWindow& mainWindow, 
 	Core::Framebuffer& shadowMapBuffer, Core::Camera& camera,
-	Core::Camera& lightSpaceCamera)
+	Core::Camera& lightSpaceCamera, const int& shadowOption)
 {
 	auto& screenShader = shaders.find("screen")->second;
 
@@ -146,6 +196,7 @@ void RenderScreen(Core::MainWindow& mainWindow,
 	screenShader.SetMat4("view", camera.GetViewMatrix());
 	screenShader.SetMat4("projection", glm::perspective(camera.fov,
 		shadowMapBuffer.GetAspect(), near, far));
+	screenShader.SetInt("shadowOption", shadowOption);
 
 	using enum Core::Framebuffer::BasicClearMode;
 	auto UseShadowMap = 
@@ -203,12 +254,22 @@ int main()
 	mainWindow.Register(std::bind(std::advance<IterType, int>, 
 		lightSetter.begin(), 1)
 	);
+	int option = 1;
+	auto shadowOptionSetter = SetShadowOption(option);
+	mainWindow.Register(std::bind(std::advance<IterType, int>,
+		shadowOptionSetter.begin(), 1)
+	);
+	auto basicInfoShow = ShowBasicInfo(mainWindow);
+	mainWindow.Register(std::bind(std::advance<IterType, int>,
+		basicInfoShow.begin(), 1)
+	);
+
 	mainWindow.Register(std::bind(RenderShadowMap, 
 		std::ref(mainWindow), std::ref(buffer), std::ref(lightSpaceCamera))
 	);
 	mainWindow.Register(std::bind(RenderScreen, 
 		std::ref(mainWindow), std::ref(buffer), std::ref(normalCamera), 
-		std::ref(lightSpaceCamera))
+		std::ref(lightSpaceCamera), std::ref(option))
 	);
 	mainWindow.MainLoop({ 1.0, 1.0, 1.0, 0.0 });
 	return 0;
