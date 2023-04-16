@@ -62,7 +62,6 @@ int main()
 
 	mainWindow.Register(
 		[&sucroseShader, &sucroseModel, &frontCamera, &mainWindow, &lightPosition, &lightColor, near, far]() {
-			glEnable(GL_DEPTH_TEST);
 			sucroseShader.Activate();
 			const auto [width, height] = mainWindow.GetWidthAndHeight();
 			SetMVP(static_cast<float>(width), static_cast<float>(height),

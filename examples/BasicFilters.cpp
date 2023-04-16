@@ -79,6 +79,9 @@ int main()
 	float pixelSigma = sqrt(0.5f), depthSigma = pixelSigma, colorSigma = pixelSigma;
 	mainWindow.Register(
 		[&filterLists, &option, &pixelSigma, &depthSigma, &colorSigma]() {
+			enum Options { NoFilter = 0, GaussianFilter, JointBilateralFilter,
+				SobelDetector, Inversion, GrayScale };
+
 			static bool init = true;
 			ImGui::Begin("Options");
 			if (init)
@@ -89,14 +92,15 @@ int main()
 			}
 			ImGui::Combo("filters", &option, filterLists.data(), 
 				static_cast<int>(filterLists.size()));
-			if (option == 0)
+			if (option != GaussianFilter && option != JointBilateralFilter)
 			{
 				ImGui::End();
 				return;
 			}
+
 			ImGui::Text("standard deviations");
 			ImGui::SliderFloat("pixel basic", &pixelSigma, 0.1f, 5.0f);
-			if (option == 2)
+			if (option == JointBilateralFilter)
 			{
 				ImGui::SliderFloat("depth", &depthSigma, 0.1f, 5.0f);
 				ImGui::SliderFloat("direct illumination", &colorSigma, 0.1f, 5.0f);

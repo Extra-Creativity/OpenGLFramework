@@ -24,10 +24,16 @@ class MainWindow
 public:
     MainWindow(unsigned int m_height, unsigned int m_width, const char* title);
     ~MainWindow();
-    MainWindow(MainWindow&) = delete;
+    MainWindow(const MainWindow&) = delete;
+    MainWindow& operator=(const MainWindow&) = delete;
+    MainWindow(MainWindow&&) noexcept;
+    MainWindow& operator=(MainWindow&&) = delete;
+
     void MainLoop(const glm::vec4& backgroundColor);
-    int Register(UpdateFunc&& func);
-    int Register(UpdateFunc& func);
+    void Register(UpdateFunc&& func);
+    void Register(UpdateFunc& func);
+    void RemoveFromRoutines(size_t id);
+    size_t GetCurrRoutineID();
     void BindScrollCallback(std::function<void(double, double)> callback);
     void BindCursorPosCallback(std::function<void(double, double)> callback);
 private:
@@ -198,6 +204,7 @@ public:
     float deltaTime, currTime;
 private:
     GLFWwindow* window_;
+    size_t currRoutineID_ = 0;
     std::vector<UpdateFunc> routineList_;
     std::array<InputToUpdateFuncMap, handleAmount_> pressedList_;
     std::array<InputToUpdateFuncMap, handleAmount_> pressingList_;

@@ -71,7 +71,6 @@ int main()
 
 	mainWindow.Register(
 		[&shader, &model, &frontCamera, &mainWindow, near, far]() {
-			glEnable(GL_DEPTH_TEST);
 			shader.Activate();
 			const auto [width, height] = mainWindow.GetWidthAndHeight();
 			SetMVP(static_cast<float>(width), static_cast<float>(height),

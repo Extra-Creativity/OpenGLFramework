@@ -125,6 +125,8 @@ public:
         return std::move(data->entries[key]);
     }
 
+    const auto& GetRawSubsections() { return data->subsections; };
+    const auto& GetRawEntries() { return data->entries; }
     size_t GetSubsectionSize() { return data->subsections.size(); };
     size_t GetEntrySize() { return data->entries.size(); }
 };
@@ -154,7 +156,7 @@ auto Section<Container>::FindAlongPath(
         {
             return nullptr;
         }
-        // In C++23, this can be changed to lazy_split('.) | 
+        // In C++23, this can be changed to lazy_split('.') | 
         // std::ranges::to<std::string>().
         std::ranges::copy(subsectionNameView.begin(), subsectionNameView.end(),
             std::back_inserter(subsectionName));

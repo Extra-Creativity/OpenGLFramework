@@ -45,7 +45,6 @@ int main()
     std::cout << pos.x << " " << pos.y << " " << pos.z << "\n";
 
     window.Register([&window, &model, &shader, &camera]() {
-        glEnable(GL_DEPTH_TEST);
         shader.Activate();
 
         const auto [width, height] = window.GetWidthAndHeight();

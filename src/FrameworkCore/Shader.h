@@ -20,8 +20,8 @@ public:
     Shader(const std::filesystem::path& vertexShaderFilePath, 
         const std::filesystem::path& geometryShaderPath, 
         const std::filesystem::path& fragmentShaderPath);
-    Shader(Shader& another) = delete;
-    Shader& operator=(Shader& another) = delete;
+    Shader(const Shader& another) = delete;
+    Shader& operator=(const Shader& another) = delete;
     Shader(Shader&& another) noexcept :shaderID_{another.shaderID_} {
         another.shaderID_ = 0;
     };

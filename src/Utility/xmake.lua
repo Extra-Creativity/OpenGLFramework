@@ -1,5 +1,5 @@
 target("OpenGLFrameworkUtility")
     set_kind("static")
-    add_deps("OpenGLFrameworkIO", "OpenGLFrameworkString")
+    add_deps("OpenGLFrameworkIO", "OpenGLFrameworkString", "OpenGLFrameworkGenerator")
 
-includes("IO", "String")
+includes("IO", "String", "Generator")

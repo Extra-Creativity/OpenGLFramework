@@ -77,13 +77,53 @@ vec3 JointBilateralFilter()
     return color;
 }
 
+vec3 SobelDetector()
+{
+    float Gx[9] = float[](
+        1, 0, -1,
+        2, 0, -2,
+        1, 0, -1
+    );
+    float Gy[9] = float[](
+        1, 2, 1,
+        0, 0, 0,
+        -1, -2, -1
+    );
+
+    vec3 sampleTex[9];
+    for(int i = 0; i < 9; i++)
+        sampleTex[i] = texture(colorTexture, TexCoords + offsets[i]).xyz;
+
+    vec3 xColor = vec3(0.0);
+    vec3 yColor = vec3(0.0);
+    for(int i = 0; i < 9; i++)
+    {
+        xColor += Gx[i] * sampleTex[i];
+        yColor += Gy[i] * sampleTex[i];
+    }
+    return sqrt(xColor * xColor + yColor * yColor);
+}
+
+float GrayScale(vec3 color)
+{
+    return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+}
+
 void main()
 {
-    if(filterOption == 0)
-        FragColor = vec4(texture(colorTexture, TexCoords).xyz, 1.0);
-    else if(filterOption == 1)
-        FragColor = vec4(GaussianFilter(), 1.0);
-    else if(filterOption == 2)
-        FragColor = vec4(JointBilateralFilter(), 1.0);
+    vec3 resultColor;
+    if(filterOption == 0) // NoFilter
+        resultColor = texture(colorTexture, TexCoords).xyz;
+    else if(filterOption == 1) // GaussianFilter
+        resultColor = GaussianFilter();
+    else if(filterOption == 2) // JointBilateralFilter
+        resultColor = JointBilateralFilter();
+    else if(filterOption == 3) // SobelDetector
+        resultColor = vec3(GrayScale(SobelDetector()));
+    else if(filterOption == 4) // Inversion
+        resultColor = vec3(1.0) - texture(colorTexture, TexCoords).xyz;
+    else if(filterOption == 5) // GrayScale
+        resultColor = vec3(GrayScale(texture(colorTexture, TexCoords).xyz));
+    FragColor = vec4(resultColor, 1.0);
     return;
 }

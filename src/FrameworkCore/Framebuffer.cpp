@@ -215,10 +215,11 @@ void Framebuffer::UseAsRenderTarget()
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
     if (NeedDepthTesting())
     {
-        glEnable(GL_DEPTH_TEST);
         if (clearMode_ & static_cast<decltype(clearMode_)>(BasicClearMode::DepthClear))
             glClear(GL_DEPTH_BUFFER_BIT);
     }
+    else
+        glDisable(GL_DEPTH_TEST);
     if (clearMode_ & static_cast<decltype(clearMode_)>(BasicClearMode::ColorClear))
     {
         auto& color = backgroundColor;
@@ -230,7 +231,7 @@ void Framebuffer::UseAsRenderTarget()
 
 void Framebuffer::RestoreDefaultRenderTarget()
 {
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return;
 };

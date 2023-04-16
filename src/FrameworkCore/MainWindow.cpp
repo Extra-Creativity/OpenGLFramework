@@ -14,8 +14,8 @@ std::function<void(double, double)> MainWindow::s_cursorPosCallback_;
 
 bool MainWindow::singletonFlag_ = true;
 
-MainWindow::MainWindow(unsigned int init_width, unsigned int init_height, const char* title) :
-    deltaTime(0.0f), currTime(0.0f), window_(nullptr)
+MainWindow::MainWindow(unsigned int init_width, unsigned int init_height, 
+    const char* title) : deltaTime(0.0f), currTime(0.0f), window_(nullptr)
 {
     assert((init_width < std::numeric_limits<int>::max() 
         && init_height < std::numeric_limits<int>::max()));
@@ -55,6 +55,17 @@ MainWindow::~MainWindow()
     return;
 };
 
+MainWindow::MainWindow(MainWindow&& another) noexcept:
+    window_{ another.window_ }, routineList_{std::move(routineList_)},
+    pressedList_{ std::move(another.pressedList_) }, 
+    pressingList_{ std::move(another.pressingList_) },
+    releasedList_{std::move(another.releasedList_)},
+    releasingList_{std::move(another.releasingList_)},
+    deltaTime{ 0.0f }, currTime{0.0f}
+{
+    another.window_ = nullptr;
+};
+
 void MainWindow::MainLoop(const glm::vec4& backgroundColor)
 {
     while (!glfwWindowShouldClose(window_))
@@ -67,14 +78,17 @@ void MainWindow::MainLoop(const glm::vec4& backgroundColor)
 
         const auto [m_width, m_height] = GetWidthAndHeight();
         glViewport(0, 0, m_width, m_height);
+        glEnable(GL_DEPTH_TEST);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        currRoutineID_ = 0;
         for (auto& func : routineList_)
         {
             std::invoke(func);
+            currRoutineID_++;
         }
 
         for (auto& list : pressedList_)
@@ -117,23 +131,28 @@ void MainWindow::MainLoop(const glm::vec4& backgroundColor)
     return;
 };
 
-int MainWindow::Register(UpdateFunc&& func)
+void MainWindow::Register(UpdateFunc&& func)
 {
-    routineList_.push_back(std::forward<UpdateFunc>(func));
-    return static_cast<int>(routineList_.size()) - 1;
+    routineList_.push_back(std::move(func));
 }
 
-int MainWindow::Register(UpdateFunc& func)
+void MainWindow::Register(UpdateFunc& func)
 {
     routineList_.push_back(func);
-    return static_cast<int>(routineList_.size()) - 1;
 };
+
+size_t MainWindow::GetCurrRoutineID() { return currRoutineID_; };
+
+void MainWindow::RemoveFromRoutines(size_t id)
+{
+    routineList_.erase(routineList_.begin() + id);
+}
 
 void MainWindow::BindScrollCallback(std::function<void(double, double)> callback)
 {
     if (callback) // if callback is not empty.
     {
-        s_scrollCallback_ = callback;
+        s_scrollCallback_ = std::move(callback);
         glfwSetScrollCallback(window_, 
             [](GLFWwindow* window, double xOffset, double yOffset) {
                 s_scrollCallback_(xOffset, yOffset);
@@ -151,7 +170,7 @@ void MainWindow::BindCursorPosCallback(std::function<void(double, double)> callb
 {
     if (callback) // if callback is not empty.
     {
-        s_cursorPosCallback_ = callback;
+        s_cursorPosCallback_ = std::move(callback);
         glfwSetCursorPosCallback(window_, 
             [](GLFWwindow* window, double xOffset, double yOffset) {
                 s_cursorPosCallback_(xOffset, yOffset);

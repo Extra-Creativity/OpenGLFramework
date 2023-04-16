@@ -49,7 +49,6 @@ int main()
 
     window.Register(
         [&shader, &model, &camera, &frameBuffer]() {
-            glEnable(GL_DEPTH_TEST);
             shader.Activate();
 
             ImGui::Begin("Side");

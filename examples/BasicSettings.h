@@ -71,6 +71,9 @@ inline void SetBasicKeyBindings(Core::MainWindow& mainWindow, Core::Camera& came
 	mainWindow.BindKeyPressed<GLFW_KEY_ESCAPE>([&mainWindow]() {
 		mainWindow.Close();
 	});
+	mainWindow.BindKeyPressed<GLFW_KEY_R>([camera, &newCamera = camera]() {
+		newCamera = camera;
+	});
 
 }
 

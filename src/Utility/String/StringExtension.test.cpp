@@ -77,8 +77,8 @@ TEST_CASE("Trim")
     REQUIRE(TrimBegin(testStr) == "Luke, I'm your father.\t    ");
     REQUIRE(TrimEnd(testStr) == "   \t  Luke, I'm your father.");
 
-    std::u8string u8testStr = u8"  \t  �Ҳ�����us���������ʥѧϰ�� . \t  ";
-    REQUIRE(Trim(u8testStr) == u8"�Ҳ�����us���������ʥѧϰ�� .");
-    REQUIRE(TrimBegin(u8testStr) == u8"�Ҳ�����us���������ʥѧϰ�� . \t  ");
-    REQUIRE(TrimEnd(u8testStr) == u8"  \t  �Ҳ�����us���������ʥѧϰ�� .");
+    std::u8string u8testStr = u8"  \t  我不如李us、刘神和刘圣学习好 . \t  ";
+    REQUIRE(Trim(u8testStr) == u8"我不如李us、刘神和刘圣学习好 .");
+    REQUIRE(TrimBegin(u8testStr) == u8"我不如李us、刘神和刘圣学习好 . \t  ");
+    REQUIRE(TrimEnd(u8testStr) == u8"  \t  我不如李us、刘神和刘圣学习好 .");
 }

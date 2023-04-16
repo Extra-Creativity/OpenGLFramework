@@ -31,6 +31,7 @@ public:
 
     unsigned int GetWidth() const { return width_; }
     unsigned int GetHeight() const { return height_; }
+    float GetAspect() const { return static_cast<float>(width_) / height_; }
     unsigned int GetFramebuffer() const { return frameBuffer_; }
     unsigned int GetDepthBuffer() const { return depthBuffer_; }
     unsigned int GetTextureColorBuffer() const { return textureColorBuffer_; }

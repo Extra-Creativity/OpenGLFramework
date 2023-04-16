@@ -27,7 +27,7 @@ int main()
 	};
 	float near = 0.1f, far = 100.0f;
 
-	Core::Camera lightSpaceCamera{ {0, 10, 35}, {0, 1, 0}, {0, 0, -1} };
+	Core::Camera lightSpaceCamera{ {0, 10, 25}, {0, 1, 0}, {0, 0, -1} };
 	lightSpaceCamera.RotateAroundCenter(-15, { 1, 0, 0 }, { 0, 10, 0 });
 
 	glm::mat4 projection = useOrtho ?
