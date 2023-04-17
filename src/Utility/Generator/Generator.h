@@ -80,12 +80,12 @@ public:
         void operator++(int) { operator++(); }
         const T& operator*() const
         {
-            return *coroutine_.promise().current_value;
+            return *coroutine_.promise().currentVal;
         }
 
         const T* operator->() const
         {
-            return &(coroutine_.promise().current_value);
+            return &(coroutine_.promise().currentval);
         }
 
         bool operator==(std::default_sentinel_t) const
