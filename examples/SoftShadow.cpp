@@ -139,8 +139,7 @@ Generator<int> ShowBasicInfo(Core::MainWindow& mainWindow)
 	}
 }
 
-void RenderShadowMap(Core::MainWindow& mainWindow,
-	Core::Framebuffer& buffer, Core::Camera& lightSpaceCamera)
+void RenderShadowMap(Core::Framebuffer& buffer, Core::Camera& lightSpaceCamera)
 {
 	auto& shadowMapShader = shaders.find("shadow map")->second;
 	float near = 0.1f, far = 100.0f;
@@ -183,8 +182,7 @@ void ResizeBufferToScreen(Core::MainWindow& mainWindow,
 	return;
 };
 
-void RenderScreen(Core::MainWindow& mainWindow, 
-	Core::Framebuffer& shadowMapBuffer, Core::Camera& camera,
+void RenderScreen(Core::Framebuffer& shadowMapBuffer, Core::Camera& camera,
 	Core::Camera& lightSpaceCamera, const int& shadowOption)
 {
 	auto& screenShader = shaders.find("screen")->second;
@@ -265,10 +263,10 @@ int main()
 	);
 
 	mainWindow.Register(std::bind(RenderShadowMap, 
-		std::ref(mainWindow), std::ref(buffer), std::ref(lightSpaceCamera))
+		std::ref(buffer), std::ref(lightSpaceCamera))
 	);
 	mainWindow.Register(std::bind(RenderScreen, 
-		std::ref(mainWindow), std::ref(buffer), std::ref(normalCamera), 
+		std::ref(buffer), std::ref(normalCamera), 
 		std::ref(lightSpaceCamera), std::ref(option))
 	);
 	mainWindow.MainLoop({ 1.0, 1.0, 1.0, 0.0 });

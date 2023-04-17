@@ -14,11 +14,14 @@ std::function<void(double, double)> MainWindow::s_cursorPosCallback_;
 
 bool MainWindow::singletonFlag_ = true;
 
+MainWindow::MainWindow() : deltaTime(0.0f), currTime(0.0f), window_(nullptr)
+{}
+
 MainWindow::MainWindow(unsigned int init_width, unsigned int init_height, 
     const char* title) : deltaTime(0.0f), currTime(0.0f), window_(nullptr)
 {
-    assert((init_width < std::numeric_limits<int>::max() 
-        && init_height < std::numeric_limits<int>::max()));
+    assert((init_width < std::numeric_limits<unsigned int>::max() 
+        && init_height < std::numeric_limits<unsigned int>::max()));
 
     // note that this is not thread-safe.
     if (!singletonFlag_) [[unlikely]]
@@ -50,8 +53,11 @@ MainWindow::MainWindow(unsigned int init_width, unsigned int init_height,
 
 MainWindow::~MainWindow()
 {
-    glfwDestroyWindow(window_);
-    singletonFlag_ = true;
+    if (window_ != nullptr)
+    {
+        glfwDestroyWindow(window_);
+        singletonFlag_ = true;
+    }
     return;
 };
 
@@ -64,6 +70,22 @@ MainWindow::MainWindow(MainWindow&& another) noexcept:
     deltaTime{ 0.0f }, currTime{0.0f}
 {
     another.window_ = nullptr;
+};
+
+MainWindow& MainWindow::operator=(MainWindow&& another) noexcept
+{
+    assert(window_ == nullptr);
+
+    window_ = another.window_;
+    another.window_ = nullptr;
+    routineList_ = std::move(routineList_);
+    pressedList_ = std::move(another.pressedList_);
+    pressingList_ = std::move(another.pressingList_);
+    releasedList_ = std::move(another.releasedList_);
+    releasingList_ = std::move(another.releasingList_);
+    deltaTime = another.deltaTime;
+    currTime = another.currTime;
+    return *this;
 };
 
 void MainWindow::MainLoop(const glm::vec4& backgroundColor)

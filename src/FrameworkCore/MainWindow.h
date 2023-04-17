@@ -22,12 +22,13 @@ class MainWindow
     using InputHandleFunc = decltype(glfwGetKey);
     using InputToUpdateFuncMap = std::unordered_map<int, UpdateFunc>;
 public:
+    MainWindow();
     MainWindow(unsigned int m_height, unsigned int m_width, const char* title);
     ~MainWindow();
     MainWindow(const MainWindow&) = delete;
     MainWindow& operator=(const MainWindow&) = delete;
     MainWindow(MainWindow&&) noexcept;
-    MainWindow& operator=(MainWindow&&) = delete;
+    MainWindow& operator=(MainWindow&&) noexcept;
 
     void MainLoop(const glm::vec4& backgroundColor);
     void Register(UpdateFunc&& func);

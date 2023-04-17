@@ -35,14 +35,14 @@ public:
     float rotationSpeed = 30.0f;
     float fov = 45.0f;
 
-    glm::vec3 Front() { return gaze_; }
-    glm::vec3 Back() { return -gaze_; }
-    glm::vec3 Up() { return up_; }
-    glm::vec3 Down() { return -up_; }
-    glm::vec3 Left() { return glm::cross(up_, gaze_); };
-    glm::vec3 Right() { return glm::cross(gaze_, up_); };
+    glm::vec3 Front() const { return gaze_; }
+    glm::vec3 Back() const { return -gaze_; }
+    glm::vec3 Up() const { return up_; }
+    glm::vec3 Down() const { return -up_; }
+    glm::vec3 Left() const { return glm::cross(up_, gaze_); };
+    glm::vec3 Right() const { return glm::cross(gaze_, up_); };
 
-    glm::mat4 GetViewMatrix() { 
+    glm::mat4 GetViewMatrix() const { 
         return glm::lookAt(position_, position_ + gaze_, up_); };
 
     void Rotate(glm::vec3 eulerAngles) {
@@ -80,7 +80,7 @@ public:
         return;
     }
 
-    glm::vec3 GetPosition() { return position_; };
+    glm::vec3 GetPosition() const { return position_; };
 private:
     // Note that this sequence is deliberate, so that up will be initialized after front.
     glm::vec3 position_;

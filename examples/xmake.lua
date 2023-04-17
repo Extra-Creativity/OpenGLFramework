@@ -25,3 +25,5 @@ target("BasicFilters")
     add_headerfiles("./*.h")
     add_deps("OpenGLFramework")
     add_files("BasicFilters.cpp")
+
+includes("complex-examples")

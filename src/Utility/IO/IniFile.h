@@ -125,8 +125,10 @@ public:
         return std::move(data->entries[key]);
     }
 
-    const auto& GetRawSubsections() { return data->subsections; };
-    const auto& GetRawEntries() { return data->entries; }
+    const auto& GetRawSubsections() & { return data->subsections; };
+    auto GetRawSubsections()&& { return std::move(data->subsections); };
+    const auto& GetRawEntries()& { return data->entries; }
+    auto GetRawEntries()&& { return std::move(data->entries); }
     size_t GetSubsectionSize() { return data->subsections.size(); };
     size_t GetEntrySize() { return data->entries.size(); }
 };
