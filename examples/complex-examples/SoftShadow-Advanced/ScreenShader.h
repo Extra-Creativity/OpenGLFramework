@@ -12,7 +12,7 @@ public:
     {}
 
     static void Render(ScreenShader& screenShader, ShadowMap& shadowMap, 
-       int& shadowOption, ExampleBase::AssetLoader::ModelContainer&);
+       const int& shadowOption, ExampleBase::AssetLoader::ModelContainer&);
     auto& GetCamera() { return camera_; }
 private:
     void SetShaderParams_(ShadowMap& shadowMap, int shadowOption);

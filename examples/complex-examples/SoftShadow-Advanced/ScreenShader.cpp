@@ -1,7 +1,7 @@
 #include "ScreenShader.h"
 
 void ScreenShader::Render(ScreenShader& screenShader, ShadowMap& shadowMap,
-	int& shadowOption, ExampleBase::AssetLoader::ModelContainer& scene)
+	const int& shadowOption, ExampleBase::AssetLoader::ModelContainer& scene)
 {
 	screenShader.SetShaderParams_(shadowMap, shadowOption);
 	screenShader.Render_(shadowMap, scene);

@@ -11,11 +11,12 @@
 
 struct ShadowOptionData
 {
-	int option = 1;
-	std::array<const char*, 3> optionList{
+	int option = 3;
+	std::array<const char*, 4> optionList{
 		"Hard Shadow(No bias)",
 		"Hard Shadow(Add bias)",
 		"PCF Shadow",
+		"PCSS"
 	};
 };
 
@@ -115,7 +116,7 @@ int main()
 	ScreenShader screen{ loader };
 	mainWindow.Register(std::bind(ScreenShader::Render,
 		std::ref(screen), std::ref(shadowMap),
-		std::ref(shadowOptionSetter.GetData().option), 
+		std::cref(shadowOptionSetter.GetData().option), 
 		std::ref(loader.GetModelContainer()))
 	);
 

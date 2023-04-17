@@ -14,7 +14,9 @@ public:
         shadowMapShader_{ loader.GetShader("shadow map") },
         lightSpaceCamera_{ {0, 10, 35}, {0, 1, 0}, {0, 0, -1} },
         lightSpaceMat_{}
-    {}
+    {
+        lightSpaceCamera_.fov = 90;
+    }
 
     static void Render(ShadowMap& shadowMap, 
         ExampleBase::AssetLoader::ModelContainer&);
