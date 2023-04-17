@@ -9,7 +9,7 @@
 namespace ExampleBase
 {
 
-inline float s_ImGuiHelper_y = 0.0f;
+inline float s_ImGuiHelper_y = 25.0f;
 inline const float s_ImGuiHelper_interval = 25.0f;
 
 template<typename T>

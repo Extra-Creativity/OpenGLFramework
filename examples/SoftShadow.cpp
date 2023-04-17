@@ -249,17 +249,17 @@ int main()
 	SetBasicButtonBindings(mainWindow, normalCamera);
 
 	auto lightSetter = SetLightPosition(lightSpaceCamera);
-	mainWindow.Register(std::bind(std::advance<IterType, int>, 
-		lightSetter.begin(), 1)
+	mainWindow.Register(std::bind<void(IterType&, int)>(
+		std::advance<IterType, int>, lightSetter.begin(), 1)
 	);
 	int option = 1;
 	auto shadowOptionSetter = SetShadowOption(option);
-	mainWindow.Register(std::bind(std::advance<IterType, int>,
-		shadowOptionSetter.begin(), 1)
+	mainWindow.Register(std::bind<void(IterType&, int)>(
+		std::advance<IterType, int>, shadowOptionSetter.begin(), 1)
 	);
 	auto basicInfoShow = ShowBasicInfo(mainWindow);
-	mainWindow.Register(std::bind(std::advance<IterType, int>,
-		basicInfoShow.begin(), 1)
+	mainWindow.Register(std::bind<void(IterType&, int)>(
+		std::advance<IterType, int>, basicInfoShow.begin(), 1)
 	);
 
 	mainWindow.Register(std::bind(RenderShadowMap, 
