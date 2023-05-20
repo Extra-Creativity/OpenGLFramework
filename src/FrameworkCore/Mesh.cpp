@@ -28,6 +28,11 @@ BasicTriMesh::BasicTriMesh(const aiMesh* mesh): vertices(mesh->mNumVertices),
     return;
 }
 
+BasicTriMesh::BasicTriMesh(std::vector<glm::vec3> init_vertices,
+    std::vector<glm::ivec3> init_triangles) : 
+    vertices{std::move(init_vertices)}, triangles{std::move(init_triangles)}
+{};
+
 std::vector<glm::vec3> BasicTriMesh::GetRealTriNormals()
 {
     std::vector<glm::vec3> normals(triangles.size());
@@ -197,6 +202,16 @@ BasicTriRenderMesh::BasicTriRenderMesh(const aiMesh* mesh,
     CopyAttributes_(mesh);
     SetupRenderResource_();
     AddAllTexturesToPoolAndFillRefs_(material, texturePool, rootPath);
+    return;
+};
+
+BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
+    const std::vector<glm::vec3>& init_normals) : 
+    BasicTriMesh{ std::move(mesh) }, verticesAttributes(init_normals.size())
+{
+    for (int i = 0; i < verticesAttributes.size(); i++)
+        verticesAttributes[i].normalCoord = init_normals[i];
+    SetupRenderResource_();
     return;
 };
 

@@ -4,3 +4,5 @@
 #include "FrameworkCore/Shader.h"
 #include "FrameworkCore/Camera.h"
 #include "FrameworkCore/Framebuffer.h"
+#include "FrameworkCore/SkyboxTexture.h"
+#include "FrameworkCore/SpecialModels/SpecialModel.h"

@@ -1,29 +1,12 @@
-target("BlinnPhong")
-    set_kind("binary")
-    add_includedirs("../src/")
-    add_headerfiles("./*.h")
-    add_deps("OpenGLFramework")
-    add_files("BlinnPhong.cpp")
+for _, file in ipairs(os.files("./*.cpp")) do
 
-target("ShadowMap")
+target(path.basename(file))
     set_kind("binary")
     add_includedirs("../src/")
-    add_headerfiles("./*.h")
+    add_headerfiles("*.h")
     add_deps("OpenGLFramework")
-    add_files("ShadowMap.cpp")
+    add_files(file)
 
-target("SoftShadow")
-    set_kind("binary")
-    add_includedirs("../src/")
-    add_headerfiles("./*.h")
-    add_deps("OpenGLFramework")
-    add_files("SoftShadow.cpp")
-
-target("BasicFilters")
-    set_kind("binary")
-    add_includedirs("../src/")
-    add_headerfiles("./*.h")
-    add_deps("OpenGLFramework")
-    add_files("BasicFilters.cpp")
+end
 
 includes("complex-examples")

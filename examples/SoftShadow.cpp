@@ -225,6 +225,8 @@ Core::MainWindow LoadMainWindow(IOExtension::IniFile<std::unordered_map>& file)
 	return { width, height, windowName.c_str() };
 }
 
+void Increment(auto& it) { it++; }
+
 int main()
 {
 	std::filesystem::path configPath = "../../../../../Resources/Configs/SoftShadowConfig.ini";
@@ -249,17 +251,17 @@ int main()
 	SetBasicButtonBindings(mainWindow, normalCamera);
 
 	auto lightSetter = SetLightPosition(lightSpaceCamera);
-	mainWindow.Register(std::bind<void(IterType&, int)>(
-		std::advance<IterType, int>, lightSetter.begin(), 1)
+	mainWindow.Register(std::bind(
+		Increment<IterType>, lightSetter.begin())
 	);
 	int option = 1;
 	auto shadowOptionSetter = SetShadowOption(option);
-	mainWindow.Register(std::bind<void(IterType&, int)>(
-		std::advance<IterType, int>, shadowOptionSetter.begin(), 1)
+	mainWindow.Register(std::bind(
+		Increment<IterType>, shadowOptionSetter.begin())
 	);
 	auto basicInfoShow = ShowBasicInfo(mainWindow);
-	mainWindow.Register(std::bind<void(IterType&, int)>(
-		std::advance<IterType, int>, basicInfoShow.begin(), 1)
+	mainWindow.Register(std::bind(
+		Increment<IterType>, basicInfoShow.begin())
 	);
 
 	mainWindow.Register(std::bind(RenderShadowMap, 

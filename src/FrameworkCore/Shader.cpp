@@ -40,10 +40,11 @@ Shader::Shader(const std::filesystem::path& vertexShaderFilePath,
     return;
 };
 
-void Shader::CompileShader_(const std::string& shaderContent, const GLenum shaderType)
+void Shader::CompileShader_(std::string_view shaderContent, 
+    const GLenum shaderType)
 {
     GLuint newShader = glCreateShader(shaderType);
-    const char* contentPtr = shaderContent.c_str();
+    const char* contentPtr = shaderContent.data();
     glShaderSource(newShader, 1, &contentPtr, NULL);
     glCompileShader(newShader);
 

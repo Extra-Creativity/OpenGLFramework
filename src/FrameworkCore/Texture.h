@@ -24,6 +24,8 @@ struct CPUTextureData
     ~CPUTextureData();
 };
 
+GLenum GetGPUChannelFromCPUChannel(int cpuChannel);
+
 class Texture
 {
 public:
@@ -44,8 +46,6 @@ public:
         glDeleteTextures(1, &ID);
         return;
     };
-private:
-    GLenum GetGPUChannelFromCPUChannel_(int cpuChannel);
 };
 
 } // namespace OpenGLFramework::Core

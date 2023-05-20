@@ -81,6 +81,8 @@ public:
     }
 
     glm::vec3 GetPosition() const { return position_; };
+    glm::vec3 GetGaze() const { return gaze_; }
+    glm::vec3 GetUp() const { return up_; }
 private:
     // Note that this sequence is deliberate, so that up will be initialized after front.
     glm::vec3 position_;

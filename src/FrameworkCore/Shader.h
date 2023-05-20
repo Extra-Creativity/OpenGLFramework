@@ -96,7 +96,7 @@ private:
     std::vector<GLuint> shaders_;
     // Here shaderID actually means OpenGL's program.
     GLuint shaderID_;
-    void CompileShader_(const std::string& shaderContent, const GLenum shaderType);
+    void CompileShader_(std::string_view shaderContent, const GLenum shaderType);
     void LinkShader_();
     void ClearShader_();
 };

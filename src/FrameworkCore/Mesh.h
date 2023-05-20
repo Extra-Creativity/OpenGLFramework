@@ -38,6 +38,8 @@ public:
     std::vector<glm::vec3> vertices;
     std::vector<glm::ivec3> triangles;
     BasicTriMesh(const aiMesh* mesh);
+    BasicTriMesh(std::vector<glm::vec3> init_vertices, 
+        std::vector<glm::ivec3> init_triangles);
     std::vector<glm::vec3> GetRealTriNormals();
     std::vector<glm::vec3> GetRealVertexNormals();
 };
@@ -49,6 +51,8 @@ public:
     std::vector<std::reference_wrapper<Texture>> diffuseTextureRefs;
     std::vector<std::reference_wrapper<Texture>> specularTextureRefs;
 
+    BasicTriRenderMesh(BasicTriMesh mesh, 
+        const std::vector<glm::vec3>& init_normals);
     BasicTriRenderMesh(const aiMesh* mesh, const aiMaterial* material, 
         TexturePool& texturePool, const std::filesystem::path& rootPath);
     BasicTriRenderMesh(const BasicTriRenderMesh&) = delete;

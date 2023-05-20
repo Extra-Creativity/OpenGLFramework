@@ -13,7 +13,7 @@ BasicTriModel::BasicTriModel(const std::filesystem::path& modelPath)
 {
     Assimp::Importer importer;
     const aiScene* model = importer.ReadFile(modelPath.string(),
-        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs
+        aiProcess_Triangulate | aiProcess_FlipUVs
         | aiProcess_JoinIdenticalVertices);
     if (model == nullptr || (model->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 ||
         model->mRootNode == nullptr) [[unlikely]]
@@ -24,6 +24,10 @@ BasicTriModel::BasicTriModel(const std::filesystem::path& modelPath)
     LoadResources_(model);
     return;
 }
+
+BasicTriModel::BasicTriModel(std::vector<BasicTriMesh> init_meshes):
+    meshes{std::move(init_meshes)}
+{};
 
 void BasicTriModel::LoadResources_(const aiScene* model)
 {
@@ -54,12 +58,17 @@ void BasicTriRenderModel::LoadResources_(const aiScene* model,
     stbi_set_flip_vertically_on_load(false);
 }
 
+BasicTriRenderModel::BasicTriRenderModel(std::vector<BasicTriRenderMesh> 
+    init_meshes) : meshes{ std::move(init_meshes) }
+{ };
+
 BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath, 
     bool textureNeedFlip)
 {
     Assimp::Importer importer;
     const aiScene* model = importer.ReadFile(modelPath.string(), 
-        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs
+        | aiProcess_JoinIdenticalVertices);
     if (model == nullptr || (model->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 ||
         model->mRootNode == nullptr) [[unlikely]]
     {

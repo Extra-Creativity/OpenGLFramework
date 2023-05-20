@@ -64,7 +64,7 @@ CPUTextureData::~CPUTextureData()
     stbi_image_free(texturePtr);
 }
 
-GLenum Texture::GetGPUChannelFromCPUChannel_(int cpuChannel)
+GLenum GetGPUChannelFromCPUChannel(int cpuChannel)
 {
     GLenum gpuChannel;
     switch (cpuChannel)
@@ -97,7 +97,7 @@ Texture::Texture(const std::filesystem::path& path) : ID(0)
     CPUTextureData cpuTextureData{ path };
     if (cpuTextureData.texturePtr == nullptr) [[unlikely]]
         return;
-    GLenum gpuChannel = GetGPUChannelFromCPUChannel_(cpuTextureData.channels);
+    GLenum gpuChannel = GetGPUChannelFromCPUChannel(cpuTextureData.channels);
 
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);

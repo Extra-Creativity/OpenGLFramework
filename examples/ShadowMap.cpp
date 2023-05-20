@@ -1,9 +1,7 @@
-#include "BasicSettings.h"
-
 #include "FrameworkCore/Core_All.h"
 #include "Utility/IO/IniFile.h"
-#include "Utility/IO/IOExtension.h"
 
+using namespace OpenGLFramework;
 int main()
 {
 	std::filesystem::path configPath = "../../../../../Resources/Configs/ShadowMapConfig.ini";

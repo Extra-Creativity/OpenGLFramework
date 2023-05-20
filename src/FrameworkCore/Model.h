@@ -46,6 +46,7 @@ class BasicTriModel
 {
 public:
     BasicTriModel(const std::filesystem::path& modelPath);
+    BasicTriModel(std::vector<BasicTriMesh> init_meshes);
     std::vector<BasicTriMesh> meshes;
     Transform transform;
 private:
@@ -58,6 +59,8 @@ public:
     TexturePool texturePool;
     std::vector<BasicTriRenderMesh> meshes;
     Transform transform;
+
+    BasicTriRenderModel(std::vector<BasicTriRenderMesh> init_meshes);
     BasicTriRenderModel(const std::filesystem::path& modelPath, 
         bool textureNeedFlip = false);
     void Draw(Shader& shader);

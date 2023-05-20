@@ -6,6 +6,8 @@ target("OpenGLFrameworkCore")
     add_headerfiles("./*.h")
     remove_headerfiles("./*.test.h")
     add_files("./*.cpp")
+    add_headerfiles("SpecialModels/*.h")
+    add_files("SpecialModels/*.cpp")
     remove_files("./*.test.cpp")
 
 for _, file in ipairs(os.files("./*.test.cpp")) do
