@@ -6,9 +6,18 @@
 #include "Texture.h"
 #include "Framebuffer.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 26451 26812)
+#endif
+
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <glm/glm.hpp>
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include <unordered_map>
 #include <filesystem>

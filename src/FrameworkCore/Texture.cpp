@@ -13,17 +13,13 @@ static const int g_fileMaxLen = 1024;
 
 namespace OpenGLFramework::Core
 {
+extern const char* GetConvertedPath(std::string& buffer, 
+    const std::filesystem::path& path);
 
 CPUTextureData::CPUTextureData(const std::filesystem::path& path)
 {
-#ifdef _WIN32
-    std::string stbiPath(g_fileMaxLen, '\0');
-    stbi_convert_wchar_to_utf8(stbiPath.data(), g_fileMaxLen, path.c_str());
-    const char* validPath = stbiPath.c_str();
-#else
-    const char* validPath = path.c_str();
-#endif // _WIN32
-
+    std::string buffer;
+    const char* validPath = GetConvertedPath(buffer, path);
     texturePtr = stbi_load(validPath, &width, &height, &channels, 0);
     if (texturePtr == nullptr) [[unlikely]]
     {

@@ -10,6 +10,7 @@
 #include <vector>
 #include <unordered_map>
 #include <array>
+#include <filesystem>
 
 namespace OpenGLFramework::Core
 {
@@ -129,6 +130,7 @@ private:
         return;
     };
 
+    std::vector<unsigned char> GetPixelsFromGPU_(int, int, int);
 public:
     template<int keyCode>
     void BindKeyPressed(UpdateFunc&& func)
@@ -201,7 +203,7 @@ public:
         glfwSetInputMode(window_, mode, value);
     }
     void Close() { glfwSetWindowShouldClose(window_, true); }
-
+    void SaveImage(const std::filesystem::path& path, bool needFlip = true);
     float deltaTime, currTime;
 private:
     GLFWwindow* window_;

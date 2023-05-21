@@ -17,9 +17,11 @@ int main()
     });
 
     mainWindow.BindKeyPressing<GLFW_KEY_W>([&mainWindow]() {
+        mainWindow.SaveImage("test.png");
         mainWindow.Close();
     });
 
-    mainWindow.MainLoop({ 0, 0, 0, 1 });
+    mainWindow.MainLoop({ 0, 1, 0, 1 });
+    
     return 0;
 }
