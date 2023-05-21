@@ -1,5 +1,6 @@
 #include "Framebuffer.h"
 #include "Utility/IO/IOExtension.h"
+#include "Texture.h"
 
 #include <glad/glad.h>
 
@@ -235,4 +236,23 @@ void Framebuffer::RestoreDefaultRenderTarget()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return;
 };
+
+std::vector<unsigned char> Framebuffer::SaveBufferInCPU(unsigned int bufferID,
+    unsigned int width, unsigned int height, int channelNum)
+{
+    std::vector<unsigned char> pixelBuffer(width * height * channelNum);
+    GLenum gpuChannel = GetGPUChannelFromCPUChannel(channelNum);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, bufferID);
+
+    int initialAlignment;
+    glGetIntegerv(GL_PACK_ALIGNMENT, &initialAlignment);    
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, width, height, gpuChannel, GL_UNSIGNED_BYTE,
+        pixelBuffer.data());
+    glPixelStorei(GL_PACK_ALIGNMENT, initialAlignment);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    return pixelBuffer;
+}
+
 } // namespace OpenGLFramework::Core

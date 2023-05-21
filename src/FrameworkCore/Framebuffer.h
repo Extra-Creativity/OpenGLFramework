@@ -28,7 +28,8 @@ public:
     ~Framebuffer();
 
     void Resize(unsigned int width, unsigned int height);
-
+    static std::vector<unsigned char> SaveBufferInCPU(unsigned int bufferID,
+        unsigned int width, unsigned int height, int channelNum);
     unsigned int GetWidth() const { return width_; }
     unsigned int GetHeight() const { return height_; }
     float GetAspect() const { return static_cast<float>(width_) / height_; }

@@ -24,7 +24,8 @@ class MainWindow
     using InputToUpdateFuncMap = std::unordered_map<int, UpdateFunc>;
 public:
     MainWindow();
-    MainWindow(unsigned int m_height, unsigned int m_width, const char* title);
+    MainWindow(unsigned int m_height, unsigned int m_width, const char* title,
+        bool visible = true);
     ~MainWindow();
     MainWindow(const MainWindow&) = delete;
     MainWindow& operator=(const MainWindow&) = delete;

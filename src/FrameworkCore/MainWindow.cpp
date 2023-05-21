@@ -21,7 +21,8 @@ MainWindow::MainWindow() : deltaTime(0.0f), currTime(0.0f), window_(nullptr)
 {}
 
 MainWindow::MainWindow(unsigned int init_width, unsigned int init_height, 
-    const char* title) : deltaTime(0.0f), currTime(0.0f), window_(nullptr)
+    const char* title, bool visible) : 
+    deltaTime(0.0f), currTime(0.0f), window_(nullptr)
 {
     assert((init_width < std::numeric_limits<unsigned int>::max() 
         && init_height < std::numeric_limits<unsigned int>::max()));
@@ -34,6 +35,7 @@ MainWindow::MainWindow(unsigned int init_width, unsigned int init_height,
     }
     singletonFlag_ = false;
 
+    glfwWindowHint(GLFW_VISIBLE, visible);
     GLFWwindow* newWindow = glfwCreateWindow(static_cast<int>(init_width), 
         static_cast<int>(init_height), title, nullptr, nullptr);
     if (newWindow == nullptr) [[unlikely]]
