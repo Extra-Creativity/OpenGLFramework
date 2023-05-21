@@ -202,8 +202,15 @@ public:
     void SetInputMode(int mode, int value) {
         glfwSetInputMode(window_, mode, value);
     }
+    void Hide(bool hide = true) { 
+        if (hide)
+            glfwHideWindow(window_);
+        else
+            glfwShowWindow(window_);
+    }
     void Close() { glfwSetWindowShouldClose(window_, true); }
     void SaveImage(const std::filesystem::path& path, bool needFlip = true);
+    GLFWwindow* GetNativeHandler() const { return window_; }
     float deltaTime, currTime;
 private:
     GLFWwindow* window_;
