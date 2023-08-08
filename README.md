@@ -4,17 +4,8 @@ In simple scenes, most of the code we write in OpenGL is drab and dreary and bas
 
 ## Annoucement
 
-We're excited to announce that we're forging ahead to update to v1.2! These are some features we'll add:
-
-+ More flexible framebuffer, e.g. you can attach more buffers and use them as textures.
-+ More examples rather than only a thorough test and many minor unit tests. Do you want to see how to draw a shadow map(both perspective and orthogonal) in 80 LOC with our framework?
-+ Skybox texture.
-+ More powerful `MainWindow`, supporting more mouse events.
-+ and so on...
-
-Wait for us!
-
-> Also, we're thrilling to announce that a postgraduate in the University of Utah has utilized our framework in his/her simulation project! Congratulations on our first star!
+1. Currently, you can see `examples/complex-examples/SoftShadow-Advanced` to see PCSS implemented by our framework.
+2. We're forging ahead for v1.3, where we'll dramatically refactor the code. There may be great breaking on APIs and docs to make it more convenient for users.
 
 ## Table of Contents
 
@@ -369,6 +360,14 @@ The bold parts represent that code with those features is crucial, and it's not 
 + Add `IniFile` for dynamic configuration.
 + Add rather complete unit test with [Catch2](https://github.com/catchorg/Catch2).
 + Fix significant bugs. For example, use singleton `ContextManager` to replace manual `Init/EndContext`, so that window will be destroyed before context ending(previously it's not, which is logically wrong).
+
+### v1.2 - 2023.5.21
+
++ More flexible framebuffer, e.g. you can attach more buffers and use them as textures.
++ Add PCSS example, with ImGUIHelper and AssetLoader.
++ Skybox texture, including six textures or all-in-one texture.
++ More powerful `MainWindow`, supporting more mouse events and screenshots.
++ Support screenshot of framebuffer.
 
 ## <span id="TODO">TODO</span>
 
