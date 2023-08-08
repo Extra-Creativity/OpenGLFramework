@@ -1,58 +1,62 @@
 #include "ContextManager.h"
 #include "MainWindow.h"
 #include "Model.h"
+#include "SpecialModels/SpecialModel.h"
+#include "../Utility/IO/IniFile.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_session.hpp>
 #include <catch2/matchers/catch_matchers_vector.hpp>
 
+#include <algorithm>
+#include <filesystem>
+
 using namespace OpenGLFramework::Core;
+OpenGLFramework::IOExtension::IniFile config{ TEST_CONFIG_PATH };
 
 TEST_CASE("Cube")
 {
+    auto path = config.rootSection.GetEntry("Cube_Model");
+    REQUIRE((path.has_value() && std::filesystem::exists(path->get())));
+    BasicTriModel model{ path->get() };
+    auto realCube = Cube::GetBasicTriMesh();
+
     SECTION("Model")
     {
-        BasicTriModel model{ R"(D:\111\University\Course\CS\Computer Graphics\OpenGL)"
-                R"(\OpenGLFramework\Resources\Models\Cube\CubeWithoutNormal.obj)" };
-        auto size = model.meshes.size();
-        REQUIRE(1 == size);
-        auto& mesh = model.meshes[0];
-        REQUIRE_THAT(mesh.vertices, Catch::Matchers::UnorderedEquals(
-            std::vector<glm::vec3>{
-                { 0.0 , 0.0 , 0.0 },
-                { 0.0 , 0.0 , 1.0 },
-                { 0.0 , 1.0 , 0.0 },
-                { 0.0 , 1.0 , 1.0 },
-                { 1.0 , 0.0 , 0.0 },
-                { 1.0 , 0.0 , 1.0 },
-                { 1.0 , 1.0 , 0.0 },
-                { 1.0 , 1.0 , 1.0 }
-            })
-        );
-        // Assimp will adjust id sequence so it's not true.
-        //REQUIRE_THAT(mesh.triangles, Catch::Matchers::UnorderedEquals(
-        //    std::vector<glm::ivec3>{
-        //        { 1, 7, 5},
-        //        { 1, 3, 7},
-        //        { 1, 4, 3},
-        //        { 1, 2, 4},
-        //        { 3, 8, 7},
-        //        { 3, 4, 8},
-        //        { 5, 7, 8},
-        //        { 5, 8, 6},
-        //        { 1, 5, 6},
-        //        { 1, 6, 2},
-        //        { 2, 6, 8},
-        //        { 2, 8, 4}
-        //    })
-        //);
-    }
-}
+        SECTION("Size")
+        {
+            auto size = model.meshes.size();
+            REQUIRE(1 == size);
 
-int main()
-{
-    [[maybe_unused]] ContextManager& manager = ContextManager::GetInstance();
-    MainWindow useForContextWindow{50, 50, "test"};
-    auto result = Catch::Session().run();
-    return result;
+            auto& mesh = model.meshes[0];
+            REQUIRE(mesh.triangles.size() == realCube.triangles.size());
+        }
+
+        auto& mesh = model.meshes[0];
+        SECTION("Vertices")
+        {
+            REQUIRE_THAT(mesh.vertices, Catch::Matchers::UnorderedEquals(realCube.vertices));
+        }
+
+        SECTION("Triangles")
+        {
+            std::vector<bool> exists(mesh.triangles.size());
+            for (auto& tri : mesh.triangles)
+            {
+                auto verts = mesh.GetTriangleVerts(tri);
+                auto it = std::ranges::find_if(realCube.triangles,
+                    [&realCube, &verts](auto& realTri) {
+                        auto realVerts = realCube.GetTriangleVerts(realTri);
+                        return std::ranges::is_permutation(verts, realVerts,
+                            [](auto refv1, auto refv2) {
+                            return refv1.get() == refv2.get();
+                        });
+                    });
+                REQUIRE(it != realCube.triangles.end());
+                auto idx = it - realCube.triangles.begin();
+                REQUIRE(!exists[idx]);
+                exists[idx] = true;
+            }
+        }
+    }
 }

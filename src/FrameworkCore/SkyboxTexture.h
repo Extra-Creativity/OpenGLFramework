@@ -33,18 +33,24 @@ public:
                             c_skyboxFacetNum_>& texturePaths);
     SkyBoxTexture(const SkyBoxTexture&) = delete;
     SkyBoxTexture& operator=(const SkyBoxTexture&) = delete;
-    SkyBoxTexture(SkyBoxTexture&&) = default;
-    SkyBoxTexture& operator=(SkyBoxTexture&&) = default;
+    SkyBoxTexture(SkyBoxTexture&&) noexcept;
+    SkyBoxTexture& operator=(SkyBoxTexture&&) noexcept;
+    ~SkyBoxTexture();
     unsigned int GetID() const { return skyboxID_; }
+    CPUTextureData GetCPUData(int idx);
 private:
     unsigned int skyboxID_;
+    int cpuChannel_;
     void GenerateSkyBox_();
     static void HorizontalFlipSegment_(unsigned char* segmentPtr, int segmentWidth,
         int segmentHeight, CPUTextureData& data, std::pair<int, int>& segPos);
     static void VerticalFlipSegment_(unsigned char* segmentPtr, int segmentWidth,
         int segmentHeight, CPUTextureData& data, std::pair<int, int>& segPos);
+    void AttachAllInOneTexture_(const std::filesystem::path& path,
+        TextureSegmentType type);
     void AttachFacetTexture_(int facetID, const std::filesystem::path& path);
     void AttachSkyBoxAttributes_();
+    void ReleaseResources_();
 };
 
 } // namespace OpenGLFramework::Core

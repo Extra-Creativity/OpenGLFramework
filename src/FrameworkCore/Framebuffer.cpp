@@ -237,7 +237,7 @@ void Framebuffer::RestoreDefaultRenderTarget()
     return;
 };
 
-std::vector<unsigned char> Framebuffer::SaveBufferInCPU(unsigned int bufferID,
+std::vector<unsigned char> Framebuffer::SaveFrameBufferInCPU(unsigned int bufferID,
     unsigned int width, unsigned int height, int channelNum)
 {
     std::vector<unsigned char> pixelBuffer(width * height * channelNum);

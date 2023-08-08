@@ -24,6 +24,8 @@ target(path.basename(file))
         end
     end)
 
+    local configPath = path.join(os.scriptdir(), "TestConfig", path.basename(file) .. ".ini"):gsub("\\", "/");
+    add_defines("TEST_CONFIG_PATH=\"" .. configPath .. "\"")
     add_deps("OpenGLFrameworkCore")
     add_files(file)
 

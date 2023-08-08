@@ -23,6 +23,7 @@
 #include <filesystem>
 #include <functional>
 #include <vector>
+#include <array>
 
 namespace OpenGLFramework::Core
 {
@@ -43,12 +44,15 @@ struct VertexAttribute
 
 class BasicTriMesh
 {
+    using TriangleVerts = std::array<std::reference_wrapper<glm::vec3>, 3>;
 public:
     std::vector<glm::vec3> vertices;
     std::vector<glm::ivec3> triangles;
     BasicTriMesh(const aiMesh* mesh);
     BasicTriMesh(std::vector<glm::vec3> init_vertices, 
         std::vector<glm::ivec3> init_triangles);
+    TriangleVerts  GetTriangleVerts(size_t index);
+    TriangleVerts GetTriangleVerts(glm::ivec3 triangle);
     std::vector<glm::vec3> GetRealTriNormals();
     std::vector<glm::vec3> GetRealVertexNormals();
 };

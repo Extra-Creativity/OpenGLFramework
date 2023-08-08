@@ -28,8 +28,9 @@ public:
     ~Framebuffer();
 
     void Resize(unsigned int width, unsigned int height);
-    static std::vector<unsigned char> SaveBufferInCPU(unsigned int bufferID,
+    static std::vector<unsigned char> SaveFrameBufferInCPU(unsigned int bufferID,
         unsigned int width, unsigned int height, int channelNum);
+
     unsigned int GetWidth() const { return width_; }
     unsigned int GetHeight() const { return height_; }
     float GetAspect() const { return static_cast<float>(width_) / height_; }
@@ -59,7 +60,7 @@ private:
     unsigned int height_;
     static const unsigned int s_randomLen_ = 1000u;
     // Note: this will be reset to all enabled in the ctor.
-    typename std::underlying_type<BasicClearMode>::type clearMode_ = 0;
+    std::underlying_type_t<BasicClearMode> clearMode_ = 0;
 
     void GenerateAndAttachWriteOnlyDepthBuffer_();
     void GenerateAndAttachReadableDepthBuffer_();

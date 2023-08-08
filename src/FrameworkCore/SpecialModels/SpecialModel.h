@@ -1,4 +1,4 @@
-#include "FrameworkCore/Model.h"
+#include "../Model.h"
 
 namespace OpenGLFramework::Core
 {

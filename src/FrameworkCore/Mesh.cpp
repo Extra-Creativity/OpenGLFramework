@@ -33,6 +33,18 @@ BasicTriMesh::BasicTriMesh(std::vector<glm::vec3> init_vertices,
     vertices{std::move(init_vertices)}, triangles{std::move(init_triangles)}
 {};
 
+BasicTriMesh::TriangleVerts BasicTriMesh::GetTriangleVerts(size_t index)
+{
+    auto& triangle = triangles.at(index);
+    return GetTriangleVerts(triangle);
+};
+
+BasicTriMesh::TriangleVerts BasicTriMesh::GetTriangleVerts(glm::ivec3 triangle)
+{
+    return { vertices.at(triangle.x), vertices.at(triangle.y),
+        vertices.at(triangle.z) };
+};
+
 std::vector<glm::vec3> BasicTriMesh::GetRealTriNormals()
 {
     std::vector<glm::vec3> normals(triangles.size());

@@ -4,13 +4,13 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Framebuffer.h"
+#include "../Utility/IO/IniFile.h"
 
 #include <glm/glm.hpp>
 #include <imgui.h>
 
-#include <iostream>
-
 using namespace OpenGLFramework::Core;
+OpenGLFramework::IOExtension::IniFile config{ TEST_CONFIG_PATH };
 
 void SetMVP(float width, float height, float near, float far,
     BasicTriRenderModel& model, Camera& camera, Shader& shader)
@@ -32,13 +32,12 @@ int main()
 {
     [[maybe_unused]] ContextManager& manager = ContextManager::GetInstance();
     MainWindow window{ 800, 600, "Test" };
+    
 
-    BasicTriRenderModel model{ R"(D:\111\University\Course\CS\Computer Graphics\OpenGL)"
-        R"(\OpenGLFramework\Resources\Models\Cube\CubeWithoutNormal.obj)" };
-    Shader shader{ R"(D:\111\University\Course\CS\Computer Graphics\OpenGL)"
-        R"(\OpenGLFramework\Shaders\Basic.vert)",
-        R"(D:\111\University\Course\CS\Computer Graphics\OpenGL)"
-        R"(\OpenGLFramework\Shaders\Basic.frag)" };
+    BasicTriRenderModel model{ config.rootSection.GetEntry("Cube_Model")->get() };
+    Shader shader{ config.rootSection.GetEntry("Vert_Shader")->get(),
+        config.rootSection.GetEntry("Frag_Shader")->get() };
+
     Camera camera{ { 0.5, 0.7, 5}, {0, 0.8, 0.2}, {0, 0, -1} };
     camera.RotateAroundCenter(60, glm::vec3{ 0, 1, 0 }, { 0, 0, 0 });
 

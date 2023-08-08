@@ -1,4 +1,5 @@
 #include "Texture.h"
+#include "Framebuffer.h"
 #include "Utility/IO/IOExtension.h"
 
 #define STBI_WINDOWS_UTF8
@@ -88,11 +89,45 @@ GLenum GetGPUChannelFromCPUChannel(int cpuChannel)
     return gpuChannel;
 }
 
-Texture::Texture(const std::filesystem::path& path) : ID(0)
+CPUTextureData GetCPUDataFromAnyTexture(int width, int height, int cpuChannel, 
+    int gpuBindTextureType, unsigned int bindTextureID, int gpuSubTextureType)
+{
+    // This is because stbi uses malloc!
+    unsigned char* buffer = reinterpret_cast<unsigned char*>(
+        std::malloc(static_cast<size_t>(width) * height * cpuChannel));
+
+    GLenum gpuChannel = GetGPUChannelFromCPUChannel(cpuChannel);
+
+    unsigned int tempFrameBuffer = 0;
+    glGenFramebuffers(1, &tempFrameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, tempFrameBuffer);
+    glBindTexture(gpuBindTextureType, bindTextureID);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gpuSubTextureType,
+        bindTextureID, 0);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+    int initialAlignment;
+    glGetIntegerv(GL_PACK_ALIGNMENT, &initialAlignment);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+    glReadPixels(0, 0, width, height, gpuChannel, GL_UNSIGNED_BYTE, buffer);
+    glPixelStorei(GL_PACK_ALIGNMENT, initialAlignment);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindTexture(gpuBindTextureType, 0);
+    glDeleteFramebuffers(1, &tempFrameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return { buffer, width, height, cpuChannel };
+}
+
+Texture::Texture(const std::filesystem::path& path) : ID{ 0 }, cpuChannel_{ 0 }
 {
     CPUTextureData cpuTextureData{ path };
     if (cpuTextureData.texturePtr == nullptr) [[unlikely]]
         return;
+    cpuChannel_ = cpuTextureData.channels;
     GLenum gpuChannel = GetGPUChannelFromCPUChannel(cpuTextureData.channels);
 
     glGenTextures(1, &ID);
@@ -109,5 +144,21 @@ Texture::Texture(const std::filesystem::path& path) : ID(0)
     glBindTexture(GL_TEXTURE_2D, 0);
     return;
 };
+
+std::pair<int, int> Texture::GetWidthAndHeight()
+{
+    int width = 0, height = 0;
+    glBindTexture(GL_TEXTURE_2D, ID);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+    return { width, height };
+};
+
+CPUTextureData Texture::GetCPUData()
+{
+    auto [width, height] = GetWidthAndHeight();
+    return GetCPUDataFromAnyTexture(width, height, cpuChannel_, 
+        GL_TEXTURE_2D, ID, GL_TEXTURE_2D);
+}
 
 } // namespace OpenGLFramework::Core
