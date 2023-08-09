@@ -4,6 +4,8 @@
 
 #include <glad/glad.h>
 
+#include "TextureConfig.h"
+
 #include <string>
 #include <filesystem>
 
@@ -37,9 +39,14 @@ CPUTextureData GetCPUDataFromAnyTexture(int width, int height, int channel,
 
 class Texture
 {
+    inline const static TextureParamConfig c_defaultConfig_ = {
+        .minFilter = TextureParamConfig::MinFilterType::LinearAfterMIPMAPLinear,
+        .needMIPMAP = true
+    };
 public:
     unsigned int ID;
-    Texture(const std::filesystem::path& path);
+    Texture(const std::filesystem::path& path, 
+        const TextureParamConfig& config = c_defaultConfig_);
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
     Texture(Texture&& another) noexcept : ID{ std::exchange(another.ID, 0) },

@@ -8,18 +8,20 @@ namespace OpenGLFramework::Core
 {
 
 SkyBoxTexture::SkyBoxTexture(const std::filesystem::path& path,
-    TextureSegmentType type)
+    TextureSegmentType type, const TextureParamConfig& config)
 {
-    GenerateSkyBox_();
+    GenerateAndBindSkyBox_();
     AttachAllInOneTexture_(path, type);
-    AttachSkyBoxAttributes_();
+    config.Apply();
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     return;
 };
 
 SkyBoxTexture::SkyBoxTexture(const std::filesystem::path& path, 
-    const std::array<std::string_view, c_skyboxFacetNum_>& append)
+    const std::array<std::string_view, c_skyboxFacetNum_>& append,
+    const TextureParamConfig& config)
 {
-    GenerateSkyBox_();
+    GenerateAndBindSkyBox_();
     auto root = path.parent_path() / path.stem();
     auto extension = path.extension().native();
     
@@ -30,18 +32,19 @@ SkyBoxTexture::SkyBoxTexture(const std::filesystem::path& path,
     // To reduce overhead.
     AttachFacetTexture_(lastID, 
         root.concat(append[lastID]).concat(std::move(extension)));
-    AttachSkyBoxAttributes_();
+    config.Apply();
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     return;
 };
 
 SkyBoxTexture::SkyBoxTexture(const std::array<std::filesystem::path, 
-    c_skyboxFacetNum_>& texturePaths)
+    c_skyboxFacetNum_>& texturePaths, const TextureParamConfig& config)
 {
-    GenerateSkyBox_();
-
+    GenerateAndBindSkyBox_();
     for (int i = 0; i < c_skyboxFacetNum_; i++)
         AttachFacetTexture_(i, texturePaths[i]);
-    AttachSkyBoxAttributes_();
+    config.Apply();
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     return;
 };
 
@@ -84,7 +87,7 @@ void SkyBoxTexture::ReleaseResources_()
     return;
 };
 
-void SkyBoxTexture::GenerateSkyBox_()
+void SkyBoxTexture::GenerateAndBindSkyBox_()
 {
     glGenTextures(1, &skyboxID_);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID_);
@@ -105,25 +108,25 @@ void SkyBoxTexture::AttachAllInOneTexture_(const std::filesystem::path& path,
         segmentHeight * channelNum);
     unsigned char* segmentRawPtr = segment.data();
 
-    const int segmentNum = 6;
     assert(type == TextureSegmentType::HorizontalLeft);
     // These two arrays are only for HorizontalLeft.
-    std::array<std::pair<int, int>, segmentNum> arr{
+    std::array<std::pair<int, int>, c_segmentNum_> arr{
         std::pair{1, 2}, { 1, 0 }, { 0, 1 }, { 2, 1 }, { 1, 3 }, { 1, 1 } };
-    std::array<decltype(&HorizontalFlipSegment_), segmentNum> handles{
+    std::array<decltype(&HorizontalFlipSegment_), c_segmentNum_> handles{
         &HorizontalFlipSegment_, &HorizontalFlipSegment_,
         &VerticalFlipSegment_, &VerticalFlipSegment_,
         &HorizontalFlipSegment_,&HorizontalFlipSegment_
     };
 
     GLenum gpuChannel = GetGPUChannelFromCPUChannel(textureData.channels);
-    for (int i = 0; i < segmentNum; i++)
+    TextureGenConfig genConfig = GetDefaultTextureGenConfig(gpuChannel);
+
+    for (int i = 0; i < c_segmentNum_; i++)
     {
         std::invoke(handles[i], segmentRawPtr, segmentWidth, segmentHeight,
             textureData, arr[i]);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gpuChannel,
-            segmentWidth, segmentHeight, 0, gpuChannel,
-            GL_UNSIGNED_BYTE, segmentRawPtr);
+        genConfig.Apply(static_cast<TextureType>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i),
+            segmentWidth, segmentHeight, segmentRawPtr);
     }
 }
 
@@ -133,20 +136,9 @@ void SkyBoxTexture::AttachFacetTexture_(int facetID, const std::filesystem::path
     cpuChannel_ = textureData.channels;
 
     GLenum gpuChannel = GetGPUChannelFromCPUChannel(textureData.channels);
-
-    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + facetID, 0, gpuChannel,
-        textureData.width, textureData.height, 0, gpuChannel,
-        GL_UNSIGNED_BYTE, textureData.texturePtr);
-    return;
-}
-
-void SkyBoxTexture::AttachSkyBoxAttributes_()
-{
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    auto genConfig = GetDefaultTextureGenConfig(gpuChannel);
+    genConfig.Apply(static_cast<TextureType>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + facetID),
+        textureData);
     return;
 }
 

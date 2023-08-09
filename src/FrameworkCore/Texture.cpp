@@ -122,25 +122,23 @@ CPUTextureData GetCPUDataFromAnyTexture(int width, int height, int cpuChannel,
     return { buffer, width, height, cpuChannel };
 }
 
-Texture::Texture(const std::filesystem::path& path) : ID{ 0 }, cpuChannel_{ 0 }
+Texture::Texture(const std::filesystem::path& path,
+    const TextureParamConfig& paramConfig) : ID{ 0 }, cpuChannel_{ 0 }
 {
     CPUTextureData cpuTextureData{ path };
     if (cpuTextureData.texturePtr == nullptr) [[unlikely]]
         return;
     cpuChannel_ = cpuTextureData.channels;
+
     GLenum gpuChannel = GetGPUChannelFromCPUChannel(cpuTextureData.channels);
+    TextureGenConfig genConfig = GetDefaultTextureGenConfig(gpuChannel);
 
     glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);
-    glTexImage2D(GL_TEXTURE_2D, 0, gpuChannel, cpuTextureData.width, 
-        cpuTextureData.height, 0, gpuChannel, GL_UNSIGNED_BYTE, 
-        cpuTextureData.texturePtr);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+    genConfig.Apply(TextureType::Texture2D, cpuTextureData);
+    paramConfig.Apply();
+    
     glBindTexture(GL_TEXTURE_2D, 0);
     return;
 };
@@ -151,6 +149,7 @@ std::pair<int, int> Texture::GetWidthAndHeight()
     glBindTexture(GL_TEXTURE_2D, ID);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
+    glBindTexture(GL_TEXTURE_2D, 0);
     return { width, height };
 };
 
