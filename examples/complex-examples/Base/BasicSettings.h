@@ -85,6 +85,7 @@ inline void SetBasicButtonBindings(Core::MainWindow& mainWindow, Core::Camera& c
 	});
 
 	static bool lastNotDrag = false;
+	static float initCameraY = camera.GetPosition().y;
 	mainWindow.BindMouseButtonPressing<GLFW_MOUSE_BUTTON_RIGHT>([&mainWindow, &camera]() {
 		const auto [xPos, yPos] = mainWindow.GetCursorPos();
 		static float lastxPos = xPos, lastyPos = yPos;
@@ -96,10 +97,14 @@ inline void SetBasicButtonBindings(Core::MainWindow& mainWindow, Core::Camera& c
 			return;
 		}
 
+		glm::vec3 yAxis = glm::cross(camera.GetGaze(), { 0, 1, 0 });
+		if (glm::all(glm::epsilonEqual(yAxis, glm::zero<glm::vec3>(), glm::vec3{ 1e-4f })))
+			yAxis = { 1,0,0 };
+
 		camera.RotateAroundCenter(camera.mouseSensitivity * xOffset, { 0, 1, 0 },
-			{ 0, 10, 0 });
-		camera.RotateAroundCenter(camera.mouseSensitivity * yOffset, { 1, 0, 0 },
-			{ 0, 10, 0 });
+			{ 0, initCameraY, 0 });
+		camera.RotateAroundCenter(camera.mouseSensitivity * yOffset, yAxis,
+			{ 0, initCameraY, 0 });
 		});
 	mainWindow.BindMouseButtonReleasing<GLFW_MOUSE_BUTTON_RIGHT>([]() { lastNotDrag = true; });
 }

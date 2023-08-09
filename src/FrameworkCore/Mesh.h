@@ -51,7 +51,7 @@ public:
     BasicTriMesh(const aiMesh* mesh);
     BasicTriMesh(std::vector<glm::vec3> init_vertices, 
         std::vector<glm::ivec3> init_triangles);
-    TriangleVerts  GetTriangleVerts(size_t index);
+    TriangleVerts GetTriangleVerts(size_t index);
     TriangleVerts GetTriangleVerts(glm::ivec3 triangle);
     std::vector<glm::vec3> GetRealTriNormals();
     std::vector<glm::vec3> GetRealVertexNormals();
@@ -66,6 +66,7 @@ public:
 
     BasicTriRenderMesh(BasicTriMesh mesh, 
         const std::vector<glm::vec3>& init_normals);
+    BasicTriRenderMesh(BasicTriMesh mesh, std::vector<VertexAttribute> attrs);
     BasicTriRenderMesh(const aiMesh* mesh, const aiMaterial* material, 
         TexturePool& texturePool, const std::filesystem::path& rootPath);
     BasicTriRenderMesh(const BasicTriRenderMesh&) = delete;

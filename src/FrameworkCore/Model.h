@@ -56,13 +56,15 @@ private:
 class BasicTriRenderModel
 {
 public:
-    TexturePool texturePool;
     std::vector<BasicTriRenderMesh> meshes;
     Transform transform;
 
     BasicTriRenderModel(std::vector<BasicTriRenderMesh> init_meshes);
     BasicTriRenderModel(const std::filesystem::path& modelPath, 
         bool textureNeedFlip = false);
+
+    void AttachTexture(const std::filesystem::path& path,
+        std::initializer_list<int> attachIDs, bool isSpecular = false);
     void Draw(Shader& shader);
     void Draw(Shader& shader, Framebuffer& buffer);
     void Draw(Shader& shader, const std::function<void(int, Shader&)>& preprocess,
@@ -73,6 +75,7 @@ public:
 private:
     void LoadResources_(const aiScene* model, const std::filesystem::path& 
         resourceRootPath, bool textureNeedFlip);
+    TexturePool texturePool_;
 };
 
 } // namespace OpenGLFramework::Core

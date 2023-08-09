@@ -1,15 +1,23 @@
 #include "../Model.h"
+#include <stdexcept>
 
 namespace OpenGLFramework::Core
 {
+    
+enum class SpecialModelTag { Cube, Quad };
 
-class Cube
+template<SpecialModelTag>
+class SpecialModel
 {
 public:
     static BasicTriMesh GetBasicTriMesh();
     static BasicTriRenderMesh GetBasicTriRenderMesh();
     static BasicTriModel GetBasicTriModel();
     static BasicTriRenderModel GetBasicTriRenderModel();
-    Cube() = delete;
+    SpecialModel() = delete;
 };
+
+using Cube = SpecialModel<SpecialModelTag::Cube>;
+using Quad = SpecialModel<SpecialModelTag::Quad>;
+
 }

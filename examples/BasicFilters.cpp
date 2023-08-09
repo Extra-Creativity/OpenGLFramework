@@ -53,7 +53,7 @@ int main()
 	Core::Framebuffer buffer{ width, height,
 		Core::Framebuffer::BasicBufferType::ColorBufferAndReadableDepthBuffer };
 
-	Core::BasicTriRenderModel quadOnScreen{ pathsSection("quad_resource_dir") };
+	auto quadOnScreen = Core::Quad::GetBasicTriRenderModel();
 	mainWindow.Register(
 		[&normalShader, &sucroseModel, &floor, &buffer, &frontCamera, &mainWindow,
 		near, far]() {

@@ -51,7 +51,7 @@ void BasicTriRenderModel::LoadResources_(const aiScene* model,
         {
             aiMaterial* material = model->mMaterials[mesh->mMaterialIndex];
             // construct triangle mesh.
-            this->meshes.emplace_back(mesh, material, this->texturePool, 
+            this->meshes.emplace_back(mesh, material, this->texturePool_, 
                 resourceRootPath);
         }, model, resourceRootPath);
 
@@ -80,6 +80,22 @@ BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
     LoadResources_(model, resourceRootPath, textureNeedFlip);
     return;
 }
+
+void BasicTriRenderModel::AttachTexture(const std::filesystem::path& path,
+    std::initializer_list<int> attachIDs, bool isSpecular)
+{
+    auto [textureIt, _] = texturePool_.try_emplace(path, path);
+    if (isSpecular)
+    {
+        for (auto attachID : attachIDs)
+            meshes.at(attachID).specularTextureRefs.push_back(textureIt->second);
+        return;
+    }
+    // else, diffuse.
+    for (auto attachID : attachIDs)
+        meshes.at(attachID).diffuseTextureRefs.push_back(textureIt->second);
+    return;
+};
 
 void BasicTriRenderModel::Draw(Shader& shader)
 {

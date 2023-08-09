@@ -227,6 +227,14 @@ BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
     return;
 };
 
+BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
+    std::vector<VertexAttribute> attrs) :
+    BasicTriMesh{ std::move(mesh) }, verticesAttributes{ std::move(attrs) }
+{
+    SetupRenderResource_();
+    return;
+};
+
 void BasicTriRenderMesh::ReleaseRenderResources_()
 {
     glDeleteBuffers(1, &VBO);
