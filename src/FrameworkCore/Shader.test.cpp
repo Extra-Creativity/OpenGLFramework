@@ -1,7 +1,7 @@
 #include "ContextManager.h"
 #include "MainWindow.h"
 #include "Shader.h"
-#include "Model.h"
+#include "SpecialModels/SpecialModel.h"
 #include "Camera.h"
 #include "../Utility/IO/IniFile.h"
 
@@ -34,7 +34,7 @@ int main()
     [[maybe_unused]] ContextManager& manager = ContextManager::GetInstance();
     MainWindow window{ 800, 600, "Shader Test" };
 
-    BasicTriRenderModel model{ config.rootSection.GetEntry("Cube_Model")->get() };
+    auto model = Cube::GetBasicTriRenderModel();
 
     Shader shader{ config.rootSection.GetEntry("Vert_Shader")->get(),
         config.rootSection.GetEntry("Frag_Shader")->get() };
