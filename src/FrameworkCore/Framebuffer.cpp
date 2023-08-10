@@ -117,25 +117,19 @@ void Framebuffer::ReleaseResources_()
     auto ReleaseBuffer = [](auto&& arg) {
         using T = std::remove_cvref_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, RenderBuffer>)
-        {
-            if (arg.buffer != 0)
-            {
-                std::cout << "Delete render buffer." << arg.buffer << "\n";
-                glDeleteRenderbuffers(1, &arg.buffer);
-            }
-        }
+            glDeleteRenderbuffers(1, &arg.buffer);
         else if constexpr (std::is_same_v<T, RenderTexture>)
-        {
-            std::cout << "Delete render texture." << arg.buffer << "\n";
             glDeleteTextures(1, &arg.buffer);
-        }
         else
-            static_assert(false, "Unrecognized format.\n");
+        {
+            IOExtension::LogError("Unrecognized format.");
+            std::terminate();
+        }
     };
     std::visit(ReleaseBuffer, depthBuffer_);
     for (auto& buffer : colorBuffers_)
         std::visit(ReleaseBuffer, buffer);
-    glDeleteBuffers(1, &frameBuffer_);
+    glDeleteFramebuffers(1, &frameBuffer_);
     colorBuffers_.clear();
     return;
 }

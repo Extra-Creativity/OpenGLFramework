@@ -1,6 +1,8 @@
 #include "SkyboxTexture.h"
 
 #include <cassert>
+#include <functional>
+#include <cstring>
 
 #include "stb_image.h"
 
@@ -171,10 +173,10 @@ void SkyBoxTexture::VerticalFlipSegment_(unsigned char* segmentPtr,
         channelNum = textureData.channels;
 
     for (int row = 0; row < segmentHeight; row++) {
-        memcpy(segmentPtr + (segmentHeight - row - 1) * segmentWidth
-            * channelNum, textureData.texturePtr + channelNum *
-            ((row + beginRow) * textureData.width + beginCol),
-            segmentWidth * channelNum);
+        std::memcpy(segmentPtr + (segmentHeight - row - 1) * segmentWidth
+                    * channelNum, textureData.texturePtr + channelNum *
+                    ((row + beginRow) * textureData.width + beginCol),
+                    segmentWidth * channelNum);
     }
     return;
 };

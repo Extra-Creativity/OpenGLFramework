@@ -6,6 +6,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_session.hpp>
 
+#include <cstring>
+
 using namespace OpenGLFramework::Core;
 OpenGLFramework::IOExtension::IniFile config{ TEST_CONFIG_PATH };
 

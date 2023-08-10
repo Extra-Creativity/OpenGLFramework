@@ -28,37 +28,11 @@ void SetMVP(float width, float height, float near, float far,
     return;
 }
 
-void test(MainWindow& w)
-{
-    auto model = Cube::GetBasicTriRenderModel();
-    Shader shader{ config.rootSection.GetEntry("Vert_Shader")->get(),
-        config.rootSection.GetEntry("Frag_Shader")->get() };
-    Camera camera{ { 0.5, 0.7, 5}, {0, 0.8, 0.2}, {0, 0, -1} };
-    camera.RotateAroundCenter(60, glm::vec3{ 0, 1, 0 }, { 0, 0, 0 });
-    Framebuffer frameBuffer0(400, 300);
-    w.Register([&]() {
-        //ImGui::Begin("Test");
-        [[maybe_unused]] const auto& io = ImGui::GetIO();
-
-        shader.Activate();
-        frameBuffer0 = Framebuffer{ 400, 300 };
-        SetMVP(400, 300, 4, 10, model,
-            camera, shader);
-        model.Draw(shader, frameBuffer0);
-        //ImGui::End();
-        std::cout << "Next...\n";
-    });
-    w.MainLoop({ 0,0,0,0 });
-    return;
-}
-
 int main()
 {
     [[maybe_unused]] ContextManager& manager = ContextManager::GetInstance();
     MainWindow window{ 800, 600, "Test"};
-    test(window);
-    return 0;
-    
+
     auto model = Cube::GetBasicTriRenderModel();
     Shader shader{ config.rootSection.GetEntry("Vert_Shader")->get(),
         config.rootSection.GetEntry("Frag_Shader")->get() };
@@ -99,7 +73,6 @@ int main()
                     static_cast<unsigned int>(subwindowSize.x),
                     static_cast<unsigned int>(subwindowSize.y)
                 };
-                std::cout << frameBuffer.GetColorBuffer();
                 SetMVP(subwindowSize.x, subwindowSize.y, 4, 10, model,
                     camera, shader);
                 model.Draw(shader, frameBuffer);

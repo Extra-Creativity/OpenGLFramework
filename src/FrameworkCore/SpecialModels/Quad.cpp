@@ -22,6 +22,7 @@ static const OpenGLFramework::Core::VertexAttribute c_quadAttributes[] = {
 namespace OpenGLFramework::Core
 {
 
+template<>
 BasicTriMesh Quad::GetBasicTriMesh()
 {
     return BasicTriMesh{
@@ -30,6 +31,7 @@ BasicTriMesh Quad::GetBasicTriMesh()
     };
 };
 
+template<>
 BasicTriRenderMesh Quad::GetBasicTriRenderMesh()
 {
     return BasicTriRenderMesh{
@@ -38,6 +40,7 @@ BasicTriRenderMesh Quad::GetBasicTriRenderMesh()
     };
 };
 
+template<>
 BasicTriModel Quad::GetBasicTriModel() {
     std::vector<BasicTriMesh> meshes;
     meshes.push_back(GetBasicTriMesh());
@@ -45,6 +48,7 @@ BasicTriModel Quad::GetBasicTriModel() {
     return BasicTriModel{ std::move(meshes) };
 };
 
+template<>
 BasicTriRenderModel Quad::GetBasicTriRenderModel() {
     std::vector<BasicTriRenderMesh> meshes;
     meshes.push_back(GetBasicTriRenderMesh());

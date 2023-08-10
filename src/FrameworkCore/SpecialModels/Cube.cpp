@@ -38,6 +38,7 @@ static const glm::vec3 c_cubeNormals[] = {
 namespace OpenGLFramework::Core
 {
 
+template<>
 BasicTriMesh Cube::GetBasicTriMesh()
 {
     return BasicTriMesh{ 
@@ -46,6 +47,7 @@ BasicTriMesh Cube::GetBasicTriMesh()
     };
 };
 
+template<>
 BasicTriRenderMesh Cube::GetBasicTriRenderMesh()
 {
     return BasicTriRenderMesh {
@@ -54,6 +56,7 @@ BasicTriRenderMesh Cube::GetBasicTriRenderMesh()
     };
 };
 
+template<>
 BasicTriModel Cube::GetBasicTriModel() {
     std::vector<BasicTriMesh> meshes;
     meshes.push_back(GetBasicTriMesh());
@@ -61,6 +64,7 @@ BasicTriModel Cube::GetBasicTriModel() {
     return BasicTriModel{ std::move(meshes) };
 };
 
+template<>
 BasicTriRenderModel Cube::GetBasicTriRenderModel(){
     std::vector<BasicTriRenderMesh> meshes;
     meshes.push_back(GetBasicTriRenderMesh());
