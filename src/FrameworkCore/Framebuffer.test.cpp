@@ -44,8 +44,6 @@ int main()
     std::cout << pos.x << " " << pos.y << " " << pos.z << "\n";
 
     Framebuffer frameBuffer(400, 300);
-    std::cout << frameBuffer.GetColorBuffer();
-
     window.Register(
         [&shader, &model, &camera, &frameBuffer]() {
             shader.Activate();

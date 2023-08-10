@@ -50,21 +50,22 @@ int main()
 	SetBasicKeyBindings(mainWindow, frontCamera);
 	SetBasicButtonBindings(mainWindow, frontCamera);
 
-	Core::Framebuffer buffer{ width, height,
-		Core::Framebuffer::BasicBufferType::ColorBufferAndReadableDepthBuffer };
+	const auto& depthConfig = Core::Framebuffer::GetDepthTextureDefaultParamConfig();
+	Core::Framebuffer buffer{ width, height, depthConfig };
 
 	auto quadOnScreen = Core::Quad::GetBasicTriRenderModel();
 	mainWindow.Register(
 		[&normalShader, &sucroseModel, &floor, &buffer, &frontCamera, &mainWindow,
-		near, far]() {
+		 &depthConfig, near, far]() {
 			using enum Core::Framebuffer::BasicClearMode;
 
 			normalShader.Activate();
 			const auto [width, height] = mainWindow.GetWidthAndHeight();
 			if (width != buffer.GetWidth() || height != buffer.GetHeight())
-				buffer.Resize(width, height);
+				buffer = Core::Framebuffer{ width, height, depthConfig };
 
-			SetMVP(width, height, near, far, sucroseModel, frontCamera, normalShader);
+			SetMVP(static_cast<float>(width), static_cast<float>(height),
+				near, far, sucroseModel, frontCamera, normalShader);
 
 			normalShader.SetMat4("modelMat", sucroseModel.transform.GetModelMatrix());
 			buffer.SetClearMode({ DepthClear, ColorClear });
@@ -126,7 +127,7 @@ int main()
 			[&buffer](int textureBeginID, Core::Shader& shader) {
 				glActiveTexture(GL_TEXTURE0 + textureBeginID);
 				shader.SetInt("colorTexture", textureBeginID);
-				glBindTexture(GL_TEXTURE_2D, buffer.GetTextureColorBuffer());
+				glBindTexture(GL_TEXTURE_2D, buffer.GetColorBuffer());
 				// to eliminate top grey shadow in filter.
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

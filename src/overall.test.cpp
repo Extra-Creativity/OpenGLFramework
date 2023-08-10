@@ -99,15 +99,17 @@ int main()
 			{
 				glViewport(0, 0, static_cast<size_t>(subwindowSize.x),
 					static_cast<size_t>(subwindowSize.y));
-				frameBuffer.Resize(static_cast<size_t>(subwindowSize.x),
-					static_cast<size_t>(subwindowSize.y));
+				frameBuffer = Core::Framebuffer{
+					static_cast<unsigned int>(subwindowSize.x),
+					static_cast<unsigned int>(subwindowSize.y)
+				};
 				SetMVP(subwindowSize.x, subwindowSize.y, near, far, model, 
 					sideCamera, shader);
 				model.Draw(shader, frameBuffer);
 			}
 
 			ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(
-				frameBuffer.GetTextureColorBuffer())), subwindowSize, { 0, 1 }, { 1, 0 });
+				frameBuffer.GetColorBuffer())), subwindowSize, { 0, 1 }, { 1, 0 });
 			ImGui::End();
 		});
 

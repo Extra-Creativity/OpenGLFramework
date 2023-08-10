@@ -10,7 +10,7 @@ public:
 
     ShadowMap(unsigned int init_width, unsigned int init_height, 
         ExampleBase::AssetLoader& loader) : buffer{ init_width, init_height,
-            decltype(buffer)::BasicBufferType::OnlyReadableDepthBuffer},
+        decltype(buffer)::GetDepthTextureDefaultParamConfig(), {} },
         shadowMapShader_{ loader.GetShader("shadow map") },
         lightSpaceCamera_{ {0, 10, 35}, {0, 1, 0}, {0, 0, -1} },
         lightSpaceMat_{}

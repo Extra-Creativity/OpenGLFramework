@@ -178,7 +178,7 @@ void ResizeBufferToScreen(Core::MainWindow& mainWindow,
 	const auto [width, height] = mainWindow.GetWidthAndHeight();
 	if (width == buffer.GetWidth() && height == buffer.GetHeight())
 		return;
-	buffer.Resize(width, height);
+	buffer = Core::Framebuffer{ width, height };
 	return;
 };
 
@@ -237,7 +237,8 @@ int main()
 
 	const auto [width, height] = mainWindow.GetWidthAndHeight();
 	Core::Framebuffer buffer{ width, height,
-		Core::Framebuffer::BasicBufferType::OnlyReadableDepthBuffer };
+		Core::Framebuffer::GetDepthTextureDefaultParamConfig(), {}
+	};
 
 	using IterType = Generator<int>::Iter;
 

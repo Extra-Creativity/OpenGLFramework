@@ -35,7 +35,8 @@ int main()
 	glm::mat4 lightSpaceMat = projection * lightSpaceCamera.GetViewMatrix();
 
 	Core::Framebuffer buffer{ width, height, 
-		Core::Framebuffer::BasicBufferType::OnlyReadableDepthBuffer };
+		Core::Framebuffer::GetDepthTextureDefaultParamConfig(), {}
+	};
 	
 	auto quadOnScreen = Core::Quad::GetBasicTriRenderModel();
 	mainWindow.Register(
