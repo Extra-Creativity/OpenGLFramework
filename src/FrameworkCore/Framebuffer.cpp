@@ -7,111 +7,88 @@
 namespace OpenGLFramework::Core
 {
 
-void Framebuffer::GenerateAndAttachTextureBuffer_()
+void Framebuffer::GenerateAndAttachDepthBuffer_(RenderBufferConfigCRef ref)
 {
-    glGenTextures(1, &textureColorBuffer_);
-    glBindTexture(GL_TEXTURE_2D, textureColorBuffer_);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, 
-        GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 
-        textureColorBuffer_, 0);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-   
-void Framebuffer::GenerateAndAttachWriteOnlyDepthBuffer_()
-{
-    glGenRenderbuffers(1, &depthBuffer_);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer_);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
-        GL_RENDERBUFFER, depthBuffer_);
-
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-}
-
-void Framebuffer::GenerateAndAttachReadableDepthBuffer_()
-{
-    glGenTextures(1, &depthBuffer_);
-    glBindTexture(GL_TEXTURE_2D, depthBuffer_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-        width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthBuffer_, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void Framebuffer::GenerateAdditionalBuffers_(unsigned int begin)
-{
-    glGenTextures(static_cast<int>(additionalBuffers_.size()),
-        additionalBuffers_.data());
-    for (auto& buffer : additionalBuffers_)
-    {
-        glBindTexture(GL_TEXTURE_2D, buffer);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width_, height_, 0, GL_RGB,
-            GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + begin, GL_TEXTURE_2D,
-            textureColorBuffer_, 0);
-        begin++;
-    }
-    glBindTexture(GL_TEXTURE_2D, 0);
+    depthBuffer_ = RenderBuffer{ ref.get().Apply(width_, height_) };
     return;
 }
 
-Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
-    BasicBufferType type, int additionalBufferAmount) :
-    basicBufferType_(type), additionalBuffers_(additionalBufferAmount), 
-    width_(init_width), height_(init_height)
+void Framebuffer::GenerateAndAttachDepthBuffer_(TexParamConfigCRef ref)
 {
-    glGenFramebuffers(1, &frameBuffer_);
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
+    unsigned int buffer = 0;
+    glGenTextures(1, &buffer);
+    glBindTexture(GL_TEXTURE_2D, buffer);
+    TextureGenConfig{
+        .gpuPixelFormat = TextureGenConfig::GPUPixelFormat::Depth,
+        .cpuPixelFormat = TextureGenConfig::CPUPixelFormat::Depth,
+        .rawDataType = TextureGenConfig::RawDataType::Float
+    }.Apply(TextureType::Texture2D, width_, height_, nullptr);
+    ref.get().Apply();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+        GL_TEXTURE_2D, buffer, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    depthBuffer_ = RenderTexture{ buffer };
+    return;
+}
 
-    // In most occasions, we only need one color texture.
-    int colorTextureBeginID = 1;
-    switch (type)
+void Framebuffer::GenerateAndAttachColorBuffer_(RenderBufferConfigCRef ref, int id) {
+    auto realConfig = ref.get();
+    realConfig.attachmentType = static_cast<RenderBufferConfig::AttachmentType>(
+        GL_COLOR_ATTACHMENT0 + id
+    );
+    auto buffer = realConfig.Apply(width_, height_);
+    colorBuffers_.push_back(RenderBuffer{ buffer });
+    return;
+};
+
+void Framebuffer::GenerateAndAttachColorBuffer_(TexParamConfigCRef ref, int id) {
+    unsigned int buffer = 0;
+    glGenTextures(1, &buffer);
+    glBindTexture(GL_TEXTURE_2D, buffer);
+
+    GetDefaultTextureGenConfig(GL_RGB).Apply(TextureType::Texture2D,
+        width_, height_, nullptr);
+    ref.get().Apply();
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + id,
+        GL_TEXTURE_2D, buffer, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    colorBuffers_.push_back(RenderTexture{ buffer });
+};
+
+Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
+    std::variant<std::monostate, RenderBufferConfigCRef, TexParamConfigCRef>
+        depthConfig,
+    const std::vector<std::variant<RenderBufferConfigCRef, TexParamConfigCRef>>&
+        colorConfigs): width_{ init_width }, height_{ init_height }
+{
+    if (colorConfigs.size() > GL_MAX_COLOR_ATTACHMENTS ||
+        colorConfigs.size() > GL_MAX_DRAW_BUFFERS) [[unlikely]]
     {
-        using enum BasicBufferType;
-    case OnlyColorBuffer:
-        GenerateAndAttachTextureBuffer_();
-        break;
-    case OnlyReadableDepthBuffer:
-        GenerateAndAttachReadableDepthBuffer_();
-        if (additionalBufferAmount == 0)
-        {
-            glDrawBuffer(GL_NONE);
-            glReadBuffer(GL_NONE);
-        }
-        // no color texture now.
-        colorTextureBeginID = 0;
-        break;
-    case ColorBufferAndWriteOnlyDepthBuffer:
-        GenerateAndAttachTextureBuffer_();
-        GenerateAndAttachWriteOnlyDepthBuffer_();
-        break;
-    case ColorBufferAndReadableDepthBuffer:
-        GenerateAndAttachTextureBuffer_();
-        GenerateAndAttachReadableDepthBuffer_();
-        break;
-    default:
-        IOExtension::LogError("Unrecognized basic buffer format.");
+        IOExtension::LogError("Too many color buffers.");
         return;
     }
 
-    GenerateAdditionalBuffers_(colorTextureBeginID);
+    glGenFramebuffers(1, &frameBuffer_);
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
+
+    if (colorConfigs.empty()) {
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+    }
+
+    std::visit([this](auto&& arg) {
+        using T = std::remove_cvref_t<decltype(arg)>;
+        if constexpr (!std::is_same_v<T, std::monostate>)
+            GenerateAndAttachDepthBuffer_(arg);
+    }, depthConfig);
+
+    for (int i = 0, len = static_cast<int>(colorConfigs.size()); i < len; i++)
+    {
+        std::visit([this, i](auto&& arg) {
+            GenerateAndAttachColorBuffer_(arg, i);
+        }, colorConfigs[i]);
+    }
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) 
         [[unlikely]]
@@ -126,25 +103,40 @@ Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
 
 Framebuffer::Framebuffer(Framebuffer&& another) noexcept: 
     frameBuffer_(another.frameBuffer_), depthBuffer_(another.depthBuffer_),
-    textureColorBuffer_(another.textureColorBuffer_), 
-    basicBufferType_(another.basicBufferType_), 
-    additionalBuffers_(std::move(another.additionalBuffers_)),
-    width_(another.width_), height_(another.height_), clearMode_(another.clearMode_)
+    colorBuffers_(std::move(another.colorBuffers_)), width_(another.width_),
+    height_(another.height_), clearMode_(another.clearMode_)
 {
-    another.frameBuffer_ = another.textureColorBuffer_ = another.depthBuffer_ = 0;
+    another.frameBuffer_ = 0;
+    another.depthBuffer_ = RenderBuffer{ 0 };
     return;
 }
 
 void Framebuffer::ReleaseResources_()
 {
-    using enum BasicBufferType;
-    if (basicBufferType_ == ColorBufferAndWriteOnlyDepthBuffer)
-        glDeleteRenderbuffers(1, &depthBuffer_);
-    else
-        glDeleteTextures(1, &depthBuffer_);
-    glDeleteTextures(1, &textureColorBuffer_);
-    glDeleteTextures(static_cast<int>(additionalBuffers_.size()), additionalBuffers_.data());
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
+    auto ReleaseBuffer = [](auto&& arg) {
+        using T = std::remove_cvref_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, RenderBuffer>)
+        {
+            if (arg.buffer != 0)
+            {
+                std::cout << "Delete render buffer." << arg.buffer << "\n";
+                glDeleteRenderbuffers(1, &arg.buffer);
+            }
+        }
+        else if constexpr (std::is_same_v<T, RenderTexture>)
+        {
+            std::cout << "Delete render texture." << arg.buffer << "\n";
+            glDeleteTextures(1, &arg.buffer);
+        }
+        else
+            static_assert(false, "Unrecognized format.\n");
+    };
+    std::visit(ReleaseBuffer, depthBuffer_);
+    for (auto& buffer : colorBuffers_)
+        std::visit(ReleaseBuffer, buffer);
     glDeleteBuffers(1, &frameBuffer_);
+    colorBuffers_.clear();
     return;
 }
 
@@ -155,55 +147,14 @@ Framebuffer& Framebuffer::operator=(Framebuffer&& another) noexcept
 
     ReleaseResources_();
     frameBuffer_ = another.frameBuffer_;
-    depthBuffer_ = another.depthBuffer_;
-    textureColorBuffer_ = another.textureColorBuffer_;
-    basicBufferType_ = another.basicBufferType_;
+    depthBuffer_ = std::move(another.depthBuffer_);
+    colorBuffers_ = std::move(another.colorBuffers_);
     width_ = another.width_;
     height_ = another.height_;
-    additionalBuffers_ = std::move(another.additionalBuffers_);
-    another.frameBuffer_ = another.textureColorBuffer_ = another.depthBuffer_ = 0;
+    another.frameBuffer_ = 0;
+    another.depthBuffer_ = RenderBuffer{ 0 };
     return *this;
 };
-
-void Framebuffer::Resize(unsigned int width, unsigned int height)
-{
-    width_ = width, height_ = height;
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
-
-    glBindTexture(GL_TEXTURE_2D, textureColorBuffer_);
-    // note that here we assume texture format is RGB-based.
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB, 
-        GL_UNSIGNED_BYTE, nullptr);
-
-    for (auto& buffer : additionalBuffers_)
-    {
-        glBindTexture(GL_TEXTURE_2D, buffer);
-        // note that here we assume texture format is RGB-based.
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width_, height_, 0, GL_RGB,
-            GL_FLOAT, nullptr);
-    }
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    if (depthBuffer_ != 0)
-    {
-        if (basicBufferType_ == BasicBufferType::ColorBufferAndWriteOnlyDepthBuffer)
-        {
-            glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer_);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-                width_, height_);
-            glBindRenderbuffer(GL_RENDERBUFFER, 0);
-        }
-        else
-        {
-            glBindTexture(GL_TEXTURE_2D, depthBuffer_);
-            // note that here we assume texture format is RGB-based.
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-                width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-        }
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    return;
-}
 
 Framebuffer::~Framebuffer()
 {
@@ -214,7 +165,7 @@ Framebuffer::~Framebuffer()
 void Framebuffer::UseAsRenderTarget()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
-    if (NeedDepthTesting())
+    if (GetDepthBuffer() != 0)
     {
         if (clearMode_ & static_cast<decltype(clearMode_)>(BasicClearMode::DepthClear))
             glClear(GL_DEPTH_BUFFER_BIT);

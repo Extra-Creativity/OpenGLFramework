@@ -31,6 +31,7 @@ struct TextureGenConfig
     enum class CPUPixelFormat {
         R = GL_RED, RG = GL_RG, RGB = GL_RGB,
         BGR = GL_BGR, RGBA = GL_RGBA, BGRA = GL_BGRA,
+        Depth = GL_DEPTH_COMPONENT
     } cpuPixelFormat = CPUPixelFormat::RGB;
 
     // specify the element type of pixel.

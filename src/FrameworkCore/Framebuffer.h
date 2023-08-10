@@ -3,31 +3,76 @@
 #define OPENGLFRAMEWORK_CORE_FRAMEBUFFER_H_
 
 #include <glm/glm.hpp>
+
+#include "ConfigHelpers/TextureConfig.h"
+#include "ConfigHelpers/RenderBufferConfig.h"
+
 #include <vector>
+#include <variant>
+#include <cstdint>
+#include <functional> // for reference wrapper.
 
 namespace OpenGLFramework::Core
 {
 
 class Framebuffer
 {
+    inline const static RenderBufferConfig c_depthBufferDefaultConfig_ = {
+        .bufferType = RenderBufferConfig::RenderBufferType::Depth,
+        .attachmentType = RenderBufferConfig::AttachmentType::Depth
+    };
+
+    inline const static TextureParamConfig c_depthTextureDefaultConfig_ = {
+        .minFilter = TextureParamConfig::MinFilterType::Nearest,
+        .maxFilter = TextureParamConfig::MaxFilterType::Nearest
+    };
+
+    inline const static TextureParamConfig c_colorTextureDefaultConfig_ = {
+        .minFilter = TextureParamConfig::MinFilterType::Linear,
+        .wrapS = TextureParamConfig::WrapType::ClampToEdge,
+        .wrapT = TextureParamConfig::WrapType::ClampToEdge,
+        .wrapR = TextureParamConfig::WrapType::ClampToEdge
+    };
+
+    using TexParamConfigCRef = std::reference_wrapper<const TextureParamConfig>;
+    using RenderBufferConfigCRef = std::reference_wrapper<const RenderBufferConfig>;
+
+    struct RenderBuffer { unsigned int buffer; };
+    struct RenderTexture { unsigned int buffer; };
+    using AttachType = std::variant<RenderBuffer, RenderTexture>;
+    unsigned int GetBufferFromAttachType_(const AttachType& buf) const {
+        return std::visit([](const auto& arg) { return arg.buffer; }, buf);
+    }
+
 public:
+    static const auto& GetDepthTextureDefaultParamConfig() { 
+        return c_depthTextureDefaultConfig_; 
+    }
+    static const auto& GetDepthRenderBufferDefaultConfig() { 
+        return c_depthBufferDefaultConfig_; 
+    }
+    static const auto& GetColorTextureDefaultParamConfig() { 
+        return c_colorTextureDefaultConfig_;
+    }
+
     glm::vec4 backgroundColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-    enum class BasicBufferType { OnlyColorBuffer, OnlyReadableDepthBuffer,
-       ColorBufferAndWriteOnlyDepthBuffer, ColorBufferAndReadableDepthBuffer};
     enum class BasicClearMode : std::uint32_t { 
-        None = 0, ColorClear = 1, DepthClear = 2 };
+        None = 0, ColorClear = 1, DepthClear = 2
+    };
 
     Framebuffer(unsigned int init_width = s_randomLen_,
-        unsigned int init_height = s_randomLen_, BasicBufferType type =
-        BasicBufferType::ColorBufferAndWriteOnlyDepthBuffer,
-        int additionalBufferAmount = 0);
+        unsigned int init_height = s_randomLen_,
+        std::variant<std::monostate, RenderBufferConfigCRef, TexParamConfigCRef>
+            depthConfig = c_depthBufferDefaultConfig_,
+        const std::vector<std::variant<RenderBufferConfigCRef, TexParamConfigCRef>>&
+            vec = { c_colorTextureDefaultConfig_ });
+
     Framebuffer(const Framebuffer&) = delete;
     Framebuffer& operator=(const Framebuffer&) = delete;
     Framebuffer(Framebuffer&& another) noexcept;
     Framebuffer& operator=(Framebuffer&& another) noexcept;
     ~Framebuffer();
 
-    void Resize(unsigned int width, unsigned int height);
     static std::vector<unsigned char> SaveFrameBufferInCPU(unsigned int bufferID,
         unsigned int width, unsigned int height, int channelNum);
 
@@ -35,12 +80,14 @@ public:
     unsigned int GetHeight() const { return height_; }
     float GetAspect() const { return static_cast<float>(width_) / height_; }
     unsigned int GetFramebuffer() const { return frameBuffer_; }
-    unsigned int GetDepthBuffer() const { return depthBuffer_; }
-    unsigned int GetTextureColorBuffer() const { return textureColorBuffer_; }
-    unsigned int GetAddtionalBuffer(size_t index) const { 
-        return additionalBuffers_[index]; 
+    unsigned int GetDepthBuffer() const {
+        return GetBufferFromAttachType_(depthBuffer_);
     }
-    bool NeedDepthTesting() const { return depthBuffer_ != 0; }
+    unsigned int GetColorBuffer(size_t index = 0) const { 
+        return GetBufferFromAttachType_(colorBuffers_.at(index));
+    }
+    
+    bool HasColorBuffer() const { return !colorBuffers_.empty(); }
     void SetClearMode(std::initializer_list<BasicClearMode> modes) { 
         clearMode_ = 0;
         for (auto mode : modes)
@@ -51,10 +98,8 @@ public:
     static void RestoreDefaultRenderTarget();
 private:
     unsigned int frameBuffer_ = 0;
-    unsigned int depthBuffer_ = 0;
-    unsigned int textureColorBuffer_ = 0;
-    BasicBufferType basicBufferType_;
-    std::vector<unsigned int> additionalBuffers_;
+    AttachType depthBuffer_;
+    std::vector<AttachType> colorBuffers_;
 
     unsigned int width_;
     unsigned int height_;
@@ -62,10 +107,11 @@ private:
     // Note: this will be reset to all enabled in the ctor.
     std::underlying_type_t<BasicClearMode> clearMode_ = 0;
 
-    void GenerateAndAttachWriteOnlyDepthBuffer_();
-    void GenerateAndAttachReadableDepthBuffer_();
-    void GenerateAndAttachTextureBuffer_();
-    void GenerateAdditionalBuffers_(unsigned int begin);
+    void GenerateAndAttachDepthBuffer_(RenderBufferConfigCRef ref);
+    void GenerateAndAttachDepthBuffer_(TexParamConfigCRef ref);
+
+    void GenerateAndAttachColorBuffer_(RenderBufferConfigCRef ref, int);
+    void GenerateAndAttachColorBuffer_(TexParamConfigCRef ref, int);
     void ReleaseResources_();
 };
 

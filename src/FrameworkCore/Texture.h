@@ -4,7 +4,7 @@
 
 #include <glad/glad.h>
 
-#include "TextureConfig.h"
+#include "ConfigHelpers/TextureConfig.h"
 
 #include <string>
 #include <filesystem>
@@ -44,6 +44,8 @@ class Texture
         .needMIPMAP = true
     };
 public:
+    static const auto& GetDefaultParamConfig() { return c_defaultConfig_; }
+
     unsigned int ID;
     Texture(const std::filesystem::path& path, 
         const TextureParamConfig& config = c_defaultConfig_);

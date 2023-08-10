@@ -22,12 +22,13 @@ class SkyBoxTexture
     static constexpr inline TextureParamConfig c_defaultConfig_ = {
         .textureType = TextureType::CubeMap,
         .minFilter = TextureParamConfig::MinFilterType::Linear,
-        .maxFilter = TextureParamConfig::MaxFilterType::Linear,
         .wrapS = TextureParamConfig::WrapType::ClampToEdge,
         .wrapT = TextureParamConfig::WrapType::ClampToEdge,
         .wrapR = TextureParamConfig::WrapType::ClampToEdge
     };
 public:
+    static const auto& GetDefaultParamConfig() { return c_defaultConfig_; }
+
     enum class TextureSegmentType {
         HorizontalLeft
     };
