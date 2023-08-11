@@ -83,6 +83,7 @@ vec3 GetColorWithPCFShadow(int range)
                 validCnt++;
         }
     }
+
     range = range * 2 + 1;
     float area = range * range;
     vec3 color = texture(diffuseTexture1, TexCoords).rgb;

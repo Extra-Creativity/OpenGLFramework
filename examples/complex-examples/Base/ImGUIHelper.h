@@ -94,7 +94,7 @@ template<typename T>
 void RegisterHelperOnMainWindow(OpenGLFramework::Core::MainWindow& mainWindow,
     ImGuiHelper<T>& helper)
 {
-    mainWindow.Register(std::bind(std::invoke<decltype(helper)&>, 
+    mainWindow.Register(std::bind_front(std::invoke<decltype(helper)&>,
         std::ref(helper)));
 }
 

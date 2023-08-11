@@ -113,7 +113,6 @@ Framebuffer::Framebuffer(Framebuffer&& another) noexcept:
 
 void Framebuffer::ReleaseResources_()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
     auto ReleaseBuffer = [](auto&& arg) {
         using T = std::remove_cvref_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, RenderBuffer>)

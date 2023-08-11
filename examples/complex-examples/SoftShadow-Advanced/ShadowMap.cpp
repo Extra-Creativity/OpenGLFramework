@@ -21,7 +21,7 @@ void ShadowMap::UpdateLightSpaceMat_()
     float near = 10.0f, far = 100.0f;
 	lightSpaceCamera_.fov = 90;
 	float top = near * glm::tan(glm::radians(lightSpaceCamera_.fov / 2)),
-		right = top * buffer.GetAspect();
+		right = top * buffer_.GetAspect();
 	glm::mat4 projection = glm::ortho(-right, right, -top, top, near, far);
     lightSpaceMat_ = projection * lightSpaceCamera_.GetViewMatrix();
 }
@@ -31,13 +31,13 @@ void ShadowMap::Render_(ExampleBase::AssetLoader::ModelContainer& models)
 	using enum Core::Framebuffer::BasicClearMode;
 	auto& firstModel = models.begin()->second;
 	shadowMapShader_.SetMat4("modelMat", firstModel.transform.GetModelMatrix());
-	buffer.SetClearMode({ DepthClear });
-	firstModel.Draw(shadowMapShader_, buffer);
+	buffer_.SetClearMode({ DepthClear });
+	firstModel.Draw(shadowMapShader_, buffer_);
 
 	for (auto& [name, model] : models | std::views::drop(1))
 	{
 		shadowMapShader_.SetMat4("modelMat", model.transform.GetModelMatrix());
-		buffer.SetClearMode({ None });
-		model.Draw(shadowMapShader_, buffer);
+		buffer_.SetClearMode({ None });
+		model.Draw(shadowMapShader_, buffer_);
 	}
 }

@@ -74,13 +74,12 @@ void StatBasicInfo(BasicInfoData& data)
 	ImGui::Text("FPS: %f", data.lastFPS);
 }
 
-void ResizeBufferToScreen(Core::MainWindow& mainWindow,
-	Core::Framebuffer& buffer)
+void ResizeBufferToScreen(Core::MainWindow& mainWindow, ShadowMap& shadowMap)
 {
-	const auto [width, height] = mainWindow.GetWidthAndHeight();
-	if (width == buffer.GetWidth() && height == buffer.GetHeight())
+	const auto widthHeightPair = mainWindow.GetWidthAndHeight();
+	if (shadowMap.GetWidthAndHeight() == widthHeightPair)
 		return;
-	ShadowMap::ResizeBuffer(buffer, width, height);
+	shadowMap.ResizeBuffer(widthHeightPair.first, widthHeightPair.second);
 	return;
 };
 
@@ -105,16 +104,16 @@ int main()
 	};
 	ExampleBase::RegisterHelperOnMainWindow(mainWindow, basicInfoShow);
 
-	ShadowMap shadowMap{ width, height, loader };
-	mainWindow.Register(std::bind(ResizeBufferToScreen,
-		std::ref(mainWindow), std::ref(shadowMap.buffer))
+	ShadowMapForVSSM shadowMap{ width, height, loader };
+	mainWindow.Register(std::bind_front(ResizeBufferToScreen,
+		std::ref(mainWindow), std::ref(shadowMap))
 	);
-	mainWindow.Register(std::bind(ShadowMap::Render,
+	mainWindow.Register(std::bind_front(ShadowMap::Render,
 		std::ref(shadowMap), std::ref(loader.GetModelContainer()))
 	);
 
 	ScreenShader screen{ loader };
-	mainWindow.Register(std::bind(ScreenShader::Render,
+	mainWindow.Register(std::bind_front(ScreenShader::Render,
 		std::ref(screen), std::ref(shadowMap),
 		std::cref(shadowOptionSetter.GetData().option), 
 		std::ref(loader.GetModelContainer()))
@@ -126,8 +125,8 @@ int main()
 	};
 	ExampleBase::RegisterHelperOnMainWindow(mainWindow, lightSetter);
 
-	SetBasicKeyBindings(mainWindow, screen.GetCamera());
-	SetBasicButtonBindings(mainWindow, screen.GetCamera());
+	//SetBasicKeyBindings(mainWindow, screen.GetCamera());
+	//SetBasicButtonBindings(mainWindow, screen.GetCamera());
 
 	mainWindow.MainLoop({ 1.0, 1.0, 1.0, 0.0 });
 	return 0;

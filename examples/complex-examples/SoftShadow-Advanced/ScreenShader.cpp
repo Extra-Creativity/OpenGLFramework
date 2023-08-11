@@ -17,7 +17,7 @@ void ScreenShader::SetShaderParams_(ShadowMap& shadowMap, int shadowOption)
 	screenShader_.SetVec3("viewPos", camera_.GetPosition());
 	screenShader_.SetMat4("view", camera_.GetViewMatrix());
 	screenShader_.SetMat4("projection", glm::perspective(camera_.fov,
-		shadowMap.buffer.GetAspect(), near, far));
+		shadowMap.GetAspect(), near, far));
 	screenShader_.SetInt("shadowOption", shadowOption);
 }
 
@@ -28,7 +28,7 @@ void ScreenShader::BindShadowMap_(ShadowMap& shadowMap, int textureBeginID,
 
 	glActiveTexture(GL_TEXTURE0 + textureBeginID);
 	shader.SetInt("shadowMap", textureBeginID);
-	glBindTexture(GL_TEXTURE_2D, shadowMap.buffer.GetDepthBuffer());
+	glBindTexture(GL_TEXTURE_2D, shadowMap.GetShadowBuffer());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
