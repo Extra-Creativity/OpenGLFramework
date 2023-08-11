@@ -221,7 +221,7 @@ BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
     const std::vector<glm::vec3>& init_normals) : 
     BasicTriMesh{ std::move(mesh) }, verticesAttributes(init_normals.size())
 {
-    for (int i = 0; i < verticesAttributes.size(); i++)
+    for (size_t i = 0; i < verticesAttributes.size(); i++)
         verticesAttributes[i].normalCoord = init_normals[i];
     SetupRenderResource_();
     return;

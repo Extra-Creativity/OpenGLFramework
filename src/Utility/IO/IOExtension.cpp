@@ -22,7 +22,7 @@ std::string ReadAll(const std::filesystem::path& filePath)
     return buffer.str();
 };
 
-void LogError(const std::string_view& errorInfo, std::ostream& logFile,
+void LogError(std::string_view errorInfo, std::ostream& logFile,
     const std::source_location& location)
 {
 #ifdef __cpp_lib_format	

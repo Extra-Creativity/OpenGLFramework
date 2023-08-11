@@ -67,12 +67,12 @@ MainWindow::~MainWindow()
 };
 
 MainWindow::MainWindow(MainWindow&& another) noexcept:
+    deltaTime{ 0.0f }, currTime{0.0f},
     window_{ another.window_ }, routineList_{std::move(routineList_)},
     pressedList_{ std::move(another.pressedList_) }, 
     pressingList_{ std::move(another.pressingList_) },
     releasedList_{std::move(another.releasedList_)},
-    releasingList_{std::move(another.releasingList_)},
-    deltaTime{ 0.0f }, currTime{0.0f}
+    releasingList_{std::move(another.releasingList_)}
 {
     another.window_ = nullptr;
 };
@@ -181,7 +181,7 @@ void MainWindow::BindScrollCallback(std::function<void(double, double)> callback
     {
         s_scrollCallback_ = std::move(callback);
         glfwSetScrollCallback(window_, 
-            [](GLFWwindow* window, double xOffset, double yOffset) {
+            []([[maybe_unused]]GLFWwindow* window, double xOffset, double yOffset) {
                 s_scrollCallback_(xOffset, yOffset);
             });
     }
@@ -199,7 +199,7 @@ void MainWindow::BindCursorPosCallback(std::function<void(double, double)> callb
     {
         s_cursorPosCallback_ = std::move(callback);
         glfwSetCursorPosCallback(window_, 
-            [](GLFWwindow* window, double xOffset, double yOffset) {
+            []([[maybe_unused]] GLFWwindow* window, double xOffset, double yOffset) {
                 s_cursorPosCallback_(xOffset, yOffset);
             });
     }

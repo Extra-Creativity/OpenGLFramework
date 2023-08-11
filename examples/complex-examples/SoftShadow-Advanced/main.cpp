@@ -80,7 +80,7 @@ void ResizeBufferToScreen(Core::MainWindow& mainWindow,
 	const auto [width, height] = mainWindow.GetWidthAndHeight();
 	if (width == buffer.GetWidth() && height == buffer.GetHeight())
 		return;
-	buffer = Core::Framebuffer{ width, height };
+	ShadowMap::ResizeBuffer(buffer, width, height);
 	return;
 };
 

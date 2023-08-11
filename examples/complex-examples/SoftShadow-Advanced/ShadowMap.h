@@ -22,6 +22,13 @@ public:
         ExampleBase::AssetLoader::ModelContainer&);
     const glm::mat4& GetLightSpaceMat() { return lightSpaceMat_; }
     auto& GetLightSpaceCamera() { return lightSpaceCamera_; }
+    static void ResizeBuffer(decltype(buffer)& frameBuffer,
+        unsigned int width, unsigned int height)
+    { 
+        frameBuffer = OpenGLFramework::Core::Framebuffer{ width, height,
+            decltype(buffer)::GetDepthTextureDefaultParamConfig(), {} 
+        };
+    }
 
 private:
     void SetShaderParams_();

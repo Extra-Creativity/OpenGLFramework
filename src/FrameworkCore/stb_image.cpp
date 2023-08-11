@@ -24,7 +24,8 @@ static const int g_fileMaxLen = 1024;
 namespace OpenGLFramework::Core
 {
 
-const char* GetConvertedPath(std::string& buffer, const std::filesystem::path& path)
+const char *GetConvertedPath([[maybe_unused]] std::string &buffer,
+                              const std::filesystem::path &path)
 {
 #ifdef _WIN32
     buffer.resize(g_fileMaxLen, '\0');

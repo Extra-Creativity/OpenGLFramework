@@ -12,7 +12,7 @@ namespace OpenGLFramework::IOExtension
 {
 
 std::string ReadAll(const std::filesystem::path& filePath);
-void LogError(const std::string_view& errorInfo, std::ostream& logFile = std::cerr,
+void LogError(std::string_view errorInfo, std::ostream& logFile = std::cerr,
     const std::source_location& location = std::source_location::current());
 
 template<typename CharType = char, typename CharTraits = std::char_traits<CharType>>
