@@ -35,6 +35,8 @@ void TextureParamConfig::Apply() const
     glTexParameteri(type, GL_TEXTURE_WRAP_S, to_underlying(wrapS));
     glTexParameteri(type, GL_TEXTURE_WRAP_T, to_underlying(wrapT));
     glTexParameteri(type, GL_TEXTURE_WRAP_R, to_underlying(wrapR));
+    if (auxHandle) [[unlikely]]
+        auxHandle();
 }
 
 }

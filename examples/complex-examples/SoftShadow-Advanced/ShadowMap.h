@@ -5,12 +5,27 @@
 
 class ShadowMap
 {
+protected:
+    using Handle_ = decltype([] {
+        float border[] = { 1.0,1.0,1.0,1.0 };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+    });
+
     using FrameBuffer = OpenGLFramework::Core::Framebuffer;
+    using TextureParamConfig = OpenGLFramework::Core::TextureParamConfig;
+private:
+    inline static const TextureParamConfig c_config_ = {
+        .minFilter = TextureParamConfig::MinFilterType::Linear,
+        .wrapS = TextureParamConfig::WrapType::ClampToBorder,
+        .wrapT = TextureParamConfig::WrapType::ClampToBorder,
+        .wrapR = TextureParamConfig::WrapType::ClampToBorder,
+        .auxHandle = Handle_{}
+    };
 public:
     ShadowMap(unsigned int init_width, unsigned int init_height,
-        ExampleBase::AssetLoader& loader) : ShadowMap{ { init_width, init_height,
-            FrameBuffer::GetDepthTextureDefaultParamConfig(), {} }, loader }
-    {}
+        ExampleBase::AssetLoader& loader) : ShadowMap{ 
+            { init_width, init_height, c_config_, {} }, loader 
+    } {}
 
     static void Render(ShadowMap& shadowMap, 
         ExampleBase::AssetLoader::ModelContainer&);
@@ -18,9 +33,7 @@ public:
     auto& GetLightSpaceCamera() { return lightSpaceCamera_; }
     virtual void ResizeBuffer(unsigned int width, unsigned int height)
     { 
-        buffer_ = FrameBuffer{ width, height,
-            decltype(buffer_)::GetDepthTextureDefaultParamConfig(), {} 
-        };
+        buffer_ = FrameBuffer{ width, height, c_config_, {} };
     }
 
     auto GetAspect() { return buffer_.GetAspect(); }
@@ -28,6 +41,7 @@ public:
     std::pair<unsigned int, unsigned int> GetWidthAndHeight() { 
         return { buffer_.GetWidth(), buffer_.GetHeight() };
     }
+    virtual bool NeedMIPMAP() { return false; }
 protected:
     ShadowMap(FrameBuffer frameBuffer, ExampleBase::AssetLoader& loader) :
         buffer_{ std::move(frameBuffer) },
@@ -52,16 +66,30 @@ private:
 class ShadowMapForVSSM : public ShadowMap
 {
     using FrameBuffer = OpenGLFramework::Core::Framebuffer;
+    using TextureParamConfig = OpenGLFramework::Core::TextureParamConfig;
+    inline static const TextureParamConfig c_config = {
+        .minFilter = TextureParamConfig::MinFilterType::LinearAfterMIPMAPLinear,
+        .wrapS = TextureParamConfig::WrapType::ClampToBorder,
+        .wrapT = TextureParamConfig::WrapType::ClampToBorder,
+        .wrapR = TextureParamConfig::WrapType::ClampToBorder,
+        .auxHandle = Handle_{}
+    };
+
 public:
     ShadowMapForVSSM(unsigned int init_width, unsigned int init_height,
         ExampleBase::AssetLoader& loader) : ShadowMap{
-            { init_width, init_height}, loader
+            { init_width, init_height,
+              FrameBuffer::GetDepthRenderBufferDefaultConfig(), { c_config }
+            }, loader
     } {}
 
     void ResizeBuffer(unsigned int width, unsigned int height) override
     {
-        buffer_ = OpenGLFramework::Core::Framebuffer{ width, height };
+        buffer_ = OpenGLFramework::Core::Framebuffer{ width, height,
+            FrameBuffer::GetDepthRenderBufferDefaultConfig(), { c_config }
+        };
     }
 
     unsigned int GetShadowBuffer() override { return buffer_.GetColorBuffer(); }
+    bool NeedMIPMAP() override { return true; }
 };

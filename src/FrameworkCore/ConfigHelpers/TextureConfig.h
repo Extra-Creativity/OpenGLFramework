@@ -81,6 +81,7 @@ struct TextureParamConfig
       wrapR = WrapType::Repeat;
 
     bool needMIPMAP = false;
+    void(*auxHandle)() = nullptr;
     void Apply() const;
 };
 

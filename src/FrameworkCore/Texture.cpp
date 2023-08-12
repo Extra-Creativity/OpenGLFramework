@@ -100,11 +100,11 @@ CPUTextureData GetCPUDataFromAnyTexture(int width, int height, int cpuChannel,
 
     unsigned int tempFrameBuffer = 0;
     glGenFramebuffers(1, &tempFrameBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, tempFrameBuffer);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, tempFrameBuffer);
     glBindTexture(gpuBindTextureType, bindTextureID);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gpuSubTextureType,
-        bindTextureID, 0);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+        gpuSubTextureType, bindTextureID, 0);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
 
     int initialAlignment;
@@ -117,7 +117,6 @@ CPUTextureData GetCPUDataFromAnyTexture(int width, int height, int cpuChannel,
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindTexture(gpuBindTextureType, 0);
     glDeleteFramebuffers(1, &tempFrameBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return { buffer, width, height, cpuChannel };
 }

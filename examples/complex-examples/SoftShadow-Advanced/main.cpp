@@ -11,12 +11,13 @@
 
 struct ShadowOptionData
 {
-	int option = 3;
-	std::array<const char*, 4> optionList{
+	int option = 4;
+	const std::array<const char*, 5> optionList{
 		"Hard Shadow(No bias)",
 		"Hard Shadow(Add bias)",
 		"PCF Shadow",
-		"PCSS"
+		"PCSS",
+		"VSSM"
 	};
 };
 
@@ -125,8 +126,8 @@ int main()
 	};
 	ExampleBase::RegisterHelperOnMainWindow(mainWindow, lightSetter);
 
-	//SetBasicKeyBindings(mainWindow, screen.GetCamera());
-	//SetBasicButtonBindings(mainWindow, screen.GetCamera());
+	SetBasicKeyBindings(mainWindow, screen.GetCamera());
+	SetBasicButtonBindings(mainWindow, screen.GetCamera());
 
 	mainWindow.MainLoop({ 1.0, 1.0, 1.0, 0.0 });
 	return 0;

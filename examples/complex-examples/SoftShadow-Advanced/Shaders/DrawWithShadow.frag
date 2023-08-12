@@ -110,7 +110,7 @@ float GetAvgBlockerDepth()
     return validCnt == 0 ? currentDepth : result / float(validCnt);
 }
 
-highp vec3 GetColorWithPCSS()
+vec3 GetColorWithPCSS()
 {
     float blockerDepth = GetAvgBlockerDepth();
     float currentDepth = projCoords.z;
@@ -118,6 +118,45 @@ highp vec3 GetColorWithPCSS()
         (currentDepth - blockerDepth) / blockerDepth;
     int range = int(sampleWidth / 2);
     return GetColorWithPCFShadow(range);
+}
+
+vec2 GetEstimatedAvgAndSqr(float width)
+{
+    return textureLod(shadowMap, projCoords.xy, log2(width)).rg;
+}
+
+float GetEstimatedNonOcculsion(vec2 estimatedAvgAndSqr, float currDepth)
+{
+    float avg = estimatedAvgAndSqr.r, sub = avg - currDepth,
+          var = estimatedAvgAndSqr.g - avg * avg;
+    return var / (var + sub * sub);
+}
+
+vec3 GetColorWithVSSM()
+{
+    float currentDepth = projCoords.z;
+
+    float estimatedNonBlockerDepth = currentDepth;
+    vec2 estimatedInfo = GetEstimatedAvgAndSqr(BLOCKER_SEARCH_WIDTH);
+
+    float estimatedNonOcculusion =
+        GetEstimatedNonOcculsion(estimatedInfo, currentDepth);
+
+    float estimatedBlockerDepth = 
+        (estimatedInfo.r - estimatedNonOcculusion * estimatedNonBlockerDepth) / 
+        (1 - estimatedNonOcculusion);
+
+    float sampleWidth = float(LIGHT_WIDTH) *
+        (currentDepth - estimatedBlockerDepth) / estimatedBlockerDepth;
+    vec3 color = texture(diffuseTexture1, TexCoords).rgb;
+
+    if(sampleWidth < 1)
+        return GetNonOcculdedColor();
+
+    vec2 sampleInfo = GetEstimatedAvgAndSqr(sampleWidth);
+
+    return color * lightColor * (ambientCoeff + 
+        GetEstimatedNonOcculsion(sampleInfo, currentDepth) * GetNonAmbientCoeff());
 }
 
 void main()
@@ -132,6 +171,8 @@ void main()
         resultColor = GetColorWithPCFShadow(3); // sampleWidth = 3 * 2 + 1
     else if(shadowOption == 3)
         resultColor = GetColorWithPCSS();
+    else if(shadowOption == 4)
+        resultColor = GetColorWithVSSM();
 
     FragColor = vec4(resultColor, 1.0);
     return;

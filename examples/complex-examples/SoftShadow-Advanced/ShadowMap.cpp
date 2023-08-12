@@ -19,7 +19,6 @@ void ShadowMap::SetShaderParams_()
 void ShadowMap::UpdateLightSpaceMat_()
 {
     float near = 10.0f, far = 100.0f;
-	lightSpaceCamera_.fov = 90;
 	float top = near * glm::tan(glm::radians(lightSpaceCamera_.fov / 2)),
 		right = top * buffer_.GetAspect();
 	glm::mat4 projection = glm::ortho(-right, right, -top, top, near, far);

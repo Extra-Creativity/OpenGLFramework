@@ -24,14 +24,11 @@ void ScreenShader::SetShaderParams_(ShadowMap& shadowMap, int shadowOption)
 void ScreenShader::BindShadowMap_(ShadowMap& shadowMap, int textureBeginID,
 	OpenGLFramework::Core::Shader& shader)
 {
-	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
 	glActiveTexture(GL_TEXTURE0 + textureBeginID);
 	shader.SetInt("shadowMap", textureBeginID);
 	glBindTexture(GL_TEXTURE_2D, shadowMap.GetShadowBuffer());
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	if (shadowMap.NeedMIPMAP())
+		glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void ScreenShader::Render_(ShadowMap& shadowMap, 
