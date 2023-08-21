@@ -45,31 +45,31 @@ class Texture
     };
 public:
     static const auto& GetDefaultParamConfig() { return c_defaultConfig_; }
-
-    unsigned int ID;
+    auto GetID() const { return ID_; }
     Texture(const std::filesystem::path& path, 
         const TextureParamConfig& config = c_defaultConfig_);
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
-    Texture(Texture&& another) noexcept : ID{ std::exchange(another.ID, 0) },
+    Texture(Texture&& another) noexcept : ID_{ std::exchange(another.ID_, 0) },
         cpuChannel_{ std::exchange(another.cpuChannel_, 0) } {};
     Texture& operator=(Texture&& another) noexcept { 
         if (&another == this)
             return *this;
 
-        glDeleteTextures(1, &ID);
-        ID = std::exchange(another.ID, 0);
+        glDeleteTextures(1, &ID_);
+        ID_ = std::exchange(another.ID_, 0);
         cpuChannel_ = std::exchange(another.cpuChannel_, 0);
 
         return *this;
     };
     ~Texture() {
-        glDeleteTextures(1, &ID);
+        glDeleteTextures(1, &ID_);
         return;
     };
-    std::pair<int, int> GetWidthAndHeight();
-    CPUTextureData GetCPUData();
+    std::pair<int, int> GetWidthAndHeight() const;
+    CPUTextureData GetCPUData() const;
 private:
+    unsigned int ID_;
     int cpuChannel_;
 };
 

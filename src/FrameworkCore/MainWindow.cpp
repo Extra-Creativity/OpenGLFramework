@@ -6,7 +6,9 @@
 #include <stb_image_write.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
 #include <limits>
+#include <exception>
 
 namespace OpenGLFramework::Core
 {
@@ -17,12 +19,12 @@ std::function<void(double, double)> MainWindow::s_cursorPosCallback_;
 
 bool MainWindow::singletonFlag_ = true;
 
-MainWindow::MainWindow() : deltaTime(0.0f), currTime(0.0f), window_(nullptr)
+MainWindow::MainWindow() : deltaTime_(0.0f), currTime_(0.0f), window_(nullptr)
 {}
 
 MainWindow::MainWindow(unsigned int init_width, unsigned int init_height, 
     const char* title, bool visible) : 
-    deltaTime(0.0f), currTime(0.0f), window_(nullptr)
+    deltaTime_(0.0f), currTime_(0.0f), window_(nullptr)
 {
     assert((init_width < std::numeric_limits<unsigned int>::max() 
         && init_height < std::numeric_limits<unsigned int>::max()));
@@ -31,7 +33,7 @@ MainWindow::MainWindow(unsigned int init_width, unsigned int init_height,
     if (!singletonFlag_) [[unlikely]]
     {
         IOExtension::LogError("Try to use two GLFW windows simutanously.");
-        abort();
+        std::terminate();
     }
     singletonFlag_ = false;
 
@@ -67,7 +69,7 @@ MainWindow::~MainWindow()
 };
 
 MainWindow::MainWindow(MainWindow&& another) noexcept:
-    deltaTime{ 0.0f }, currTime{0.0f},
+    deltaTime_{ 0.0f }, currTime_{0.0f},
     window_{ another.window_ }, routineList_{std::move(routineList_)},
     pressedList_{ std::move(another.pressedList_) }, 
     pressingList_{ std::move(another.pressingList_) },
@@ -88,8 +90,8 @@ MainWindow& MainWindow::operator=(MainWindow&& another) noexcept
     pressingList_ = std::move(another.pressingList_);
     releasedList_ = std::move(another.releasedList_);
     releasingList_ = std::move(another.releasingList_);
-    deltaTime = another.deltaTime;
-    currTime = another.currTime;
+    deltaTime_ = another.deltaTime_;
+    currTime_ = another.currTime_;
     return *this;
 };
 
@@ -100,8 +102,8 @@ void MainWindow::MainLoop(const glm::vec4& backgroundColor)
         glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 
             backgroundColor.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        deltaTime = static_cast<float>(glfwGetTime()) - currTime;
-        currTime += deltaTime;
+        deltaTime_ = static_cast<float>(glfwGetTime()) - currTime_;
+        currTime_ += deltaTime_;
 
         const auto [m_width, m_height] = GetWidthAndHeight();
         glViewport(0, 0, m_width, m_height);
@@ -168,11 +170,9 @@ void MainWindow::Register(UpdateFunc& func)
     routineList_.push_back(func);
 };
 
-size_t MainWindow::GetCurrRoutineID() { return currRoutineID_; };
-
-void MainWindow::RemoveFromRoutines(size_t id)
+void MainWindow::ClearRoutines()
 {
-    routineList_.erase(routineList_.begin() + id);
+    routineList_.clear();
 }
 
 void MainWindow::BindScrollCallback(std::function<void(double, double)> callback)
@@ -212,9 +212,10 @@ void MainWindow::BindCursorPosCallback(std::function<void(double, double)> callb
 }
 
 std::vector<unsigned char> MainWindow::GetPixelsFromGPU_(
-    int width, int height, int channelNum)
+    int width, int height, int channelNum) const
 {
-    std::vector<unsigned char> pixelBuffer(width * height * channelNum);
+    std::vector<unsigned char> pixelBuffer(
+        static_cast<size_t>(width) * height * channelNum);
     unsigned char* pixelBufferRawPtr = pixelBuffer.data();
 
     int initialAlignment, initalBuffer;
@@ -233,7 +234,7 @@ std::vector<unsigned char> MainWindow::GetPixelsFromGPU_(
 extern const char* GetConvertedPath(std::string& buffer,
     const std::filesystem::path& path);
 
-void MainWindow::SaveImage(const std::filesystem::path& path, bool needFlip)
+void MainWindow::SaveImage(const std::filesystem::path& path, bool needFlip) const
 {
     auto extension = path.extension().string();
     std::string pathBuffer;

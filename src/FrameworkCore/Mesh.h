@@ -59,11 +59,8 @@ public:
 
 class BasicTriRenderMesh : public BasicTriMesh
 {
+    friend class BasicTriRenderModel;
 public:
-    std::vector<VertexAttribute> verticesAttributes;
-    std::vector<std::reference_wrapper<Texture>> diffuseTextureRefs;
-    std::vector<std::reference_wrapper<Texture>> specularTextureRefs;
-
     BasicTriRenderMesh(BasicTriMesh mesh, 
         const std::vector<glm::vec3>& init_normals);
     BasicTriRenderMesh(BasicTriMesh mesh, std::vector<VertexAttribute> attrs);
@@ -75,15 +72,20 @@ public:
     BasicTriRenderMesh& operator=(BasicTriRenderMesh&&) noexcept;
     ~BasicTriRenderMesh();
 
-    void Draw(Shader& shader);
-    void Draw(Shader& shader, Framebuffer& buffer);
-    void Draw(Shader& shader, const std::function<void(int, Shader&)>& preprocess,
-        const std::function<void(void)>& postprocess);
-    void Draw(Shader& shader, Framebuffer& buffer, 
-        const std::function<void(int, Shader&)>& preprocess,
-        const std::function<void(void)>& postprocess);
+    void Draw(const Shader& shader) const;
+    void Draw(const Shader& shader, const Framebuffer& buffer) const;
+    void Draw(const Shader& shader,
+        const std::function<void(int, const Shader&)>& preprocess,
+        const std::function<void(void)>& postprocess) const;
+    void Draw(const Shader& shader, const Framebuffer& buffer, 
+        const std::function<void(int, const Shader&)>& preprocess,
+        const std::function<void(void)>& postprocess) const;
 private:
+    std::vector<VertexAttribute> verticesAttributes_;
+    std::vector<std::reference_wrapper<Texture>> diffuseTextureRefs_;
+    std::vector<std::reference_wrapper<Texture>> specularTextureRefs_;
     GLuint VAO, VBO, IBO;
+
     void AllocateAndMemcpyVerticesData_();
     void BindVerticesAttributeSequence_();
     void AllocateAndMemcpyTrianglesData_();
@@ -97,8 +99,8 @@ private:
         const aiTextureType type, std::vector<std::reference_wrapper<Texture>>& refs,
         TexturePool& texturePool, const std::filesystem::path& rootPath);
 
-    void SetTextures_(Core::Shader& shader, const std::string& namePrefix,
-        const decltype(diffuseTextureRefs)& textures, int& beginID);
+    void SetTextures_(const Core::Shader& shader, const std::string& namePrefix,
+        const decltype(diffuseTextureRefs_)& textures, int& beginID) const;
 };
 
 }

@@ -16,7 +16,7 @@ public:
     glm::vec3 scale = { 1, 1, 1 };
     glm::quat rotation = { 1, 0, 0, 0 };
 
-    glm::mat4 GetModelMatrix()
+    glm::mat4 GetModelMatrix() const
     {
         return glm::translate(glm::scale(glm::toMat4(rotation), scale), position);
     }

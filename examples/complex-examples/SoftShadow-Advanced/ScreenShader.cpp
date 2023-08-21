@@ -22,7 +22,7 @@ void ScreenShader::SetShaderParams_(ShadowMap& shadowMap, int shadowOption)
 }
 
 void ScreenShader::BindShadowMap_(ShadowMap& shadowMap, int textureBeginID,
-	OpenGLFramework::Core::Shader& shader)
+	const OpenGLFramework::Core::Shader& shader)
 {
 	glActiveTexture(GL_TEXTURE0 + textureBeginID);
 	shader.SetInt("shadowMap", textureBeginID);

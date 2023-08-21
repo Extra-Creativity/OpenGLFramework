@@ -157,36 +157,36 @@ int main()
 	//});
 
 	mainWindow.BindKeyPressing<GLFW_KEY_W>([&frontCamera, &mainWindow]() {
-		frontCamera.Translate(mainWindow.deltaTime * 
+		frontCamera.Translate(mainWindow.GetDeltaTime() * 
 			glm::vec3{ 0.0f, 0.0f, -frontCamera.movementSpeed });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_S>([&frontCamera, &mainWindow]() {
-		frontCamera.Translate(mainWindow.deltaTime * 
+		frontCamera.Translate(mainWindow.GetDeltaTime() * 
 			glm::vec3{ 0.0f, 0.0f, frontCamera.movementSpeed });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_A>([&frontCamera, &mainWindow]() {
-		frontCamera.Translate(mainWindow.deltaTime * 
+		frontCamera.Translate(mainWindow.GetDeltaTime() * 
 			glm::vec3{ -frontCamera.movementSpeed, 0.0f, 0.0f });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_D>([&frontCamera, &mainWindow]() {
-		frontCamera.Translate(mainWindow.deltaTime * 
+		frontCamera.Translate(mainWindow.GetDeltaTime() * 
 			glm::vec3{ frontCamera.movementSpeed, 0.0f, 0.5f });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_UP>([&frontCamera, &mainWindow]() {
 		frontCamera.Rotate(
-			mainWindow.deltaTime * frontCamera.rotationSpeed, { 1, 0, 0 });
+			mainWindow.GetDeltaTime() * frontCamera.rotationSpeed, { 1, 0, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_DOWN>([&frontCamera, &mainWindow]() {
 		frontCamera.Rotate(
-			-mainWindow.deltaTime * frontCamera.rotationSpeed, { 1, 0, 0 });
+			-mainWindow.GetDeltaTime() * frontCamera.rotationSpeed, { 1, 0, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_LEFT>([&frontCamera, &mainWindow]() {
 		frontCamera.Rotate(
-			mainWindow.deltaTime * frontCamera.rotationSpeed, { 0, 1, 0 });
+			mainWindow.GetDeltaTime() * frontCamera.rotationSpeed, { 0, 1, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_RIGHT>([&frontCamera, &mainWindow]() {
 		frontCamera.Rotate(
-			-mainWindow.deltaTime * frontCamera.rotationSpeed, { 0, 1, 0 });
+			-mainWindow.GetDeltaTime() * frontCamera.rotationSpeed, { 0, 1, 0 });
 	});
 
 	mainWindow.BindKeyPressed<GLFW_KEY_SPACE>([&frontCamera]() {

@@ -31,17 +31,18 @@ public:
         ExampleBase::AssetLoader::ModelContainer&);
     const glm::mat4& GetLightSpaceMat() { return lightSpaceMat_; }
     auto& GetLightSpaceCamera() { return lightSpaceCamera_; }
+    const auto& GetLightSpaceCamera() const { return lightSpaceCamera_; }
     virtual void ResizeBuffer(unsigned int width, unsigned int height)
     { 
         buffer_ = FrameBuffer{ width, height, c_config_, {} };
     }
 
-    auto GetAspect() { return buffer_.GetAspect(); }
-    virtual unsigned int GetShadowBuffer() { return buffer_.GetDepthBuffer(); }
-    std::pair<unsigned int, unsigned int> GetWidthAndHeight() { 
+    auto GetAspect() const { return buffer_.GetAspect(); }
+    virtual unsigned int GetShadowBuffer() const { return buffer_.GetDepthBuffer(); }
+    std::pair<unsigned int, unsigned int> GetWidthAndHeight() const { 
         return { buffer_.GetWidth(), buffer_.GetHeight() };
     }
-    virtual bool NeedMIPMAP() { return false; }
+    virtual bool NeedMIPMAP() const { return false; }
 protected:
     ShadowMap(FrameBuffer frameBuffer, ExampleBase::AssetLoader& loader) :
         buffer_{ std::move(frameBuffer) },
@@ -90,6 +91,6 @@ public:
         };
     }
 
-    unsigned int GetShadowBuffer() override { return buffer_.GetColorBuffer(); }
-    bool NeedMIPMAP() override { return true; }
+    unsigned int GetShadowBuffer() const override { return buffer_.GetColorBuffer(); }
+    bool NeedMIPMAP() const override { return true; }
 };

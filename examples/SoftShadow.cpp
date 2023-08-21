@@ -129,7 +129,7 @@ Generator<int> ShowBasicInfo(Core::MainWindow& mainWindow)
 	{
 		if (frameCnt % 100 == 0)
 		{
-			lastFPS = 1 / mainWindow.deltaTime;
+			lastFPS = 1 / mainWindow.GetDeltaTime();
 		}
 		ImGui::Text("FPS: %f", lastFPS);
 		ImGui::End();
@@ -198,7 +198,7 @@ void RenderScreen(Core::Framebuffer& shadowMapBuffer, Core::Camera& camera,
 
 	using enum Core::Framebuffer::BasicClearMode;
 	auto UseShadowMap = 
-		[&shadowMapBuffer](int textureBeginID, Core::Shader& shader) {
+		[&shadowMapBuffer](int textureBeginID, const Core::Shader& shader) {
 			glActiveTexture(GL_TEXTURE0 + textureBeginID);
 			shader.SetInt("shadowMap", textureBeginID);
 			glBindTexture(GL_TEXTURE_2D, shadowMapBuffer.GetDepthBuffer());

@@ -74,6 +74,9 @@ public:
     }
 
     T& GetData() { return data_; }
+    void RegisterOnMainWindow(OpenGLFramework::Core::MainWindow& mainWindow) {
+        mainWindow.Register(std::bind_front(&ImGuiHelper::operator(), this));
+    }
 private:
     float AllocateVerticalPosition_() {
         float currY = s_ImGuiHelper_y;
@@ -89,13 +92,5 @@ private:
     OpenGLFramework::Coroutine::Generator<int> savedContext_;
     typename decltype(savedContext_)::Iter contextIter_;
 };
-
-template<typename T>
-void RegisterHelperOnMainWindow(OpenGLFramework::Core::MainWindow& mainWindow,
-    ImGuiHelper<T>& helper)
-{
-    mainWindow.Register(std::bind_front(std::invoke<decltype(helper)&>,
-        std::ref(helper)));
-}
 
 }

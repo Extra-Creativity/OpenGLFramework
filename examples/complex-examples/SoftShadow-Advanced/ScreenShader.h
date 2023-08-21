@@ -17,7 +17,7 @@ public:
 private:
     void SetShaderParams_(ShadowMap& shadowMap, int shadowOption);
     static void BindShadowMap_(ShadowMap& shadowMap, int textureBeginID, 
-        OpenGLFramework::Core::Shader&);
+        const OpenGLFramework::Core::Shader&);
     void Render_(ShadowMap&, ExampleBase::AssetLoader::ModelContainer&);
 
     OpenGLFramework::Core::Shader& screenShader_;

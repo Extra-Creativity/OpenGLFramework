@@ -69,7 +69,7 @@ int main()
 		}
 
 		quadOnScreen.Draw(basicQuadShader, 
-			[&buffer](int textureBeginID, Core::Shader& shader) {
+			[&buffer](int textureBeginID, const Core::Shader& shader) {
 			glActiveTexture(GL_TEXTURE0 + textureBeginID);
 			shader.SetInt("diffuseTexture1", textureBeginID);
 			glBindTexture(GL_TEXTURE_2D, buffer.GetDepthBuffer());

@@ -94,7 +94,7 @@ public:
             clearMode_ |= static_cast<decltype(clearMode_)>(mode);
         return;
     }
-    void UseAsRenderTarget();
+    void UseAsRenderTarget() const;
     static void RestoreDefaultRenderTarget();
 private:
     unsigned int frameBuffer_ = 0;

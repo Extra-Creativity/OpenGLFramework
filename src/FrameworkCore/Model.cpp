@@ -88,16 +88,16 @@ void BasicTriRenderModel::AttachTexture(const std::filesystem::path& path,
     if (isSpecular)
     {
         for (auto attachID : attachIDs)
-            meshes.at(attachID).specularTextureRefs.push_back(textureIt->second);
+            meshes.at(attachID).specularTextureRefs_.push_back(textureIt->second);
         return;
     }
     // else, diffuse.
     for (auto attachID : attachIDs)
-        meshes.at(attachID).diffuseTextureRefs.push_back(textureIt->second);
+        meshes.at(attachID).diffuseTextureRefs_.push_back(textureIt->second);
     return;
 };
 
-void BasicTriRenderModel::Draw(Shader& shader)
+void BasicTriRenderModel::Draw(const Shader& shader) const
 {
     for (auto& mesh : meshes)
     {
@@ -106,7 +106,8 @@ void BasicTriRenderModel::Draw(Shader& shader)
     return;
 }
 
-void BasicTriRenderModel::Draw(Shader& shader, Framebuffer& buffer)
+void BasicTriRenderModel::Draw(const Shader& shader, 
+    const Framebuffer& buffer) const
 {
     buffer.UseAsRenderTarget();
     for (auto& mesh : meshes)
@@ -117,9 +118,9 @@ void BasicTriRenderModel::Draw(Shader& shader, Framebuffer& buffer)
     return;
 };
 
-void BasicTriRenderModel::Draw(Shader& shader, 
-    const std::function<void(int, Shader&)>& preprocess,
-    const std::function<void(void)>& postprocess)
+void BasicTriRenderModel::Draw(const Shader& shader, 
+    const std::function<void(int, const Shader&)>& preprocess,
+    const std::function<void(void)>& postprocess) const
 {
     for (auto& mesh : meshes)
     {
@@ -128,9 +129,9 @@ void BasicTriRenderModel::Draw(Shader& shader,
     return;
 };
 
-void BasicTriRenderModel::Draw(Shader& shader, Framebuffer& buffer,
-    const std::function<void(int, Shader&)>& preprocess,
-    const std::function<void(void)>& postprocess)
+void BasicTriRenderModel::Draw(const Shader& shader, const Framebuffer& buffer,
+    const std::function<void(int, const Shader&)>& preprocess,
+    const std::function<void(void)>& postprocess) const
 {
     buffer.UseAsRenderTarget();
     for (auto& mesh : meshes)

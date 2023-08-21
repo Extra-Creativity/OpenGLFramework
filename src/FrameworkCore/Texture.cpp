@@ -122,7 +122,7 @@ CPUTextureData GetCPUDataFromAnyTexture(int width, int height, int cpuChannel,
 }
 
 Texture::Texture(const std::filesystem::path& path,
-    const TextureParamConfig& paramConfig) : ID{ 0 }, cpuChannel_{ 0 }
+    const TextureParamConfig& paramConfig) : ID_{ 0 }, cpuChannel_{ 0 }
 {
     CPUTextureData cpuTextureData{ path };
     if (cpuTextureData.texturePtr == nullptr) [[unlikely]]
@@ -132,8 +132,8 @@ Texture::Texture(const std::filesystem::path& path,
     GLenum gpuChannel = GetGPUChannelFromCPUChannel(cpuTextureData.channels);
     TextureGenConfig genConfig = GetDefaultTextureGenConfig(gpuChannel);
 
-    glGenTextures(1, &ID);
-    glBindTexture(GL_TEXTURE_2D, ID);
+    glGenTextures(1, &ID_);
+    glBindTexture(GL_TEXTURE_2D, ID_);
 
     genConfig.Apply(TextureType::Texture2D, cpuTextureData);
     paramConfig.Apply();
@@ -142,21 +142,21 @@ Texture::Texture(const std::filesystem::path& path,
     return;
 };
 
-std::pair<int, int> Texture::GetWidthAndHeight()
+std::pair<int, int> Texture::GetWidthAndHeight() const
 {
     int width = 0, height = 0;
-    glBindTexture(GL_TEXTURE_2D, ID);
+    glBindTexture(GL_TEXTURE_2D, ID_);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &width);
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &height);
     glBindTexture(GL_TEXTURE_2D, 0);
     return { width, height };
 };
 
-CPUTextureData Texture::GetCPUData()
+CPUTextureData Texture::GetCPUData() const
 {
     auto [width, height] = GetWidthAndHeight();
     return GetCPUDataFromAnyTexture(width, height, cpuChannel_, 
-        GL_TEXTURE_2D, ID, GL_TEXTURE_2D);
+        GL_TEXTURE_2D, ID_, GL_TEXTURE_2D);
 }
 
 } // namespace OpenGLFramework::Core

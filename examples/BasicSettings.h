@@ -37,36 +37,36 @@ void SetProjection(float width, float height, float near, float far,
 inline void SetBasicKeyBindings(Core::MainWindow& mainWindow, Core::Camera& camera)
 {
     mainWindow.BindKeyPressing<GLFW_KEY_W>([&camera, &mainWindow]() {
-		camera.Translate(mainWindow.deltaTime * 
+		camera.Translate(mainWindow.GetDeltaTime() * 
 			glm::vec3{ 0.0f, 0.0f, -camera.movementSpeed });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_S>([&camera, &mainWindow]() {
-		camera.Translate(mainWindow.deltaTime * 
+		camera.Translate(mainWindow.GetDeltaTime() * 
 			glm::vec3{ 0.0f, 0.0f, camera.movementSpeed });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_A>([&camera, &mainWindow]() {
-		camera.Translate(mainWindow.deltaTime * 
+		camera.Translate(mainWindow.GetDeltaTime() * 
 			glm::vec3{ -camera.movementSpeed, 0.0f, 0.0f });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_D>([&camera, &mainWindow]() {
-		camera.Translate(mainWindow.deltaTime * 
+		camera.Translate(mainWindow.GetDeltaTime() * 
 			glm::vec3{ camera.movementSpeed, 0.0f, 0.5f });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_UP>([&camera, &mainWindow]() {
 		camera.Rotate(
-			mainWindow.deltaTime * camera.rotationSpeed, { 1, 0, 0 });
+			mainWindow.GetDeltaTime() * camera.rotationSpeed, { 1, 0, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_DOWN>([&camera, &mainWindow]() {
 		camera.Rotate(
-			-mainWindow.deltaTime * camera.rotationSpeed, { 1, 0, 0 });
+			-mainWindow.GetDeltaTime() * camera.rotationSpeed, { 1, 0, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_LEFT>([&camera, &mainWindow]() {
 		camera.Rotate(
-			mainWindow.deltaTime * camera.rotationSpeed, { 0, 1, 0 });
+			mainWindow.GetDeltaTime() * camera.rotationSpeed, { 0, 1, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_RIGHT>([&camera, &mainWindow]() {
 		camera.Rotate(
-			-mainWindow.deltaTime * camera.rotationSpeed, { 0, 1, 0 });
+			-mainWindow.GetDeltaTime() * camera.rotationSpeed, { 0, 1, 0 });
 	});
 
 	mainWindow.BindKeyPressed<GLFW_KEY_SPACE>([&camera]() {

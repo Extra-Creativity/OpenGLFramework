@@ -44,7 +44,7 @@ int main()
 	SetBasicKeyBindings(mainWindow, frontCamera);
 	SetBasicButtonBindings(mainWindow, frontCamera);
 
-	auto BindSkybox = [&skyBox](int textureBeginID, Core::Shader& shader)
+	auto BindSkybox = [&skyBox](int textureBeginID, const Core::Shader& shader)
 	{
 		glActiveTexture(GL_TEXTURE0 + textureBeginID);
 		shader.SetInt("skybox", textureBeginID);
@@ -67,7 +67,8 @@ int main()
 		auto viewMat = glm::mat4{ glm::mat3{ frontCamera.GetViewMatrix() } };
 		viewMat[3] = initialViewMatTranslation;
 		skyBoxShader.SetMat4("view", viewMat);
-		SetProjection(width, height, near, far, frontCamera, skyBoxShader);
+		SetProjection(static_cast<float>(width), static_cast<float>(height),
+			near, far, frontCamera, skyBoxShader);
 		cube.Draw(skyBoxShader, BindSkybox, nullptr);
 		glDepthFunc(GL_LESS);
 	});

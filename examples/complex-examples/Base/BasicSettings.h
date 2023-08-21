@@ -28,53 +28,53 @@ void SetMVP(float width, float height, float near, float far,
 inline void SetBasicKeyBindings(Core::MainWindow& mainWindow, Core::Camera& camera)
 {
     mainWindow.BindKeyPressing<GLFW_KEY_W>([&camera, &mainWindow]() {
-		camera.Translate(mainWindow.deltaTime * 
-			glm::vec3{ 0.0f, 0.0f, -camera.movementSpeed });
+		camera.Translate(mainWindow.GetDeltaTime() *
+			camera.movementSpeed * camera.Front());
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_S>([&camera, &mainWindow]() {
-		camera.Translate(mainWindow.deltaTime * 
-			glm::vec3{ 0.0f, 0.0f, camera.movementSpeed });
+		camera.Translate(mainWindow.GetDeltaTime() * 
+			camera.movementSpeed * camera.Back());
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_A>([&camera, &mainWindow]() {
-		camera.Translate(mainWindow.deltaTime * 
-			glm::vec3{ -camera.movementSpeed, 0.0f, 0.0f });
+		camera.Translate(mainWindow.GetDeltaTime() *
+			camera.movementSpeed * camera.Left());
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_D>([&camera, &mainWindow]() {
-		camera.Translate(mainWindow.deltaTime * 
-			glm::vec3{ camera.movementSpeed, 0.0f, 0.5f });
+		camera.Translate(mainWindow.GetDeltaTime() *
+			camera.movementSpeed * camera.Right());
 	});
+	mainWindow.BindKeyPressing<GLFW_KEY_Q>([&camera, &mainWindow]() {
+		camera.Translate(mainWindow.GetDeltaTime() *
+			camera.movementSpeed * camera.Up());
+	});
+	mainWindow.BindKeyPressing<GLFW_KEY_E>([&camera, &mainWindow]() {
+		camera.Translate(mainWindow.GetDeltaTime() *
+			camera.movementSpeed * camera.Down());
+	});
+
 	mainWindow.BindKeyPressing<GLFW_KEY_UP>([&camera, &mainWindow]() {
 		camera.Rotate(
-			mainWindow.deltaTime * camera.rotationSpeed, { 1, 0, 0 });
+			mainWindow.GetDeltaTime() * camera.rotationSpeed, { 1, 0, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_DOWN>([&camera, &mainWindow]() {
 		camera.Rotate(
-			-mainWindow.deltaTime * camera.rotationSpeed, { 1, 0, 0 });
+			-mainWindow.GetDeltaTime() * camera.rotationSpeed, { 1, 0, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_LEFT>([&camera, &mainWindow]() {
 		camera.Rotate(
-			mainWindow.deltaTime * camera.rotationSpeed, { 0, 1, 0 });
+			mainWindow.GetDeltaTime() * camera.rotationSpeed, { 0, 1, 0 });
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_RIGHT>([&camera, &mainWindow]() {
 		camera.Rotate(
-			-mainWindow.deltaTime * camera.rotationSpeed, { 0, 1, 0 });
+			-mainWindow.GetDeltaTime() * camera.rotationSpeed, { 0, 1, 0 });
 	});
 
-	mainWindow.BindKeyPressed<GLFW_KEY_SPACE>([&camera]() {
-		std::cout << "Pressed\n";
-		camera.Translate({ 0, 1.0f, 0.0f });
-	});
-	mainWindow.BindKeyReleased<GLFW_KEY_SPACE>([&camera]() {
-		std::cout << "Released\n";
-		camera.Translate({ 0, -1.0f, 0.0f });
-	});
 	mainWindow.BindKeyPressed<GLFW_KEY_ESCAPE>([&mainWindow]() {
 		mainWindow.Close();
 	});
 	mainWindow.BindKeyPressed<GLFW_KEY_R>([camera, &newCamera = camera]() {
 		newCamera = camera;
 	});
-
 }
 
 inline void SetBasicButtonBindings(Core::MainWindow& mainWindow, Core::Camera& camera)
@@ -97,15 +97,20 @@ inline void SetBasicButtonBindings(Core::MainWindow& mainWindow, Core::Camera& c
 			return;
 		}
 
-		glm::vec3 yAxis = glm::cross(camera.GetGaze(), { 0, 1, 0 });
-		if (glm::all(glm::epsilonEqual(yAxis, glm::zero<glm::vec3>(), glm::vec3{ 1e-4f })))
-			yAxis = { 1,0,0 };
-
 		camera.RotateAroundCenter(camera.mouseSensitivity * xOffset, { 0, 1, 0 },
 			{ 0, initCameraY, 0 });
-		camera.RotateAroundCenter(camera.mouseSensitivity * yOffset, yAxis,
-			{ 0, initCameraY, 0 });
-		});
+
+		const auto& gaze = camera.GetGaze();
+		if (1 - std::abs(gaze.y) < 1e-1f) // enough for most cases.
+			camera.RotateAroundCenter(camera.mouseSensitivity * yOffset, camera.Right(),
+				{ 0, initCameraY, 0 });
+		else
+		{
+			glm::vec3 yAxis = glm::cross(gaze, { 0, 1, 0 });
+			camera.RotateAroundCenter(camera.mouseSensitivity * yOffset, yAxis,
+				{ 0, initCameraY, 0 });
+		}
+	});
 	mainWindow.BindMouseButtonReleasing<GLFW_MOUSE_BUTTON_RIGHT>([]() { lastNotDrag = true; });
 }
 

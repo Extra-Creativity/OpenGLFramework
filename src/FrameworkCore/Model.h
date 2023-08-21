@@ -65,13 +65,14 @@ public:
 
     void AttachTexture(const std::filesystem::path& path,
         std::initializer_list<int> attachIDs, bool isSpecular = false);
-    void Draw(Shader& shader);
-    void Draw(Shader& shader, Framebuffer& buffer);
-    void Draw(Shader& shader, const std::function<void(int, Shader&)>& preprocess,
-        const std::function<void(void)>& postprocess);
-    void Draw(Shader& shader, Framebuffer& buffer, 
-        const std::function<void(int, Shader&)>& preprocess,
-        const std::function<void(void)>& postprocess);
+    void Draw(const Shader& shader) const;
+    void Draw(const Shader& shader, const Framebuffer& buffer) const;
+    void Draw(const Shader& shader,
+        const std::function<void(int, const Shader&)>& preprocess,
+        const std::function<void(void)>& postprocess) const;
+    void Draw(const Shader& shader, const Framebuffer& buffer, 
+        const std::function<void(int, const Shader&)>& preprocess,
+        const std::function<void(void)>& postprocess) const;
 private:
     void LoadResources_(const aiScene* model, const std::filesystem::path& 
         resourceRootPath, bool textureNeedFlip);

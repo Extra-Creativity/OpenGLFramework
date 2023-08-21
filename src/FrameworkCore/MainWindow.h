@@ -35,8 +35,7 @@ public:
     void MainLoop(const glm::vec4& backgroundColor);
     void Register(UpdateFunc&& func);
     void Register(UpdateFunc& func);
-    void RemoveFromRoutines(size_t id);
-    size_t GetCurrRoutineID();
+    void ClearRoutines();
     void BindScrollCallback(std::function<void(double, double)> callback);
     void BindCursorPosCallback(std::function<void(double, double)> callback);
 private:
@@ -131,7 +130,7 @@ private:
         return;
     };
 
-    std::vector<unsigned char> GetPixelsFromGPU_(int, int, int);
+    std::vector<unsigned char> GetPixelsFromGPU_(int, int, int) const;
 public:
     template<int keyCode>
     void BindKeyPressed(UpdateFunc&& func)
@@ -200,20 +199,22 @@ public:
     }
 
     int GetKeyState(int keycode) { return glfwGetKey(window_, keycode); }
-    void SetInputMode(int mode, int value) {
+    void SetInputMode(int mode, int value) const {
         glfwSetInputMode(window_, mode, value);
     }
-    void Hide(bool hide = true) { 
+    void Hide(bool hide = true) const { 
         if (hide)
             glfwHideWindow(window_);
         else
             glfwShowWindow(window_);
     }
-    void Close() { glfwSetWindowShouldClose(window_, true); }
-    void SaveImage(const std::filesystem::path& path, bool needFlip = true);
+    void Close() const { glfwSetWindowShouldClose(window_, true); }
+    void SaveImage(const std::filesystem::path& path, bool needFlip = true) const;
     GLFWwindow* GetNativeHandler() const { return window_; }
-    float deltaTime, currTime;
+    float GetDeltaTime() const { return deltaTime_; }
+    float GetCurrTime() const { return currTime_; }
 private:
+    float deltaTime_, currTime_;
     GLFWwindow* window_;
     size_t currRoutineID_ = 0;
     std::vector<UpdateFunc> routineList_;

@@ -9,7 +9,7 @@
 // This requires IniFile doesn't destruct.
 // If not, it's better to return std::vector<std::string> to keep strings valid.
 std::vector<const char*> GetAllFilterOptions(
-	IOExtension::IniFile<std::unordered_map>& file)
+	const IOExtension::IniFile<std::unordered_map>& file)
 {
 	auto& filterSection = file.rootSection["filters"];
 	std::vector<const char*> result;
@@ -51,6 +51,7 @@ int main()
 	SetBasicButtonBindings(mainWindow, frontCamera);
 
 	const auto& depthConfig = Core::Framebuffer::GetDepthTextureDefaultParamConfig();
+	// Default color buffer uses ClampToEdge, eliminate top grey shadow in filter.
 	Core::Framebuffer buffer{ width, height, depthConfig };
 
 	auto quadOnScreen = Core::Quad::GetBasicTriRenderModel();
@@ -124,20 +125,17 @@ int main()
 		basicQuadShader.SetFloat("depthSigmaSqr", depthSigma * depthSigma);
 		basicQuadShader.SetFloat("colorSigmaSqr", colorSigma * colorSigma);
 		quadOnScreen.Draw(basicQuadShader,
-			[&buffer](int textureBeginID, Core::Shader& shader) {
+			[&buffer](int textureBeginID, const Core::Shader& shader) {
 				glActiveTexture(GL_TEXTURE0 + textureBeginID);
 				shader.SetInt("colorTexture", textureBeginID);
 				glBindTexture(GL_TEXTURE_2D, buffer.GetColorBuffer());
-				// to eliminate top grey shadow in filter.
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 				glActiveTexture(GL_TEXTURE0 + textureBeginID + 1);
 				shader.SetInt("depthTexture", textureBeginID + 1);
 				glBindTexture(GL_TEXTURE_2D, buffer.GetDepthBuffer());
 			}, nullptr);
 		glDepthMask(0xFF);
-		});
+	});
 	mainWindow.MainLoop({ 0.0, 0.0, 0.0, 0.0 });
 	return 0;
 }

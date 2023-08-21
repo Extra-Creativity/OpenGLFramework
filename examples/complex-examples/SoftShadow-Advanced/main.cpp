@@ -69,7 +69,7 @@ struct BasicInfoData
 void StatBasicInfo(BasicInfoData& data)
 {
 	if (data.frameCnt % BasicInfoData::statInterval == 0) {
-		data.lastFPS = 1 / data.mainWindow.deltaTime;
+		data.lastFPS = 1 / data.mainWindow.GetDeltaTime();
 	}
 	data.frameCnt++;
 	ImGui::Text("FPS: %f", data.lastFPS);
@@ -98,12 +98,12 @@ int main()
 
 	ExampleBase::ImGuiHelper<ShadowOptionData> shadowOptionSetter{
 		300, 150, "Options", {}, SetShadowOption };
-	ExampleBase::RegisterHelperOnMainWindow(mainWindow, shadowOptionSetter);
+	shadowOptionSetter.RegisterOnMainWindow(mainWindow);
 
 	ExampleBase::ImGuiHelper<BasicInfoData> basicInfoShow{
 		150, 50, "Basic Info", {mainWindow}, StatBasicInfo
 	};
-	ExampleBase::RegisterHelperOnMainWindow(mainWindow, basicInfoShow);
+	basicInfoShow.RegisterOnMainWindow(mainWindow);
 
 	ShadowMapForVSSM shadowMap{ width, height, loader };
 	mainWindow.Register(std::bind_front(ResizeBufferToScreen,
@@ -124,7 +124,7 @@ int main()
 		250, 100, "Light Adjustment", {shadowMap.GetLightSpaceCamera()},
 		SetLightPos, RestoreLightPos
 	};
-	ExampleBase::RegisterHelperOnMainWindow(mainWindow, lightSetter);
+	lightSetter.RegisterOnMainWindow(mainWindow);
 
 	SetBasicKeyBindings(mainWindow, screen.GetCamera());
 	SetBasicButtonBindings(mainWindow, screen.GetCamera());

@@ -155,7 +155,7 @@ Framebuffer::~Framebuffer()
     return;
 }
 
-void Framebuffer::UseAsRenderTarget()
+void Framebuffer::UseAsRenderTarget() const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
     if (GetDepthBuffer() != 0)
@@ -184,7 +184,8 @@ void Framebuffer::RestoreDefaultRenderTarget()
 std::vector<unsigned char> Framebuffer::SaveFrameBufferInCPU(unsigned int bufferID,
     unsigned int width, unsigned int height, int channelNum)
 {
-    std::vector<unsigned char> pixelBuffer(width * height * channelNum);
+    std::vector<unsigned char> pixelBuffer(
+        static_cast<size_t>(width) * height * channelNum);
     GLenum gpuChannel = GetGPUChannelFromCPUChannel(channelNum);
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, bufferID);

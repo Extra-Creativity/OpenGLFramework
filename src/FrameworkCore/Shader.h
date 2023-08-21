@@ -38,7 +38,7 @@ public:
         return;
     };
 
-    void Activate() { glUseProgram(shaderID_); };
+    void Activate() const { glUseProgram(shaderID_); };
 
     void SetBool(const std::string_view name, const bool value) const {
         glUniform1i(glGetUniformLocation(shaderID_, name.data()), (int)value);

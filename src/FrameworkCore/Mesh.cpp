@@ -95,8 +95,8 @@ void BasicTriRenderMesh::AllocateAndMemcpyVerticesData_()
     glBufferSubData(GL_ARRAY_BUFFER, 0, verticeSizeOffset, vertices.data());
     // memcpy other attributes to GPU.
     glBufferSubData(GL_ARRAY_BUFFER, verticeSizeOffset, 
-        verticesAttributes.size() * sizeof(VertexAttribute), 
-        verticesAttributes.data());
+        verticesAttributes_.size() * sizeof(VertexAttribute), 
+        verticesAttributes_.data());
     return;
 }
 
@@ -156,7 +156,7 @@ void BasicTriRenderMesh::CopyAttributes_(const aiMesh* mesh)
     std::ranges::iota_view vertexIDView{ size_t(0), vertices.size() };
     std::for_each(vertexIDView.begin(), vertexIDView.end(),
         [mesh, this](size_t id) {
-            auto& dstVertAttribute = verticesAttributes[id];
+            auto& dstVertAttribute = verticesAttributes_[id];
             auto srcNorm = mesh->mNormals[id];
             dstVertAttribute.normalCoord = { srcNorm.x,
                 srcNorm.y, srcNorm.z };
@@ -201,15 +201,15 @@ void BasicTriRenderMesh::AddAllTexturesToPoolAndFillRefs_(
     const std::filesystem::path& rootPath)
 {
     AddTexturesToPoolAndFillRefsByType_(material, aiTextureType_DIFFUSE,
-        diffuseTextureRefs, texturePool, rootPath);
+        diffuseTextureRefs_, texturePool, rootPath);
     AddTexturesToPoolAndFillRefsByType_(material, aiTextureType_SPECULAR,
-        specularTextureRefs, texturePool, rootPath);
+        specularTextureRefs_, texturePool, rootPath);
 }
 
 BasicTriRenderMesh::BasicTriRenderMesh(const aiMesh* mesh,
     const aiMaterial* material, TexturePool& texturePool,
     const std::filesystem::path& rootPath):
-    BasicTriMesh{mesh}, verticesAttributes(mesh->mNumVertices)
+    BasicTriMesh{mesh}, verticesAttributes_(mesh->mNumVertices)
 {
     CopyAttributes_(mesh);
     SetupRenderResource_();
@@ -219,17 +219,17 @@ BasicTriRenderMesh::BasicTriRenderMesh(const aiMesh* mesh,
 
 BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
     const std::vector<glm::vec3>& init_normals) : 
-    BasicTriMesh{ std::move(mesh) }, verticesAttributes(init_normals.size())
+    BasicTriMesh{ std::move(mesh) }, verticesAttributes_(init_normals.size())
 {
-    for (size_t i = 0; i < verticesAttributes.size(); i++)
-        verticesAttributes[i].normalCoord = init_normals[i];
+    for (size_t i = 0; i < verticesAttributes_.size(); i++)
+        verticesAttributes_[i].normalCoord = init_normals[i];
     SetupRenderResource_();
     return;
 };
 
 BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
     std::vector<VertexAttribute> attrs) :
-    BasicTriMesh{ std::move(mesh) }, verticesAttributes{ std::move(attrs) }
+    BasicTriMesh{ std::move(mesh) }, verticesAttributes_{ std::move(attrs) }
 {
     SetupRenderResource_();
     return;
@@ -245,9 +245,9 @@ void BasicTriRenderMesh::ReleaseRenderResources_()
 
 BasicTriRenderMesh::BasicTriRenderMesh(BasicTriRenderMesh&& another) noexcept:
     BasicTriMesh{ std::move(another) }, 
-    verticesAttributes{ std::move(another.verticesAttributes)},
-    diffuseTextureRefs{ std::move(another.diffuseTextureRefs)},
-    specularTextureRefs{ std::move(another.specularTextureRefs)},
+    verticesAttributes_{ std::move(another.verticesAttributes_)},
+    diffuseTextureRefs_{ std::move(another.diffuseTextureRefs_)},
+    specularTextureRefs_{ std::move(another.specularTextureRefs_)},
     VAO{ another.VAO }, VBO{ another.VBO }, IBO{ another.IBO }
 {
     another.VAO = another.VBO = another.IBO = 0;
@@ -262,9 +262,9 @@ BasicTriRenderMesh& BasicTriRenderMesh::operator=(BasicTriRenderMesh&& another)
     ReleaseRenderResources_();
 
     BasicTriMesh::operator=(std::move(another));
-    verticesAttributes = std::move(another.verticesAttributes);
-    diffuseTextureRefs = std::move(another.diffuseTextureRefs);
-    specularTextureRefs = std::move(another.specularTextureRefs);
+    verticesAttributes_ = std::move(another.verticesAttributes_);
+    diffuseTextureRefs_ = std::move(another.diffuseTextureRefs_);
+    specularTextureRefs_ = std::move(another.specularTextureRefs_);
 
     VAO = another.VAO, VBO = another.VBO, IBO = another.IBO;
     another.VAO = another.VBO = another.IBO = 0;
@@ -276,24 +276,25 @@ BasicTriRenderMesh::~BasicTriRenderMesh()
     ReleaseRenderResources_();
 }
 
-void BasicTriRenderMesh::SetTextures_(Shader& shader, const std::string& namePrefix,
-    const decltype(diffuseTextureRefs)& textures, int& beginID)
+void BasicTriRenderMesh::SetTextures_(const Shader& shader,
+    const std::string& namePrefix,
+    const decltype(diffuseTextureRefs_)& textures, int& beginID) const
 {
     int currTypeID = 1;
     for (auto& texture : textures)
     {
         glActiveTexture(GL_TEXTURE0 + beginID);
         shader.SetInt(namePrefix + std::to_string(currTypeID), beginID);
-        glBindTexture(GL_TEXTURE_2D, texture.get().ID);
+        glBindTexture(GL_TEXTURE_2D, texture.get().GetID());
         ++beginID, ++currTypeID;
     }
 };
 
-void BasicTriRenderMesh::Draw(Shader& shader)
+void BasicTriRenderMesh::Draw(const Shader& shader) const
 {
     int textureCnt = 0;
-    SetTextures_(shader, "diffuseTexture", diffuseTextureRefs, textureCnt);
-    SetTextures_(shader, "specularTexture", specularTextureRefs, textureCnt);
+    SetTextures_(shader, "diffuseTexture", diffuseTextureRefs_, textureCnt);
+    SetTextures_(shader, "specularTexture", specularTextureRefs_, textureCnt);
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -304,13 +305,13 @@ void BasicTriRenderMesh::Draw(Shader& shader)
     return;
 };
 
-void BasicTriRenderMesh::Draw(Shader& shader, 
-    const std::function<void(int, Shader&)>& preprocess,
-    const std::function<void(void)>& postprocess)
+void BasicTriRenderMesh::Draw(const Shader& shader, 
+    const std::function<void(int, const Shader&)>& preprocess,
+    const std::function<void(void)>& postprocess) const
 {
     int textureCnt = 0;
-    SetTextures_(shader, "diffuseTexture", diffuseTextureRefs, textureCnt);
-    SetTextures_(shader, "specularTexture", specularTextureRefs, textureCnt);
+    SetTextures_(shader, "diffuseTexture", diffuseTextureRefs_, textureCnt);
+    SetTextures_(shader, "specularTexture", specularTextureRefs_, textureCnt);
     if(preprocess) [[likely]]
         preprocess(textureCnt, shader);
     
@@ -325,7 +326,7 @@ void BasicTriRenderMesh::Draw(Shader& shader,
     return;
 };
 
-void BasicTriRenderMesh::Draw(Shader& shader, Framebuffer& buffer)
+void BasicTriRenderMesh::Draw(const Shader& shader, const Framebuffer& buffer) const
 {
     buffer.UseAsRenderTarget();
     Draw(shader);
@@ -333,9 +334,9 @@ void BasicTriRenderMesh::Draw(Shader& shader, Framebuffer& buffer)
     return;
 };
 
-void BasicTriRenderMesh::Draw(Shader& shader, Framebuffer& buffer,
-    const std::function<void(int, Shader&)>& preprocess,
-    const std::function<void(void)>& postprocess)
+void BasicTriRenderMesh::Draw(const Shader& shader, const Framebuffer& buffer,
+    const std::function<void(int, const Shader&)>& preprocess,
+    const std::function<void(void)>& postprocess) const
 {
     buffer.UseAsRenderTarget();
     Draw(shader, preprocess, postprocess);
