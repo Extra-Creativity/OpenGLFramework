@@ -172,13 +172,24 @@ void RenderShadowMap(Core::Framebuffer& buffer, Core::Camera& lightSpaceCamera)
 	return;
 }
 
+Core::TextureParamConfig depthConfig = {
+	.minFilter = Core::TextureParamConfig::MinFilterType::Linear,
+	.wrapS = Core::TextureParamConfig::WrapType::ClampToBorder,
+	.wrapT = Core::TextureParamConfig::WrapType::ClampToBorder,
+	.wrapR = Core::TextureParamConfig::WrapType::ClampToBorder,
+	.auxHandle = [] {
+		float border[] = { 1.0,1.0,1.0,1.0 };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+	}
+};
+
 void ResizeBufferToScreen(Core::MainWindow& mainWindow,
 	Core::Framebuffer& buffer)
 {
 	const auto [width, height] = mainWindow.GetWidthAndHeight();
 	if (width == buffer.GetWidth() && height == buffer.GetHeight())
 		return;
-	buffer = Core::Framebuffer{ width, height };
+	buffer = Core::Framebuffer{ width, height, depthConfig, {} };
 	return;
 };
 
@@ -202,10 +213,6 @@ void RenderScreen(Core::Framebuffer& shadowMapBuffer, Core::Camera& camera,
 			glActiveTexture(GL_TEXTURE0 + textureBeginID);
 			shader.SetInt("shadowMap", textureBeginID);
 			glBindTexture(GL_TEXTURE_2D, shadowMapBuffer.GetDepthBuffer());
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-			float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 		};
 
 	for (auto& [name, model] : models)
@@ -236,9 +243,7 @@ int main()
 	InitializeAssets(file);
 
 	const auto [width, height] = mainWindow.GetWidthAndHeight();
-	Core::Framebuffer buffer{ width, height,
-		Core::Framebuffer::GetDepthTextureDefaultParamConfig(), {}
-	};
+	Core::Framebuffer buffer{ width, height, depthConfig, {} };
 
 	using IterType = Generator<int>::Iter;
 

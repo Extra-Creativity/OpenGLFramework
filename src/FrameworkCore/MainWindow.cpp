@@ -259,8 +259,8 @@ void MainWindow::SaveImage(const std::filesystem::path& path, bool needFlip) con
     {
         IOExtension::LogError("Unrecognized picture format: " 
             + extension + ", save as png.\n");
-        stbi_write_jpg(validPath, width, height, channelNum, 
-            pixelBufferRawPtr, 95);
+        stbi_write_png(validPath, width, height, channelNum,
+            pixelBufferRawPtr, width * channelNum);
     }
     stbi_flip_vertically_on_write(false);
     return;

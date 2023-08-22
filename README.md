@@ -11,17 +11,6 @@ In simple scenes, most of the code we write in OpenGL is drab and dreary and bas
 
 * [Build](#build)
 * [Usage](#usage)
-  + [MainWindow](#mainwindow)
-  + [Framebuffer](#framebuffer)
-  + [Vertex](#vertex)
-  + [Transform](#transform)
-  + [Texture](#texture)
-  + [Mesh](#mesh)
-  + [Shader](#shader)
-  + [Camera](#camera)
-  + [IOExtension](#ioextension)
-  + [IniFile](#IniFile)
-  + [StringExtension](#StringExtension)
 * [Advantages](#advantages)
 * [Build Tool](#build-tool)
 * [Customized Builder](#builder)
@@ -87,173 +76,7 @@ Model credits : miHoYo and [观海子](https://space.bilibili.com/17466365?spm_i
 
 ## Usage
 
-> NOTE : You can customize any part by rewriting the inner OpenGL code as you need. Besides, we strongly recommend you to read the code in `main.cpp` and other examples in `examples/` rather than read the usage directly, because we think the code is more intuitive.
-
-You always need to call `[[maybe_unused]] auto& contextManager = ContextManager::GetInstance()` first before using the components of this project. It will initialize context when the first time this function is called and end context when the whole program ends.
-
-----
-
-**Components below are in namespace `OpenGLFramework::Core`, and headers are in `FrameworkCore/`. You can use `Core_All.h` to include all headers.** They will not try to catch exceptions, and the thrown exceptions are all caused by the standard library. When OpenGL errors occur, it will continue to run while logging the error information rather than throw exceptions.
-
-### MainWindow
-
-+ Initialization : `size_t width, size_t height, const char* title`.
-
-+ `Register(func)` : It's recommended that you should use a lambda expression as the parameter; any out-of-scope local variables that need to be used in the scope should be captured by the `[]`. The registered functions will be executed sequentially as if looped in main.
-
-  We wrap the GLFW so that it can accept variables through captures rather than only static or global variables.
-
-+ `MainLoop(vec4 color)` : Begin the loop until closing the window. Note that `color` will be set before any execution of registered functions.
-
-+ `Close()`: close the window.
-
-+ `BindScrollCallback/ BindCursorPosCallback(func)`: when the mouse scrolls/ moves, the bound function will be called automatically.
-
-  > Note that `BindCursorPosCallback` will make ImGui cannot detect the mouse event. See [here](https://stackoverflow.com/a/72509936/15582103) for more information.
-
-+ `BindKeyPressing/BindKeyPressed/BindKeyReleasing/BindKeyReleased<keycode> (func)`: when the key is pressing/ pressed once/ releasing/ released once, the bound function will be called automatically.
-
-+ `BindMouseButtonPressing/BindMouseButtonPressed/BindMouseButtonReleasing/BindMouseButtonReleased<keycode> (func)`: similar as above, but use mouse button.
-
-+ `GetWidthAndHeight/GetCursorPos/Close`: as its name.
-
-+ `GetKeyState(key)`: return `GLFW_PRESS/GLFW_RELEASE` if key is pressed/released.
-
-+ `SetInputMode(mode, value)`: same as `glfwSetInputMode(thisWindow, mode, value)`.
-
-+ `float deltaTime/currTime`: data members, representing delta time between this frame and the last and the total time.
-
-Note that the logic of `MainWindow` assumes that there is only one instance (and we express it by a thread-unsafe singleton-detected bool) because ImGui only supports binding a single GLFW window in its context. Besides, you can customize any needed functions in `MainWindow.h/.cpp` by imitating the code there.
-
-Also, `MainWindow` uses a lot of `std::unordered_map`; if the bound functions will not be changed, you can use `std::vector` instead to get a slight performance improvement(or in C++23, `std::flat_map` to get better space locality).
-
-### Framebuffer
-
-Framebuffer is used to render an off-screen scene.
-
-+ `enum class BasicBufferType`: there are four types of buffer configuration currently;
-  + `OnlyColorBuffer`: Don't need depth testing, only a normal texture buffer for shading.
-  + `OnlyReadableDepthBuffer`: Only a depth buffer, while this buffer can be used as a texture in a shader.
-  + `ColorBufferAndWriteOnlyDepthBuffer`: A normal texture buffer with depth testing, while the depth buffer cannot be used as a texture.
-  + `ColorBufferAndReadableDepthBuffer`: A normal texture buffer with depth testing, while the depth buffer can be used as a texture.
-
-+ Initialization: `size_t width, size_t height, BasicBufferType type, int additionalBufferAmount`. The default parameters are `(1000, 1000, BasicBufferType::ColorBufferAndWriteOnlyDepthBuffer, 0)`. The additional buffers will be texture buffer.
-+ `Resize(unsigned int width, unsigned int height)`, resize the inner buffer. Notice that if there are lots of buffers in your framebuffer, it would be costy to call `Resize`.
-+ If you want to show the scene in an ImGui Window, call `ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<std::uintptr_t>(frameBuffer.textureColorBuffer)), ImGuiWindowSize, { 0, 1 }, { 1, 0 });` in a ImGui context.
-+ `GetFramebuffer/GetDepthBuffer/GetTextureColorBuffer/GetName/GetHeight/NeedDepthTesting`: as its name.
-+ `GetAdditionalBuffer(i)`: get the `i`th additional texture buffer.
-+ `bool needDepthClear`: when depth testing is needed, you can use this option to enable/disable depth clearing.
-+ `backgroundColor`: the color used to clear the screen.
-
-You can also adjust the member variable `backgroundColor` to use different color for the framebuffer.
-
-### Transform
-
-Unity-like, with `vec3 position`, `quaternion rotation`, `vec3 scale` and methods :
-
-+ `Rotate` by Euler angles/ quaternions/ axis-angle 
-+ `Translate(vec3)`: just move the position.
-+ `GetModelMatrix()`: get the model matrix caused by this transformation.
-
-### Texture
-
-+ Initialize : `std::filesystem::path texturePath`.
-
-You can get its OpenGL ID through the member ` ID`.
-
-### Mesh
-
-#### BasicTriMesh
-
-Only stores vertices and triangles. It's pure model without rendering resources.
-
-#### BasicTriRenderMesh
-
-Derived from `BasicTriMesh`, owning `vertesAttributes` for texture coordinates and normals and rendering resources. It may not be exposed to the users, because it's mainly used for assimp adjustment. However, you may call `Draw(shader)/ Draw(shader, framebuffer)/...` to show a part of the model, just the same as `BasicTriRenderModel`.
-
-### Model
-
-#### BasicTriModel
-
-Just an array of `BasicTriMesh` and its transformation. It should be initialized by the path of the model.
-
-#### BasicTriRenderModel
-
-Array of `BasicTriRenderMesh` and all their textures. `Transform transform` is also provided.
-
-+ Initialization : `std::filesystem::path modelPath, bool textureNeedFlip`; any format of path will be accepted.
-+ `Draw(shader, preprocess, postprocess) / Draw(shader, framebuffer, preprocess, postprocess)`: use the shader to draw the model; if you want to render it on a framebuffer, pass it as the second parameter. `preprocess` and `postprocess` are default `nullptr` and used to help you to control in finer granularity. The former should accept `int, Shader&`(meaning the beginning ID of your possible new textures and the shader) and will be called after attaching known textures and before drawing; the latter will be called after drawing.
-
-### Shader
-
-+ Initialization : `std::filesystem::path vertexShaderPath, std::filesystem::path fragmentShaderPath` or `std::filesystem::path vertexShaderPath, std::filesystem::path geometryShaderPath, std::filesystem::path fragmentShaderPath`.
-+ `Activate`: before you actually use the shader, you need to activate it.
-+ `Set...`: set uniform variables in the shader.
-
-Besides, you always need to write your actual shader files like this :
-
-```glsl
-// version should be at least 330.
-#version 330 core
-    
-// .vert layout should always be coded as below temporarily.
-layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec3 aNormal;
-layout(location = 2) in vec2 aTexCoords;
-
-// if you want use texture, name it with diffuseTexture/specularTexture + number(started from 1).
-uniform sampler2D diffuseTexture1;
-uniform sampler2D specularTexture1;
-// ...
-```
-
-### Camera
-
-It has some variables indicating its state, like `movementSpeed`, `mouseSensitivity`, `rotationSpeed`, `fov`. They are not actually necessary to a camera and you can delete them if you want.
-
-+ Initilization : `vec3 position, vec3 up, vec3 front`; we don't require the `dot(up, front) = 0`, but just `cross(up, front) != {0,0,0}`. We will orthonormalize them in the process of initialization.
-+ `GetPosition()`.
-+ `Front()/Back()/Up()/Down()/Left()/Right()`
-+ `GetViewMatrix()`: Get the view matrix determined by the camera parameters.
-+ `Rotate/Translate`: similar to `Transform` `Rotate/Translate`, providing three methods to rotate the camera/ move the position.
-+ `RotateAroundCenter(float angle, vec3 axis, vec3& center)`.
-
-----
-
-**Components below are in namespace `OpenGLFramework::IOExtension`, and headers are in `Utility/IO`.**
-
-### IOExtension
-
-+ `ReadAll(std::filesystem::path path)`: return all contents of a file in the path.
-+ `LogError(std::source_location location, std::string_view errorInfo)`: display the error information in the location; The first parameter is recommended to be set as `std::source_location::current()`.
-+ `LogStreamStatus`: log the status of the file stream and throw `std::runtime_error` if it's bad.
-
-### <span id="IniFile">IniFile</span>
-
-You can use `.ini` file for dynamic configuration so the burden of re-compiling will be released. To reduce complexity, we only support UTF-8 or ascii characters in the file(however, the path can also be other types, e.g. UTF-16). For `.ini` format, please refer to [wiki](https://en.wikipedia.org/wiki/INI_file). **But we notice that `.ini` file is case-insensitive, so you may prefer `_` in you key.** For the optional features of `.ini`, we support `#` as comments and we also support sub-sections. Notice that `;` or `#` must be the first non-blank character to denote the line as a comment line. The spaces or tabs in two ends of the key or value will be trimmed.
-
-`IniFile` is initialized by its path. The only member variable you can use is `Section rootSection`. `FormatError` may be thrown if there are unrecognized format in the file.
-
-`Section` is just an implementation of section in `.ini` file. We provide two kinds of data-getter:
-
-+ `operator[]/()`: The former is for the section index, and the latter is for the entry index. These two APIs don't check the existence of the key and don't normalize(i.e. trim and make string case-insensitive required by `.ini`). Subsections are not supported. For example, if you want to index entry `C` in  `A.B`, you need to use `["a"]["b"]("c")`.
-+ `GetSubsection/GetEntry`: These two APIs will normalize the key, divide the subsection indices and check existence of the key. The return value is `std::optional<>` so that you need to check `std::nullopt`. We may change it to pointers in the future so that you need to check `nullptr`. For example, if you want to index entry `C` in  `A.B`, you need to use (here we don't check null) `GetSubsection("A.B")->get().GetEntry("C")`.
-+ `GetSubsectionSize/GetEntrySize`: Get the number of subsections/entries in current section.
-
-Other utility functions like `std::string IniFileNameNormalize(std::string_view)` in the global scope and `GetSubsectionSize/GetEntrySize` in the `Section` scope are also provided.
-
-Besides, we use template so that you can use `std::map` to replace the default `std::unordered_map`. Any container that meets the required APIs(i.e.`find/operator[]/iterator`) of `std::unordered_map` can also be used.
-
-----
-
-**Components below are in namespace `OpenGLFramework::StringExtension`, and headers are in `Utility/String`**.
-
-### <span id="StringExtension">StringExtension</span>
-
-Only ASCII and UTF-8 are supported.
-
-+ `CharAsciiToLower/StringAsciiToLower`: transform all English alphabets to lowercase.
-+ `TrimBegin/TriEnd/Trim`: trim the blank characters in the string.
+We write docs for exmample programs in `exmaples/Docs`. See it for practical usage.
 
 ## Advantages
 
@@ -324,7 +147,9 @@ What we use in C++20：
 
 + `using enum`.
 
-Those methods are trivial compared to other parts, and will not or only very slightly affect performance, so you can substitute them easily with C++17 code.
++ ...
+
+Those methods are trivial compared to other parts, and will not or only very slightly affect performance, so you can substitute them relatively easily with C++17 code. But we recommend you to use C++20 to save that bother.
 
 ### <span id="cpp17">C++17</span>
 

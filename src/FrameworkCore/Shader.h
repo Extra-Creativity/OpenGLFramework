@@ -6,8 +6,9 @@
 #include <glm/glm.hpp>
 
 #include <filesystem>
-#include <vector>
+#include <array>
 #include <string_view>
+#include <span>
 
 namespace OpenGLFramework::Core
 {
@@ -93,12 +94,12 @@ public:
     }
 
 private:
-    std::vector<GLuint> shaders_;
     // Here shaderID actually means OpenGL's program.
     GLuint shaderID_;
-    void CompileShader_(std::string_view shaderContent, const GLenum shaderType);
-    void LinkShader_();
-    void ClearShader_();
+    unsigned int CompileShader_(std::string_view shaderContent,
+        const GLenum shaderType);
+    void LinkShaders_(std::span<unsigned int> shaders);
+    void ClearShaders_(std::span<unsigned int> shaders);
 };
 
 } // namespace OpenGLFramework::Core

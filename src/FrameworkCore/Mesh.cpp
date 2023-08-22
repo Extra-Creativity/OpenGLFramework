@@ -319,7 +319,7 @@ void BasicTriRenderMesh::Draw(const Shader& shader,
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(triangles.size() * 3),
         GL_UNSIGNED_INT, 0);
-    if (postprocess)
+    if (postprocess) [[unlikely]]
         postprocess();
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

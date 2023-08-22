@@ -50,8 +50,10 @@ int main()
 	SetBasicKeyBindings(mainWindow, frontCamera);
 	SetBasicButtonBindings(mainWindow, frontCamera);
 
-	const auto& depthConfig = Core::Framebuffer::GetDepthTextureDefaultParamConfig();
-	// Default color buffer uses ClampToEdge, eliminate top grey shadow in filter.
+	const auto depthConfig = Core::TextureParamConfig{
+		.wrapS = Core::TextureParamConfig::WrapType::ClampToEdge,
+		.wrapT = Core::TextureParamConfig::WrapType::ClampToEdge
+	};	// To eliminate top grey shadow in filter.
 	Core::Framebuffer buffer{ width, height, depthConfig };
 
 	auto quadOnScreen = Core::Quad::GetBasicTriRenderModel();

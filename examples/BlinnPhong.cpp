@@ -4,8 +4,6 @@
 #include "Utility/IO/IniFile.h"
 #include "Utility/IO/IOExtension.h"
 
-#include <iostream>
-
 using namespace OpenGLFramework;
 
 int main()

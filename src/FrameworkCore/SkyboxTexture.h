@@ -47,7 +47,7 @@ public:
     SkyBoxTexture& operator=(SkyBoxTexture&&) noexcept;
     ~SkyBoxTexture();
     unsigned int GetID() const { return skyboxID_; }
-    CPUTextureData GetCPUData(int idx);
+    CPUTextureData GetCPUData(int idx) const;
 private:
     unsigned int skyboxID_;
     int cpuChannel_;

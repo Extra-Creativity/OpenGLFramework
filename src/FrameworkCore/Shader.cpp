@@ -7,16 +7,15 @@ namespace OpenGLFramework::Core
 Shader::Shader(const std::filesystem::path& vertexShaderFilePath, 
     const std::filesystem::path& fragmentShaderPath)
 {
-    constexpr int shaderNum = 2;
-    shaders_.reserve(shaderNum);
+    std::array<unsigned int, 2> shaders;
 
     std::string fileContent = IOExtension::ReadAll(vertexShaderFilePath);
-    CompileShader_(fileContent, GL_VERTEX_SHADER);
+    shaders[0] = CompileShader_(fileContent, GL_VERTEX_SHADER);
 
     fileContent = IOExtension::ReadAll(fragmentShaderPath);
-    CompileShader_(fileContent, GL_FRAGMENT_SHADER);
+    shaders[1] = CompileShader_(fileContent, GL_FRAGMENT_SHADER);
 
-    LinkShader_();
+    LinkShaders_(shaders);
     return;
 };
 
@@ -24,23 +23,22 @@ Shader::Shader(const std::filesystem::path& vertexShaderFilePath,
     const std::filesystem::path& geometryShaderPath, 
     const std::filesystem::path& fragmentShaderPath)
 {
-    constexpr int shaderNum = 3;
-    shaders_.reserve(shaderNum);
+    std::array<unsigned int, 3> shaders;
 
     std::string fileContent = IOExtension::ReadAll(vertexShaderFilePath);
-    CompileShader_(fileContent, GL_VERTEX_SHADER);
+    shaders[0] = CompileShader_(fileContent, GL_VERTEX_SHADER);
 
     fileContent = IOExtension::ReadAll(geometryShaderPath);
-    CompileShader_(fileContent, GL_GEOMETRY_SHADER);
+    shaders[1] = CompileShader_(fileContent, GL_GEOMETRY_SHADER);
 
     fileContent = IOExtension::ReadAll(fragmentShaderPath);
-    CompileShader_(fileContent, GL_FRAGMENT_SHADER);
+    shaders[2] = CompileShader_(fileContent, GL_FRAGMENT_SHADER);
 
-    LinkShader_();
+    LinkShaders_(shaders);
     return;
 };
 
-void Shader::CompileShader_(std::string_view shaderContent, 
+unsigned int Shader::CompileShader_(std::string_view shaderContent, 
     const GLenum shaderType)
 {
     GLuint newShader = glCreateShader(shaderType);
@@ -51,10 +49,7 @@ void Shader::CompileShader_(std::string_view shaderContent,
     GLint compileSuccess = 0;
     glGetShaderiv(newShader, GL_COMPILE_STATUS, &compileSuccess);
     if (compileSuccess == GL_TRUE) [[likely]]
-    {
-        shaders_.push_back(newShader);
-        return;
-    }
+        return newShader;
     // Else compile fails.
     GLint length = 0;
     glGetShaderiv(newShader, GL_INFO_LOG_LENGTH, &length);
@@ -64,23 +59,20 @@ void Shader::CompileShader_(std::string_view shaderContent,
     IOExtension::LogError(std::string_view{logPtr});
 
     glDeleteShader(newShader);
-    return;
+    return 0;
 };
 
-void Shader::ClearShader_()
+void Shader::ClearShaders_(std::span<unsigned int> shaders)
 {
-    for (auto& shader : shaders_)
-    {
+    for (auto& shader : shaders)
         glDeleteShader(shader);
-    }
-    shaders_.resize(0);
     return;
 }
 
-void Shader::LinkShader_()
+void Shader::LinkShaders_(std::span<unsigned int> shaders)
 {
     GLuint newShaderAssembly = glCreateProgram();
-    for (auto& shader : shaders_)
+    for (auto& shader : shaders)
     {
         glAttachShader(newShaderAssembly, shader);
     }
@@ -91,7 +83,7 @@ void Shader::LinkShader_()
     if (linkSuccess == GL_TRUE)[[likely]]
     {
         shaderID_ = newShaderAssembly;
-        ClearShader_();
+        ClearShaders_(shaders);
         return;
     }
     // Else link fails.
@@ -103,7 +95,7 @@ void Shader::LinkShader_()
     IOExtension::LogError(std::string_view{ logPtr });
 
     glDeleteProgram(newShaderAssembly);
-    ClearShader_();
+    ClearShaders_(shaders);
     return;
 }
 

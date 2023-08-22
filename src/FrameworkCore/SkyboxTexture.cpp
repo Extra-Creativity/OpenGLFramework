@@ -69,7 +69,7 @@ SkyBoxTexture::~SkyBoxTexture()
     return;
 }
 
-CPUTextureData SkyBoxTexture::GetCPUData(int idx)
+CPUTextureData SkyBoxTexture::GetCPUData(int idx) const
 {
     int width = 0, height = 0;
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID_);
