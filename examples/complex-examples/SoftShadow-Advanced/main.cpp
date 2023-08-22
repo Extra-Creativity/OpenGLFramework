@@ -61,18 +61,13 @@ void RestoreLightPos(LightPosData& data)
 struct BasicInfoData
 {
 	Core::MainWindow& mainWindow;
-	int frameCnt{};
-	float lastFPS{};
-	static const int statInterval = 100;
+	int lastFPS{};
 };
 
 void StatBasicInfo(BasicInfoData& data)
 {
-	if (data.frameCnt % BasicInfoData::statInterval == 0) {
-		data.lastFPS = 1 / data.mainWindow.GetDeltaTime();
-	}
-	data.frameCnt++;
-	ImGui::Text("FPS: %f", data.lastFPS);
+	data.lastFPS = static_cast<int>(1 / data.mainWindow.GetDeltaTime());
+	ImGui::Text("FPS: %d", data.lastFPS);
 }
 
 void ResizeBufferToScreen(Core::MainWindow& mainWindow, ShadowMap& shadowMap)
@@ -106,12 +101,12 @@ int main()
 	basicInfoShow.RegisterOnMainWindow(mainWindow);
 
 	ShadowMapForVSSM shadowMap{ width, height, loader };
-	mainWindow.Register(std::bind_front(ResizeBufferToScreen,
-		std::ref(mainWindow), std::ref(shadowMap))
-	);
-	mainWindow.Register(std::bind_front(ShadowMap::Render,
-		std::ref(shadowMap), std::ref(loader.GetModelContainer()))
-	);
+	mainWindow.Register([&mainWindow, &shadowMap] {
+		ResizeBufferToScreen(mainWindow, shadowMap);
+	});
+	mainWindow.Register([&shadowMap, &models = loader.GetModelContainer()]{
+		ShadowMap::Render(shadowMap, models);
+	});
 
 	ScreenShader screen{ loader };
 	mainWindow.Register(std::bind_front(ScreenShader::Render,

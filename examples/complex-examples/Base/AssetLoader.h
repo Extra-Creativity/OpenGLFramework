@@ -4,15 +4,24 @@
 #include "FrameworkCore/Shader.h"
 #include "FrameworkCore/MainWindow.h"
 
+#include <string_view>
+
 namespace ExampleBase
 {
 class AssetLoader
 {
+    struct StringHasher
+    {
+        using is_transparent = void;
+        auto operator()(std::string_view s) const { 
+            return std::hash<std::string_view>{}(s);
+        }
+    };
 public:
     using ModelContainer = std::unordered_map<std::string,
-        OpenGLFramework::Core::BasicTriRenderModel>;
+        OpenGLFramework::Core::BasicTriRenderModel, StringHasher, std::equal_to<>>;
     using ShaderContainer = std::unordered_map<std::string,
-        OpenGLFramework::Core::Shader>;
+        OpenGLFramework::Core::Shader, StringHasher, std::equal_to<>>;
 
     AssetLoader(const std::filesystem::path& path, 
         const std::filesystem::path&, const std::filesystem::path&);
@@ -21,8 +30,8 @@ public:
     AssetLoader(AssetLoader&&) = delete;
     AssetLoader& operator=(AssetLoader&&) = delete;
 
-    OpenGLFramework::Core::BasicTriRenderModel& GetModel(const std::string&);
-    OpenGLFramework::Core::Shader& GetShader(const std::string&);
+    OpenGLFramework::Core::BasicTriRenderModel& GetModel(std::string_view);
+    OpenGLFramework::Core::Shader& GetShader(std::string_view);
     auto& GetModelContainer() { return models_; }
     auto& GetShaderContainer() { return shaders_; }
     OpenGLFramework::Core::MainWindow& GetMainWindowInstance();

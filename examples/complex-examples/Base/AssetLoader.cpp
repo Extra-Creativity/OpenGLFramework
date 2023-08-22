@@ -17,24 +17,24 @@ AssetLoader::AssetLoader(const std::filesystem::path& path,
     return;
 }
 
-Core::BasicTriRenderModel& AssetLoader::GetModel(const std::string& name)
+Core::BasicTriRenderModel& AssetLoader::GetModel(std::string_view name)
 {
 	auto it = models_.find(name);
 	if (it == models_.end()) [[unlikely]]
 	{
-		IOExtension::LogError("No key called " + name + 
+		IOExtension::LogError("No key called " + std::string{name} +
 			" in model pool of asset loader");
 		throw std::runtime_error{"AssetLoader key error."};
 	};
 	return it->second;
 }
 
-Core::Shader& AssetLoader::GetShader(const std::string& name)
+Core::Shader& AssetLoader::GetShader(std::string_view name)
 {
 	auto it = shaders_.find(name);
 	if (it == shaders_.end())[[unlikely]]
 	{
-		IOExtension::LogError("No key called " + name +
+		IOExtension::LogError("No key called " + std::string{name} +
 			" in shader pool of asset loader");
 		throw std::runtime_error{ "AssetLoader key error." };
 	};

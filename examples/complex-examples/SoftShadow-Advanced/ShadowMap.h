@@ -44,9 +44,10 @@ public:
     }
     virtual bool NeedMIPMAP() const { return false; }
 protected:
-    ShadowMap(FrameBuffer frameBuffer, ExampleBase::AssetLoader& loader) :
+    ShadowMap(FrameBuffer frameBuffer, ExampleBase::AssetLoader& loader,
+        std::string_view shaderName = "shadow map") :
         buffer_{ std::move(frameBuffer) },
-        shadowMapShader_{ loader.GetShader("shadow map") },
+        shadowMapShader_{ loader.GetShader(shaderName) },
         lightSpaceCamera_{ {0, 10, 35}, {0, 1, 0}, {0, 0, -1} },
         lightSpaceMat_{}
     {
@@ -81,7 +82,7 @@ public:
         ExampleBase::AssetLoader& loader) : ShadowMap{
             { init_width, init_height,
               FrameBuffer::GetDepthRenderBufferDefaultConfig(), { c_config }
-            }, loader
+            }, loader, "shadow map for vssm"
     } {}
 
     void ResizeBuffer(unsigned int width, unsigned int height) override

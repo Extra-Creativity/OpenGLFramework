@@ -35,10 +35,6 @@ public:
         contextIter_{ savedContext_.begin() }
     { };
 
-    void operator()() {
-        contextIter_++;
-    };
-
     OpenGLFramework::Coroutine::Generator<int> Work(Handle work)
     {
         float currY = AllocateVerticalPosition_();
@@ -75,7 +71,7 @@ public:
 
     T& GetData() { return data_; }
     void RegisterOnMainWindow(OpenGLFramework::Core::MainWindow& mainWindow) {
-        mainWindow.Register(std::bind_front(&ImGuiHelper::operator(), this));
+        mainWindow.Register([&iter = contextIter_]() { iter++; });
     }
 private:
     float AllocateVerticalPosition_() {
