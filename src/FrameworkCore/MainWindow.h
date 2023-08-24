@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_MAINWINDOW_H_
-#define OPENGLFRAMEWORK_MAINWINDOW_H_
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -230,4 +228,3 @@ private:
 };
 
 }
-#endif // !OPENGLFRAMEWORK_MAINWINDOW_H_

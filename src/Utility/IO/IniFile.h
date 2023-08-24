@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_IOEXTENSION_INIFILE_H_
-#define OPENGLFRAMEWORK_IOEXTENSION_INIFILE_H_
 
 #include "IOExtension.h"
 #include "../String/StringExtension.h"
@@ -330,5 +328,3 @@ private:
 };
 
 } // namespace OpenGLFramework::IOExtension
-
-#endif // !OPENGLFRAMEWORK_IOEXTENSION_INIFILE_H_

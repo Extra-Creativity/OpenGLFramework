@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_MODEL_H_
-#define OPENGLFRAMEWORK_CORE_MODEL_H_
 
 #include "Shader.h"
 #include "Texture.h"
@@ -81,5 +79,3 @@ private:
 };
 
 } // namespace OpenGLFramework::Core
-
-#endif // !OPENGLFRAMEWORK_CORE_MODEL_H_

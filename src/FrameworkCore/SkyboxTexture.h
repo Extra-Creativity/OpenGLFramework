@@ -1,6 +1,6 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_SKYBOXTEXTURE_H_
-#define OPENGLFRAMEWORK_CORE_SKYBOXTEXTURE_H_
+
+#include "Texture.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -9,8 +9,6 @@
 #include <vector>
 #include <string>
 #include <array>
-
-#include "Texture.h"
 
 namespace OpenGLFramework::Core
 {
@@ -63,4 +61,3 @@ private:
 };
 
 } // namespace OpenGLFramework::Core
-#endif // !OPENGLFRAMEWORK_CORE_SKYBOXTEXTURE_H_

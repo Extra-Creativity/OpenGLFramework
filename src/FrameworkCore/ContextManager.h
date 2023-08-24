@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_CONTEXTMANAGER_H_
-#define OPENGLFRAMEWORK_CORE_CONTEXTMANAGER_H_
 
 namespace OpenGLFramework::Core
 {
@@ -18,4 +16,3 @@ private:
 };
 
 }
-#endif // !OPENGLFRAMEWORK_CORE_CONTEXTMANAGER_H_

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_STRINGEXTENSION_H_
-#define OPENGLFRAMEWORK_STRINGEXTENSION_H_
 
 #include <ranges>
 #include <algorithm>
@@ -76,5 +74,3 @@ StringType Trim(const StringType& str)
 }
 
 } // namespace OpenGLFramework::StringExtension
-
-#endif // !OPENGLFRAMEWORK_STRINGEXTENSION_H_

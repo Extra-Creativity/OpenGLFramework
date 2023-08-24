@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_SHADER_H_
-#define OPENGLFRAMEWORK_CORE_SHADER_H_
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -103,4 +101,3 @@ private:
 };
 
 } // namespace OpenGLFramework::Core
-#endif // !OPENGLFRAMEWORK_CORE_SHADER_H_

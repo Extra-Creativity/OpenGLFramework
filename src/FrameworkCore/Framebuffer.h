@@ -1,11 +1,9 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_FRAMEBUFFER_H_
-#define OPENGLFRAMEWORK_CORE_FRAMEBUFFER_H_
-
-#include <glm/glm.hpp>
 
 #include "ConfigHelpers/TextureConfig.h"
 #include "ConfigHelpers/RenderBufferConfig.h"
+
+#include <glm/glm.hpp>
 
 #include <vector>
 #include <variant>
@@ -116,4 +114,3 @@ private:
 };
 
 } // namespace OpenGLFramework::Core
-#endif // !OPENGLFRAMEWORK_CORE_FRAMEBUFFER_H_

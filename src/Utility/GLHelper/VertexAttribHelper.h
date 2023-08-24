@@ -1,6 +1,6 @@
 #pragma once
 #include "TypeMapping.h"
-#include "glad/glad.h"
+#include <glad/glad.h>
 
 #include <any>
 #include <ranges>

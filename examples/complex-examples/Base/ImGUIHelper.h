@@ -2,9 +2,10 @@
 #include "Utility/Generator/Generator.h"
 #include "FrameworkCore/MainWindow.h"
 
+#include <imgui.h>
+
 #include <string>
 #include <functional>
-#include <imgui.h>
 
 namespace ExampleBase
 {

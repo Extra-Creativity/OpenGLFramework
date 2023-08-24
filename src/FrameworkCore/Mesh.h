@@ -1,11 +1,9 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_MESH_H_
-#define OPENGLFRAMEWORK_CORE_MESH_H_
 
 #include "Shader.h"
 #include "Texture.h"
 #include "Framebuffer.h"
-#include "Utility/GLHelper/VertexAttribHelper.h"
+#include "../Utility/GLHelper/VertexAttribHelper.h"
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -141,5 +139,3 @@ private:
 };
 
 }
-
-#endif // !OPENGLFRAMEWORK_CORE_MESH_H_

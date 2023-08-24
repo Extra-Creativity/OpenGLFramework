@@ -1,7 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_TEXTURECONFIG_H_
-#define OPENGLFRAMEWORK_CORE_TEXTURECONFIG_H_
-
 #include <glad/glad.h>
 
 namespace OpenGLFramework::Core
@@ -86,5 +83,3 @@ struct TextureParamConfig
 };
 
 }
-
-#endif // OPENGLFRAMEWORK_CORE_TEXTURECONFIG_H_

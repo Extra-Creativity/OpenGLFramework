@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_TRANSFORM_H_
-#define OPENGLFRAMEWORK_CORE_TRANSFORM_H_
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -46,5 +44,3 @@ public:
 };
 
 } // namespace OpenGLFramework
-
-#endif // !OPENGLFRAMEWORK_CORE_TRANSFORM_H_

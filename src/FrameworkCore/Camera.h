@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_CAMERA_H_
-#define OPENGLFRAMEWORK_CORE_CAMERA_H_
 
 #include "../Utility/IO/IOExtension.h"
 
@@ -91,4 +89,3 @@ private:
 };
 
 }
-#endif // !OPENGLFRAMEWORK_CORE_CAMERA_H_

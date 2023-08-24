@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_IOEXTENSION_H_
-#define OPENGLFRAMEWORK_IOEXTENSION_H_
 
 #include <string>
 #include <filesystem>
@@ -35,4 +33,3 @@ void LogStreamStatus(const std::basic_ios<CharType, CharTraits>& stream,
 };
 
 } // namespace OpenGLFramework::IOExtension
-#endif // !OPENGLFRAMEWORK_IOEXTENSION_H_

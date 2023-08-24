@@ -49,8 +49,8 @@ TEST_CASE("Simple")
         glm::epsilonEqual(camera.Front(), glm::vec3{ std::numbers::sqrt2 / 2, 0,
             std::numbers::sqrt2 / 2 }, tolerantEpsilon) ));
     
-    camera.Rotate(glm::quat{ std::numbers::sqrt2 / 2 , 0, 0, 
-         std::numbers::sqrt2 / 2 });
+    camera.Rotate(glm::quat{ std::numbers::sqrt2_v<float> / 2 , 0, 0, 
+         std::numbers::sqrt2_v<float> / 2 });
     REQUIRE(glm::all(
         glm::epsilonEqual(camera.Front(), glm::vec3{ 0, std::numbers::sqrt2 / 2,
             std::numbers::sqrt2 / 2 }, tolerantEpsilon)));

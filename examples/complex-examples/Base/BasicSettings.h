@@ -1,10 +1,11 @@
+#pragma once
 #include "FrameworkCore/MainWindow.h"
 #include "FrameworkCore/Shader.h"
 #include "FrameworkCore/Camera.h"
 
-#include <numbers>
-
 #include <imgui.h>
+
+#include <numbers>
 
 using namespace OpenGLFramework;
 

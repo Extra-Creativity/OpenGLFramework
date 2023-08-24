@@ -1,10 +1,8 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_TEXTURE_H_
-#define OPENGLFRAMEWORK_CORE_TEXTURE_H_
-
-#include <glad/glad.h>
 
 #include "ConfigHelpers/TextureConfig.h"
+
+#include <glad/glad.h>
 
 #include <string>
 #include <filesystem>
@@ -74,4 +72,3 @@ private:
 };
 
 } // namespace OpenGLFramework::Core
-#endif // !OPENGLFRAMEWORK_CORE_TEXTURE_H_

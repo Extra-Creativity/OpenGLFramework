@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_CORE_RENDERBUFFERCONFIG_H_
-#define OPENGLFRAMEWORK_CORE_RENDERBUFFERCONFIG_H_
 
 #include <glad/glad.h>
 #include <cstdint>
@@ -30,4 +28,3 @@ struct RenderBufferConfig
 
 }
 
-#endif // OPENGLFRAMEWORK_CORE_RENDERBUFFERCONFIG_H_

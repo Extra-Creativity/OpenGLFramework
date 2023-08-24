@@ -1,6 +1,4 @@
 #pragma once
-#ifndef OPENGLFRAMEWORK_GENERATOR_H_
-#define OPENGLFRAMEWORK_GENERATOR_H_
 
 #include <coroutine>
 #include <optional>
@@ -113,5 +111,3 @@ private:
 };
 
 } // namespace OpenGLFramework::Coroutine
-
-#endif // !OPENGLFRAMEWORK_GENERATOR_H_
