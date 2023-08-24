@@ -1,3 +1,5 @@
+#pragma once
+
 #include "FrameworkCore/ContextManager.h"
 #include "FrameworkCore/MainWindow.h"
 #include "FrameworkCore/Model.h"

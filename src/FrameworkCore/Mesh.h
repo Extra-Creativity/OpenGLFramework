@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Framebuffer.h"
+#include "Utility/GLHelper/VertexAttribHelper.h"
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -24,6 +25,50 @@
 #include <functional>
 #include <vector>
 #include <array>
+#include <span>
+
+namespace OpenGLFramework::Core
+{
+struct BasicVertexAttribute
+{
+    glm::vec3 normalCoord;
+    glm::vec2 textureCoord;
+};
+
+template<typename T>
+void CopyBasicAttributes(std::span<T> verticesAttributes_, const aiMesh* mesh)
+{
+    for (size_t id = 0; id < verticesAttributes_.size(); id++)
+    {
+        auto& dstVertAttribute = verticesAttributes_[id];
+        auto srcNorm = mesh->mNormals[id];
+        dstVertAttribute.normalCoord = { srcNorm.x, srcNorm.y, srcNorm.z };
+
+        if (auto srcTextureCoords = mesh->mTextureCoords[0]) [[likely]]
+        {
+            auto & srcTextureCoord = srcTextureCoords[id];
+            dstVertAttribute.textureCoord = { srcTextureCoord.x,
+                srcTextureCoord.y };
+        }
+        else
+            dstVertAttribute.textureCoord = { 0.f, 0.f };
+    }
+}
+}
+
+BEGIN_REFLECT(OpenGLFramework::Core::BasicVertexAttribute, 2);
+REFLECT(1, float, normalCoord);
+REFLECT(2, float, textureCoord);
+END_REFLECT;
+
+VERTEX_ATTRIB_SPECIALIZE_COPY(
+    std::vector<OpenGLFramework::Core::BasicVertexAttribute>& attribs,
+    const aiMesh* mesh)
+{
+    attribs.resize(mesh->mNumVertices);
+    std::span attribSpan = attribs;
+    OpenGLFramework::Core::CopyBasicAttributes(attribSpan, mesh);
+}
 
 namespace OpenGLFramework::Core
 {
@@ -35,12 +80,6 @@ struct PathHash_AssumeCanonical {
 // Key should be absolute path so that absolute & relative path will be seen as one.
 using TexturePool = std::unordered_map<std::filesystem::path, Texture,
     PathHash_AssumeCanonical>;
-
-struct VertexAttribute
-{
-    glm::vec3 normalCoord;
-    glm::vec2 textureCoord;
-};
 
 class BasicTriMesh
 {
@@ -63,9 +102,10 @@ class BasicTriRenderMesh : public BasicTriMesh
 public:
     BasicTriRenderMesh(BasicTriMesh mesh, 
         const std::vector<glm::vec3>& init_normals);
-    BasicTriRenderMesh(BasicTriMesh mesh, std::vector<VertexAttribute> attrs);
+    BasicTriRenderMesh(BasicTriMesh mesh, std::vector<BasicVertexAttribute> attrs);
     BasicTriRenderMesh(const aiMesh* mesh, const aiMaterial* material, 
-        TexturePool& texturePool, const std::filesystem::path& rootPath);
+        TexturePool& texturePool, const std::filesystem::path& rootPath,
+        GLHelper::IVertexAttribContainer);
     BasicTriRenderMesh(const BasicTriRenderMesh&) = delete;
     BasicTriRenderMesh& operator=(const BasicTriRenderMesh&) = delete;
     BasicTriRenderMesh(BasicTriRenderMesh&&) noexcept;
@@ -81,14 +121,11 @@ public:
         const std::function<void(int, const Shader&)>& preprocess,
         const std::function<void(void)>& postprocess) const;
 private:
-    std::vector<VertexAttribute> verticesAttributes_;
+    GLHelper::IVertexAttribContainer verticesAttributes_;
     std::vector<std::reference_wrapper<Texture>> diffuseTextureRefs_;
     std::vector<std::reference_wrapper<Texture>> specularTextureRefs_;
     GLuint VAO, VBO, IBO;
 
-    void AllocateAndMemcpyVerticesData_();
-    void BindVerticesAttributeSequence_();
-    void AllocateAndMemcpyTrianglesData_();
     void ReleaseRenderResources_();
 
     void SetupRenderResource_();

@@ -12,7 +12,7 @@ static const glm::ivec3 c_quadTriangles[] = {
     { 0, 2, 3 }
 };
 
-static const OpenGLFramework::Core::VertexAttribute c_quadAttributes[] = {
+static const OpenGLFramework::Core::BasicVertexAttribute c_quadAttributes[] = {
     { { 0.0, 0.0, 1.0 }, { 0.0, 1.0 } },
     { { 0.0, 0.0, 1.0 }, { 1.0, 1.0 } },
     { { 0.0, 0.0, 1.0 }, { 1.0, 0.0 } },

@@ -60,7 +60,8 @@ public:
     Transform transform;
 
     BasicTriRenderModel(std::vector<BasicTriRenderMesh> init_meshes);
-    BasicTriRenderModel(const std::filesystem::path& modelPath, 
+    BasicTriRenderModel(const std::filesystem::path& modelPath,
+        const GLHelper::IVertexAttribContainer& = std::vector<BasicVertexAttribute>{},
         bool textureNeedFlip = false);
 
     void AttachTexture(const std::filesystem::path& path,
@@ -75,7 +76,7 @@ public:
         const std::function<void(void)>& postprocess) const;
 private:
     void LoadResources_(const aiScene* model, const std::filesystem::path& 
-        resourceRootPath, bool textureNeedFlip);
+        resourceRootPath, bool textureNeedFlip, const GLHelper::IVertexAttribContainer&);
     TexturePool texturePool_;
 };
 

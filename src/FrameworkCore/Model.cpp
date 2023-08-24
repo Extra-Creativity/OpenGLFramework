@@ -41,19 +41,21 @@ void BasicTriModel::LoadResources_(const aiScene* model)
 }
 
 void BasicTriRenderModel::LoadResources_(const aiScene* model, 
-    const std::filesystem::path& resourceRootPath, bool textureNeedFlip)
+    const std::filesystem::path& resourceRootPath, bool textureNeedFlip,
+    const GLHelper::IVertexAttribContainer& container)
 {
     stbi_set_flip_vertically_on_load(textureNeedFlip);
 
     LoadResourcesDecorator_(model, 
         [this](const aiMesh* mesh, const aiScene* model,
-        const std::filesystem::path& resourceRootPath) 
+            const std::filesystem::path& resourceRootPath,
+            const GLHelper::IVertexAttribContainer& c) 
         {
             aiMaterial* material = model->mMaterials[mesh->mMaterialIndex];
             // construct triangle mesh.
             this->meshes.emplace_back(mesh, material, this->texturePool_, 
-                resourceRootPath);
-        }, model, resourceRootPath);
+                resourceRootPath, c);
+        }, model, resourceRootPath, container);
 
     stbi_set_flip_vertically_on_load(false);
 }
@@ -63,7 +65,7 @@ BasicTriRenderModel::BasicTriRenderModel(std::vector<BasicTriRenderMesh>
 { };
 
 BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath, 
-    bool textureNeedFlip)
+    const GLHelper::IVertexAttribContainer& container, bool textureNeedFlip)
 {
     Assimp::Importer importer;
     const aiScene* model = importer.ReadFile(modelPath.string(), 
@@ -77,7 +79,7 @@ BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
     }
     // NOTICE that we assume the model is at the root path.
     const std::filesystem::path resourceRootPath = modelPath.parent_path();
-    LoadResources_(model, resourceRootPath, textureNeedFlip);
+    LoadResources_(model, resourceRootPath, textureNeedFlip, container);
     return;
 }
 

@@ -83,52 +83,6 @@ std::vector<glm::vec3> BasicTriMesh::GetRealVertexNormals()
     return normals;
 };
 
-void BasicTriRenderMesh::AllocateAndMemcpyVerticesData_()
-{
-    size_t elementSize = sizeof(glm::vec3) + sizeof(VertexAttribute);
-    // allocate memory.
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * elementSize, nullptr, 
-        GL_STATIC_DRAW);
-
-    size_t verticeSizeOffset = sizeof(glm::vec3) * vertices.size();
-    // memcpy vertex position to GPU.
-    glBufferSubData(GL_ARRAY_BUFFER, 0, verticeSizeOffset, vertices.data());
-    // memcpy other attributes to GPU.
-    glBufferSubData(GL_ARRAY_BUFFER, verticeSizeOffset, 
-        verticesAttributes_.size() * sizeof(VertexAttribute), 
-        verticesAttributes_.data());
-    return;
-}
-
-void BasicTriRenderMesh::BindVerticesAttributeSequence_()
-{
-    size_t verticeSizeOffset = sizeof(glm::vec3) * vertices.size();
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0);
-
-    size_t normalAttributeBeginOffset = verticeSizeOffset + 
-        offsetof(VertexAttribute, normalCoord);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttribute), 
-        reinterpret_cast<void*>(normalAttributeBeginOffset));
-
-    size_t textureAttributeBeginOffset = verticeSizeOffset +
-        offsetof(VertexAttribute, textureCoord);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexAttribute), 
-        reinterpret_cast<void*>(textureAttributeBeginOffset));
-    return;
-}
-
-void BasicTriRenderMesh::AllocateAndMemcpyTrianglesData_()
-{
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(glm::ivec3),
-        triangles.data(), GL_STATIC_DRAW);
-    return;
-};
-
 void BasicTriRenderMesh::SetupRenderResource_()
 {
     glGenVertexArrays(1, &VAO);
@@ -137,13 +91,17 @@ void BasicTriRenderMesh::SetupRenderResource_()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    AllocateAndMemcpyVerticesData_();
-    BindVerticesAttributeSequence_();
+    verticesAttributes_.AllocateAndBind(sizeof(glm::vec3), vertices.size());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * vertices.size(),
+        vertices.data());
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0);
 
     glGenBuffers(1, &IBO);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    AllocateAndMemcpyTrianglesData_();
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size() * sizeof(glm::ivec3),
+        triangles.data(), GL_STATIC_DRAW);
 
     // NOTICE: Unbind sequence MUST be VAO->VBO&IBO
     glBindVertexArray(0);
@@ -153,24 +111,7 @@ void BasicTriRenderMesh::SetupRenderResource_()
 
 void BasicTriRenderMesh::CopyAttributes_(const aiMesh* mesh)
 {
-    std::ranges::iota_view vertexIDView{ size_t(0), vertices.size() };
-    std::for_each(vertexIDView.begin(), vertexIDView.end(),
-        [mesh, this](size_t id) {
-            auto& dstVertAttribute = verticesAttributes_[id];
-            auto srcNorm = mesh->mNormals[id];
-            dstVertAttribute.normalCoord = { srcNorm.x,
-                srcNorm.y, srcNorm.z };
-
-            if (auto srcTextureCoords = mesh->mTextureCoords[0])
-            {
-                auto& srcTextureCoord = srcTextureCoords[id];
-                dstVertAttribute.textureCoord = { srcTextureCoord.x,
-                    srcTextureCoord.y };
-            }
-            else
-                dstVertAttribute.textureCoord = { 0.f, 0.f };
-            return;
-        });
+    verticesAttributes_.CopyFromMesh(mesh);
     return;
 }
 
@@ -208,8 +149,8 @@ void BasicTriRenderMesh::AddAllTexturesToPoolAndFillRefs_(
 
 BasicTriRenderMesh::BasicTriRenderMesh(const aiMesh* mesh,
     const aiMaterial* material, TexturePool& texturePool,
-    const std::filesystem::path& rootPath):
-    BasicTriMesh{mesh}, verticesAttributes_(mesh->mNumVertices)
+    const std::filesystem::path& rootPath, GLHelper::IVertexAttribContainer c):
+    BasicTriMesh{ mesh }, verticesAttributes_{ std::move(c) }
 {
     CopyAttributes_(mesh);
     SetupRenderResource_();
@@ -219,16 +160,18 @@ BasicTriRenderMesh::BasicTriRenderMesh(const aiMesh* mesh,
 
 BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
     const std::vector<glm::vec3>& init_normals) : 
-    BasicTriMesh{ std::move(mesh) }, verticesAttributes_(init_normals.size())
+    BasicTriMesh{ std::move(mesh) }
 {
-    for (size_t i = 0; i < verticesAttributes_.size(); i++)
-        verticesAttributes_[i].normalCoord = init_normals[i];
+    std::vector<BasicVertexAttribute> attribs(init_normals.size());
+    for (size_t i = 0; i < attribs.size(); i++)
+        attribs[i].normalCoord = init_normals[i];
+    verticesAttributes_ = std::move(attribs);
     SetupRenderResource_();
     return;
 };
 
 BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
-    std::vector<VertexAttribute> attrs) :
+    std::vector<BasicVertexAttribute> attrs) :
     BasicTriMesh{ std::move(mesh) }, verticesAttributes_{ std::move(attrs) }
 {
     SetupRenderResource_();

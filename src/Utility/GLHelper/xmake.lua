@@ -1,6 +1,7 @@
-target("OpenGLFrameworkString")
+target("OpenGLFrameworkGLHelper")
     set_kind("headeronly")
     add_headerfiles("./*.h")
+    remove_files("./*.test.h")
 
 for _, file in ipairs(os.files("./*.test.cpp")) do
 
@@ -16,7 +17,7 @@ target(path.basename(file))
         end
     end)
 
-    add_deps("OpenGLFrameworkString")
+    add_deps("OpenGLFrameworkGLHelper")
     add_files(file)
 
 end
