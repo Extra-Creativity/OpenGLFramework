@@ -1,4 +1,5 @@
 #include "ScreenShader.h"
+#include "FrameworkCore/Texture.h"
 
 void ScreenShader::Render(ScreenShader& screenShader, ShadowMap& shadowMap,
 	const int& shadowOption, ExampleBase::AssetLoader::ModelContainer& scene)
@@ -24,9 +25,8 @@ void ScreenShader::SetShaderParams_(ShadowMap& shadowMap, int shadowOption)
 void ScreenShader::BindShadowMap_(ShadowMap& shadowMap, int textureBeginID,
 	const OpenGLFramework::Core::Shader& shader)
 {
-	glActiveTexture(GL_TEXTURE0 + textureBeginID);
-	shader.SetInt("shadowMap", textureBeginID);
-	glBindTexture(GL_TEXTURE_2D, shadowMap.GetShadowBuffer());
+	OpenGLFramework::Core::Texture::BindTextureOnShader(textureBeginID,
+		"shadowMap", shader, shadowMap.GetShadowBuffer());
 	if (shadowMap.NeedMIPMAP())
 		glGenerateMipmap(GL_TEXTURE_2D);
 }

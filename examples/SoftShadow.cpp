@@ -210,9 +210,8 @@ void RenderScreen(Core::Framebuffer& shadowMapBuffer, Core::Camera& camera,
 	using enum Core::Framebuffer::BasicClearMode;
 	auto UseShadowMap = 
 		[&shadowMapBuffer](int textureBeginID, const Core::Shader& shader) {
-			glActiveTexture(GL_TEXTURE0 + textureBeginID);
-			shader.SetInt("shadowMap", textureBeginID);
-			glBindTexture(GL_TEXTURE_2D, shadowMapBuffer.GetDepthBuffer());
+			Core::Texture::BindTextureOnShader(textureBeginID, "shadowMap",
+				shader, shadowMapBuffer.GetDepthBuffer());
 		};
 
 	for (auto& [name, model] : models)

@@ -35,6 +35,8 @@ GLenum GetGPUChannelFromCPUChannel(int cpuChannel);
 CPUTextureData GetCPUDataFromAnyTexture(int width, int height, int channel,
     int gpuBindTextureType, unsigned int bindTextureID, int gpuSubTextureType);
 
+class Shader;
+
 class Texture
 {
     inline const static TextureParamConfig c_defaultConfig_ = {
@@ -66,6 +68,8 @@ public:
     };
     std::pair<int, int> GetWidthAndHeight() const;
     CPUTextureData GetCPUData() const;
+    static void BindTextureOnShader(unsigned int activateID, const char* name,
+        const Shader& shader, unsigned int textureID);
 private:
     unsigned int ID_;
     int cpuChannel_;

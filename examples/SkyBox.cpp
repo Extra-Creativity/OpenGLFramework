@@ -44,12 +44,11 @@ int main()
 	SetBasicKeyBindings(mainWindow, frontCamera);
 	SetBasicButtonBindings(mainWindow, frontCamera);
 
-	auto BindSkybox = [&skyBox](int textureBeginID, const Core::Shader& shader)
-	{
-		glActiveTexture(GL_TEXTURE0 + textureBeginID);
-		shader.SetInt("skybox", textureBeginID);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox.GetID());
-	};
+	auto BindSkybox = 
+		[id = skyBox.GetID()](int textureBeginID, const Core::Shader& shader){
+			Core::SkyBoxTexture::BindTextureOnShader(textureBeginID, "skybox",
+				shader, id);
+		};
 
 	mainWindow.Register([&]() {
 		sucroseShader.Activate();

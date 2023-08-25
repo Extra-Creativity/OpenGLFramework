@@ -127,17 +127,18 @@ void SetBasicTransformSubwindow(Core::MainWindow& mainWindow, Model& model)
 			ImGui::SetWindowSize({ 250,100 });
 			init = false;
 		}
+		constexpr float pi = std::numbers::pi_v<float>;
 		static glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
-		ImGui::SliderFloat3("rotation", &rotation.x, 0.0f, 2 * std::numbers::pi_v<float>);
+		ImGui::SliderFloat3("rotation", &rotation.x, -pi, pi);
 		model.transform.rotation = glm::quat(rotation);
 
 		static glm::vec3 position = { 0.0f, 0.0f, 0.0f };
 		ImGui::SliderFloat3("position", &position.x, -10, 10);
 		model.transform.position = position;
 
-		static float scale = 1.0f;
+		static float scale = 1.0f, initScale = model.transform.scale.x;
 		ImGui::SliderFloat("scale", &scale, 0.5, 2);
-		model.transform.scale = { scale,scale,scale };
+		model.transform.scale = glm::vec3{ scale } * initScale;
 		ImGui::End();
 		}
 	);

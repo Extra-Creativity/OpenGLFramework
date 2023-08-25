@@ -1,5 +1,6 @@
 #include "Texture.h"
 #include "Framebuffer.h"
+#include "Shader.h"
 #include "Utility/IO/IOExtension.h"
 
 #define STBI_WINDOWS_UTF8
@@ -158,5 +159,13 @@ CPUTextureData Texture::GetCPUData() const
     return GetCPUDataFromAnyTexture(width, height, cpuChannel_, 
         GL_TEXTURE_2D, ID_, GL_TEXTURE_2D);
 }
+
+void Texture::BindTextureOnShader(unsigned int activateID, const char* name,
+    const Core::Shader& shader, unsigned int textureID)
+{
+    glActiveTexture(GL_TEXTURE0 + activateID);
+    shader.SetInt(name, activateID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+};
 
 } // namespace OpenGLFramework::Core

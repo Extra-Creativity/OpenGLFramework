@@ -1,4 +1,5 @@
 #include "SkyboxTexture.h"
+#include "Shader.h"
 
 #include <stb_image.h>
 
@@ -179,6 +180,14 @@ void SkyBoxTexture::VerticalFlipSegment_(unsigned char* segmentPtr,
                     static_cast<size_t>(segmentWidth) * channelNum);
     }
     return;
+};
+
+void SkyBoxTexture::BindTextureOnShader(unsigned int activateID, 
+    const char* name, const Shader& shader, unsigned int textureID)
+{
+    glActiveTexture(GL_TEXTURE0 + activateID);
+    shader.SetInt(name, activateID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 };
 
 }

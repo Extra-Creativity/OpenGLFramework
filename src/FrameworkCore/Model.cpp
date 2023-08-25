@@ -8,9 +8,10 @@
 
 namespace OpenGLFramework::Core
 {
+constexpr int c_defaultPostProcess = aiProcess_Triangulate | aiProcess_GenSmoothNormals
+    | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices;
 
-template<unsigned int postprocess = aiProcess_Triangulate | aiProcess_GenSmoothNormals
-    | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices>
+template<unsigned int postprocess = c_defaultPostProcess>
 static const aiScene* LoadModelFromPath(Assimp::Importer& importer, 
     const std::filesystem::path& modelPath)
 {
@@ -94,10 +95,14 @@ BasicTriRenderModel::BasicTriRenderModel(std::vector<BasicTriRenderMesh>
 { };
 
 BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath, 
-    const GLHelper::IVertexAttribContainer& container, bool textureNeedFlip)
+    const GLHelper::IVertexAttribContainer& container, bool needTBN,
+    bool textureNeedFlip)
 {
     Assimp::Importer importer;
-    if (auto model = LoadModelFromPath<>(importer, modelPath); model != nullptr)
+    if (auto model = needTBN ? 
+        LoadModelFromPath<c_defaultPostProcess | aiProcess_CalcTangentSpace>(
+            importer, modelPath) : 
+        LoadModelFromPath<>(importer, modelPath); model != nullptr)
     {// NOTICE that we assume the model is at the root path.
         const std::filesystem::path resourceRootPath = modelPath.parent_path();
         LoadResources_(model, resourceRootPath, textureNeedFlip, container);
@@ -106,10 +111,14 @@ BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
 }
 
 BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
-    std::vector<GLHelper::IVertexAttribContainer> collection, bool textureNeedFlip)
+    std::vector<GLHelper::IVertexAttribContainer> collection, bool needTBN, 
+    bool textureNeedFlip)
 {
     Assimp::Importer importer;
-    if (auto model = LoadModelFromPath<>(importer, modelPath); model != nullptr)
+    if (auto model = needTBN ?
+        LoadModelFromPath<c_defaultPostProcess | aiProcess_CalcTangentSpace>(
+            importer, modelPath) :
+        LoadModelFromPath<>(importer, modelPath); model != nullptr)
     {// NOTICE that we assume the model is at the root path.
         const std::filesystem::path resourceRootPath = modelPath.parent_path();
         LoadResourcesFromCollection_(model, resourceRootPath, textureNeedFlip,

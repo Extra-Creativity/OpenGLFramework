@@ -46,6 +46,8 @@ public:
     ~SkyBoxTexture();
     unsigned int GetID() const { return skyboxID_; }
     CPUTextureData GetCPUData(int idx) const;
+    static void BindTextureOnShader(unsigned int activateID, const char* name,
+        const Shader& shader, unsigned int textureID);
 private:
     unsigned int skyboxID_;
     int cpuChannel_;

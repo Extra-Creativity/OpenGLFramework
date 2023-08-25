@@ -33,21 +33,24 @@ struct BasicVertexAttribute
     glm::vec2 textureCoord;
 };
 
+template<int N, typename T>
+void CopyAiVecToGLMVec(aiVector3D& aiVec, glm::vec<N, T>& vec)
+{
+    constexpr int limit = std::min(N, 3);
+    for (int i = 0; i < limit; i++)
+        vec[i] = aiVec[i];
+}
+
 template<typename T>
 void CopyBasicAttributes(std::span<T> verticesAttributes_, const aiMesh* mesh)
 {
     for (size_t id = 0; id < verticesAttributes_.size(); id++)
     {
         auto& dstVertAttribute = verticesAttributes_[id];
-        auto srcNorm = mesh->mNormals[id];
-        dstVertAttribute.normalCoord = { srcNorm.x, srcNorm.y, srcNorm.z };
+        CopyAiVecToGLMVec(mesh->mNormals[id], dstVertAttribute.normalCoord);
 
         if (auto srcTextureCoords = mesh->mTextureCoords[0]) [[likely]]
-        {
-            auto & srcTextureCoord = srcTextureCoords[id];
-            dstVertAttribute.textureCoord = { srcTextureCoord.x,
-                srcTextureCoord.y };
-        }
+            CopyAiVecToGLMVec(srcTextureCoords[id], dstVertAttribute.textureCoord);
         else
             dstVertAttribute.textureCoord = { 0.f, 0.f };
     }

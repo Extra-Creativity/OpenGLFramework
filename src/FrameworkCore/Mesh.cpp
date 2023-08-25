@@ -226,9 +226,9 @@ void BasicTriRenderMesh::SetTextures_(const Shader& shader,
     int currTypeID = 1;
     for (auto& texture : textures)
     {
-        glActiveTexture(GL_TEXTURE0 + beginID);
-        shader.SetInt(namePrefix + std::to_string(currTypeID), beginID);
-        glBindTexture(GL_TEXTURE_2D, texture.get().GetID());
+        std::string name = namePrefix + std::to_string(currTypeID);
+        Texture::BindTextureOnShader(beginID, name.c_str(), shader,
+            texture.get().GetID());
         ++beginID, ++currTypeID;
     }
 };

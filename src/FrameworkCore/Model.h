@@ -60,10 +60,10 @@ public:
     BasicTriRenderModel(std::vector<BasicTriRenderMesh> init_meshes);
     BasicTriRenderModel(const std::filesystem::path& modelPath,
         const GLHelper::IVertexAttribContainer& = std::vector<BasicVertexAttribute>{},
-        bool textureNeedFlip = false);
+        bool needTBN = false, bool textureNeedFlip = false);
     BasicTriRenderModel(const std::filesystem::path& modelPath,
         std::vector<GLHelper::IVertexAttribContainer> collection,
-        bool textureNeedFlip = false);
+        bool needTBN = false, bool textureNeedFlip = false);
 
     void AttachTexture(const std::filesystem::path& path,
         std::initializer_list<int> attachIDs, bool isSpecular = false);

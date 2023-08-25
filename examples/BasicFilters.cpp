@@ -128,13 +128,10 @@ int main()
 		basicQuadShader.SetFloat("colorSigmaSqr", colorSigma * colorSigma);
 		quadOnScreen.Draw(basicQuadShader,
 			[&buffer](int textureBeginID, const Core::Shader& shader) {
-				glActiveTexture(GL_TEXTURE0 + textureBeginID);
-				shader.SetInt("colorTexture", textureBeginID);
-				glBindTexture(GL_TEXTURE_2D, buffer.GetColorBuffer());
-
-				glActiveTexture(GL_TEXTURE0 + textureBeginID + 1);
-				shader.SetInt("depthTexture", textureBeginID + 1);
-				glBindTexture(GL_TEXTURE_2D, buffer.GetDepthBuffer());
+				Core::Texture::BindTextureOnShader(textureBeginID, "colorTexture",
+					shader, buffer.GetColorBuffer());
+				Core::Texture::BindTextureOnShader(textureBeginID + 1, "depthTexture",
+					shader, buffer.GetDepthBuffer());
 			}, nullptr);
 		glDepthMask(0xFF);
 	});
