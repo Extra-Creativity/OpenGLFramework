@@ -61,6 +61,9 @@ public:
     BasicTriRenderModel(const std::filesystem::path& modelPath,
         const GLHelper::IVertexAttribContainer& = std::vector<BasicVertexAttribute>{},
         bool textureNeedFlip = false);
+    BasicTriRenderModel(const std::filesystem::path& modelPath,
+        std::vector<GLHelper::IVertexAttribContainer> collection,
+        bool textureNeedFlip = false);
 
     void AttachTexture(const std::filesystem::path& path,
         std::initializer_list<int> attachIDs, bool isSpecular = false);
@@ -75,6 +78,9 @@ public:
 private:
     void LoadResources_(const aiScene* model, const std::filesystem::path& 
         resourceRootPath, bool textureNeedFlip, const GLHelper::IVertexAttribContainer&);
+    void LoadResourcesFromCollection_(const aiScene* model,
+        const std::filesystem::path& resourceRootPath, bool textureNeedFlip,
+        std::vector<GLHelper::IVertexAttribContainer>& container);
     TexturePool texturePool_;
 };
 

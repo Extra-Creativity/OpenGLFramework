@@ -9,19 +9,28 @@
 namespace OpenGLFramework::Core
 {
 
-BasicTriModel::BasicTriModel(const std::filesystem::path& modelPath)
+template<unsigned int postprocess = aiProcess_Triangulate | aiProcess_GenSmoothNormals
+    | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices>
+static const aiScene* LoadModelFromPath(Assimp::Importer& importer, 
+    const std::filesystem::path& modelPath)
 {
-    Assimp::Importer importer;
-    const aiScene* model = importer.ReadFile(modelPath.string(),
-        aiProcess_Triangulate | aiProcess_FlipUVs
-        | aiProcess_JoinIdenticalVertices);
+    const aiScene* model = importer.ReadFile(modelPath.string(), postprocess);
     if (model == nullptr || (model->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 ||
         model->mRootNode == nullptr) [[unlikely]]
     {
         IOExtension::LogError(importer.GetErrorString());
-        return;
+        return nullptr;
     }
-    LoadResources_(model);
+    return model;
+}
+
+BasicTriModel::BasicTriModel(const std::filesystem::path& modelPath)
+{
+    Assimp::Importer importer;
+    const aiScene* model = LoadModelFromPath<aiProcess_Triangulate | 
+        aiProcess_JoinIdenticalVertices>(importer, modelPath);
+    if(model != nullptr)
+        LoadResources_(model);
     return;
 }
 
@@ -60,6 +69,26 @@ void BasicTriRenderModel::LoadResources_(const aiScene* model,
     stbi_set_flip_vertically_on_load(false);
 }
 
+void BasicTriRenderModel::LoadResourcesFromCollection_(const aiScene* model,
+    const std::filesystem::path& resourceRootPath, bool textureNeedFlip,
+    std::vector<GLHelper::IVertexAttribContainer>& collection)
+{
+    stbi_set_flip_vertically_on_load(textureNeedFlip);
+
+    LoadResourcesDecorator_(model,
+        [this, id = 0](const aiMesh* mesh, const aiScene* model,
+            const std::filesystem::path& resourceRootPath,
+            std::vector<GLHelper::IVertexAttribContainer>& collection) mutable
+        {
+            aiMaterial* material = model->mMaterials[mesh->mMaterialIndex];
+            // construct triangle mesh.
+            this->meshes.emplace_back(mesh, material, this->texturePool_,
+                resourceRootPath, std::move(collection[id++]));
+        }, model, resourceRootPath, collection);
+
+    stbi_set_flip_vertically_on_load(false);
+}
+
 BasicTriRenderModel::BasicTriRenderModel(std::vector<BasicTriRenderMesh> 
     init_meshes) : meshes{ std::move(init_meshes) }
 { };
@@ -68,18 +97,24 @@ BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
     const GLHelper::IVertexAttribContainer& container, bool textureNeedFlip)
 {
     Assimp::Importer importer;
-    const aiScene* model = importer.ReadFile(modelPath.string(), 
-        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs
-        | aiProcess_JoinIdenticalVertices);
-    if (model == nullptr || (model->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 ||
-        model->mRootNode == nullptr) [[unlikely]]
-    {
-        IOExtension::LogError(importer.GetErrorString());
-        return;
+    if (auto model = LoadModelFromPath<>(importer, modelPath); model != nullptr)
+    {// NOTICE that we assume the model is at the root path.
+        const std::filesystem::path resourceRootPath = modelPath.parent_path();
+        LoadResources_(model, resourceRootPath, textureNeedFlip, container);
     }
-    // NOTICE that we assume the model is at the root path.
-    const std::filesystem::path resourceRootPath = modelPath.parent_path();
-    LoadResources_(model, resourceRootPath, textureNeedFlip, container);
+    return;
+}
+
+BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
+    std::vector<GLHelper::IVertexAttribContainer> collection, bool textureNeedFlip)
+{
+    Assimp::Importer importer;
+    if (auto model = LoadModelFromPath<>(importer, modelPath); model != nullptr)
+    {// NOTICE that we assume the model is at the root path.
+        const std::filesystem::path resourceRootPath = modelPath.parent_path();
+        LoadResourcesFromCollection_(model, resourceRootPath, textureNeedFlip,
+            collection);
+    }
     return;
 }
 
