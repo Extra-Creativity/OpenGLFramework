@@ -4,19 +4,26 @@
 #include "FrameworkCore/Shader.h"
 #include "FrameworkCore/MainWindow.h"
 
-#include <string_view>
-
 namespace ExampleBase
 {
+
+// ---------------------------- NOTICE ------------------------------------
+// GCC 11.x seems to have bugs here, so that StringHasher cannot be put into
+// AssetLoader. Otherwise prompts "std::is_invocable<cosnt StringHasher&,
+// const std::string&>{}" evaluates to false, which is weird.
+// This is unfortunately unproduceable on a simple example, and if you can,
+// we hope you to send a bug report to GCC!
+// ------------------------------------------------------------------------
+struct StringHasher
+{
+    using is_transparent = void;
+    auto operator()(std::string_view s) const noexcept{ 
+        return std::hash<std::string_view>{}(s);
+    }
+};
+
 class AssetLoader
 {
-    struct StringHasher
-    {
-        using is_transparent = void;
-        auto operator()(std::string_view s) const { 
-            return std::hash<std::string_view>{}(s);
-        }
-    };
 public:
     using ModelContainer = std::unordered_map<std::string,
         OpenGLFramework::Core::BasicTriRenderModel, StringHasher, std::equal_to<>>;

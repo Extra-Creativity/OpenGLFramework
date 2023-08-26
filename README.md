@@ -86,9 +86,12 @@ We write docs for exmample programs in `exmaples/Docs`. See it for practical usa
    | -------------------- | ---------- | ------------ |
    | LearnOpenGL, release | 3.26205s   | 1.93490s     |
    | Ours, v1.0, release  | 0.72038s   | 0.645622s    |
-   | Ours, v1.1, release  | 0.662553s  | 0.521885s    |
+   | Ours, v1.1, release  | 0.662553s  | 0.521885s*   |
+   
+   > *: Sometimes it can be even as low as ~0.35 seconds.
 
-   Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it about four to five times faster than the baseline in the latest version.
+   Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it at least four to five times faster than the baseline in the latest version.
+
 
 2. Easier-to-use interface: We wrap the OpenGL code in RAII style, hiding trivial and boring inner details for the most common features. You can dive into writing proper shaders.
 
@@ -123,52 +126,10 @@ If you use xmake, they will be installed automatically. Notice that `assimp` ins
 
 ## Compiler requirements
 
-### <span id="cpp20">C++20</span>
-
-Considering that some core features (like `module`) in C++20 are not easy for those who haven't studied them to convert back to C++17 code (like header-style), we only use minor new properties in C++20. If you cannot use C++20 features, you can detect and replace them easily.
-
-What we use in C++20：
-
-+ `<numbers>`, for `std::numbers::pi_v<f>` to get π.
-
-+ `<version>`, to check whether `<format>` is supported. If it is, `<format>` will be used.
-
-  > `<format>` is not supported until gcc13, which is not released currently.
-
-+ `[[likely]]` and `[[unlikely]]` attributes, to clearly influence branch-predict policies.
-
-+ `<source_location>`, to log error info.
-
-+ `char8_t` for UTF-8 string. Use `char` in C++17.
-
-+ `ranges`, for splitting string in `IniFile` and possible future parallelism(see TODO).
-
-+ Concept, but only `StringExtension` uses very simple concept. You can relatively easy to remove them as you want.
-
-+ `using enum`.
-
-+ ...
-
-Those methods are trivial compared to other parts, and will not or only very slightly affect performance, so you can substitute them relatively easily with C++17 code. But we recommend you to use C++20 to save that bother.
-
-### <span id="cpp17">C++17</span>
-
-There are also some C++17 features that may need extra libraries to support in old versions of some compilers, so we also list them as follows:
-
-What we use in C++17：
-
-+ structured binding, for getting the pair/tuple return value.
-+ Class template argument deduction (CTAD), to reduce code of some unnecessary types.
-+ `std::unordered_map::insert_or_assign()`, **`std::unordered_map::try_emplace()`**.
-+ ~~**`<execution>`, to load models in parallel in multi-core machines.**~~ **Temporarily not used, see TODO**.
-+ **`<filesystem>`.**
-+ `[[maybe_unused]]` attributes, to eliminate not-used warnings for ImGui needs `auto& io = ImGui::GetIO()` to monitor some events even though `io` is not used in the user's code block.
-+ `[[fall_through]]` to indicate deliberate no ending `break` in switch-cases.
-+ **`<string_view>`, to replace some of the `const char*` in modern C++.**
-+ `<optional>` and `std::reference_wrapper`.
-+ Nested namespace.
-
-The bold parts represent that code with those features is crucial, and it's not easy to re-code. Thus, we recommend you to use a compiler that at least supports C++17.
+We requires the compiler to support C++20 (partially). 
++ For GCC, the version shoule be at least 11.x; 
++ For Clang, at least 14.0.0;
++ For msvc, recommend at least v19.29(latest version of VS2019).
 
 ## <span id="Update-Information">Update Information</span>
 

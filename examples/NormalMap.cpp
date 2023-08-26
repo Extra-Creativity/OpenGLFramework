@@ -12,12 +12,12 @@ struct VertAttribWithTan
 	glm::vec3 bitanCoord;
 };
 
-BEGIN_REFLECT(VertAttribWithTan, 4)
+BEGIN_REFLECT(VertAttribWithTan)
 REFLECT(1, float, normalCoord)
 REFLECT(2, float, textureCoord)
 REFLECT(3, float, tanCoord)
 REFLECT(4, float, bitanCoord)
-END_REFLECT
+END_REFLECT(4)
 
 VERTEX_ATTRIB_SPECIALIZE_COPY(std::vector<VertAttribWithTan>& verticesAttributes_,
 	const aiMesh* mesh)

@@ -57,10 +57,10 @@ void CopyBasicAttributes(std::span<T> verticesAttributes_, const aiMesh* mesh)
 }
 }
 
-BEGIN_REFLECT(OpenGLFramework::Core::BasicVertexAttribute, 2);
+BEGIN_REFLECT(OpenGLFramework::Core::BasicVertexAttribute);
 REFLECT(1, float, normalCoord);
 REFLECT(2, float, textureCoord);
-END_REFLECT;
+END_REFLECT(2);
 
 VERTEX_ATTRIB_SPECIALIZE_COPY(
     std::vector<OpenGLFramework::Core::BasicVertexAttribute>& attribs,

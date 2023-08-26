@@ -4,7 +4,7 @@
 
 #include <any>
 #include <ranges>
-#include <vector>
+#include <utility>
 
 struct aiMesh;
 namespace OpenGLFramework::GLHelper
@@ -66,7 +66,7 @@ public:
 };
 }
 
-#define BEGIN_REFLECT(type, total)\
+#define BEGIN_REFLECT(type)\
 static_assert(std::is_default_constructible_v<type>, \
              "Vertex attribute should be able to be default constructed.");\
 static_assert(std::is_trivially_copyable_v<type>,\
@@ -76,31 +76,32 @@ template<> struct OpenGLFramework::GLHelper::VATag<type> {\
 }; \
 template<> struct OpenGLFramework::GLHelper::VertexAttribHelper<type> {\
     using VertexAttrib = type;\
-    template<size_t id>\
+    template<size_t id, typename=void>\
     struct Reflect { \
-        static inline void Bind(size_t off){ \
-            if constexpr (id > total) return;\
-            else Reflect<id + 1>::Bind(off);\
-        }\
+        static inline void Bind(size_t off){ return; }\
     };\
-    static inline void Bind(size_t off){ Reflect<1>::Bind(off); }
+    template<size_t... Indices>\
+    static inline void InnerBind(std::index_sequence<Indices...>, size_t off)\
+    { (Reflect<Indices + 1>::Bind(off), ...); }
 
 #define REFLECT(id, rawType, member)\
-template<>\
-struct Reflect<id>{\
+template<typename T>\
+struct Reflect<id, T>{\
     using RawType = rawType;\
-    using Type = decltype(VertexAttrib{}.##member);\
+    using Type = decltype(VertexAttrib{}.member);\
     static inline void Bind(size_t initOffset){\
         glEnableVertexAttribArray(id);\
         glVertexAttribPointer(\
             id, sizeof(Type) / sizeof(RawType), ToGLType<rawType>::value,\
             GL_FALSE, sizeof(VertexAttrib), reinterpret_cast<void*>(\
                 initOffset + offsetof(VertexAttrib, member)));\
-        Reflect<id + 1>::Bind(initOffset);\
     }\
 };
 
-#define END_REFLECT };
+#define END_REFLECT(total) static inline void Bind(size_t off)\
+    { InnerBind(std::make_index_sequence<total>{}, off); };\
+    };
+// end of VertexAttribHelper.
 
 #define VERTEX_ATTRIB_SPECIALIZE_COPY template<>\
 inline void OpenGLFramework::GLHelper::CopyVertexAttributes
