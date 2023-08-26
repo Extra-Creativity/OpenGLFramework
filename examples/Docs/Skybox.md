@@ -88,11 +88,11 @@ auto skyBox = file.rootSection("option") == "split" ?
 You still need to bind skybox manually on the shader:
 
 ```c++
-auto BindSkybox = [&skyBox](int textureBeginID, const Core::Shader& shader)
+auto BindSkybox = 
+[id = skyBox.GetID()](int textureBeginID, const Core::Shader& shader)
 {
-    glActiveTexture(GL_TEXTURE0 + textureBeginID);
-    shader.SetInt("skybox", textureBeginID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, skyBox.GetID());
+    Core::SkyBoxTexture::BindTextureOnShader(
+        textureBeginID, "skybox", shader, id);
 };
 ```
 

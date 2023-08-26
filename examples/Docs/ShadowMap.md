@@ -134,11 +134,19 @@ You may notice that quad itself should attach the depth buffer. The textures nee
 ```c++
 quadOnScreen.Draw(basicQuadShader, 
                   [&buffer](int textureBeginID, const Core::Shader& shader) {
-                      glActiveTexture(GL_TEXTURE0 + textureBeginID);
-                      shader.SetInt("diffuseTexture1", textureBeginID);
-                      glBindTexture(GL_TEXTURE_2D, buffer.GetDepthBuffer());
+                      		Core::Texture::BindTextureOnShader(
+                                textureBeginID, "diffuseTexture1",
+                                shader, buffer.GetDepthBuffer());
                   }, nullptr);
 ```
+
+> `Core::Texture::BindTextureOnShader` is just same as:
+>
+> ```c++
+> glActiveTexture(GL_TEXTURE0 + textureBeginID);
+> shader.SetInt("diffuseTexture1", textureBeginID);
+> glBindTexture(GL_TEXTURE_2D, buffer.GetDepthBuffer());
+> ```
 
 The final `nullptr` is to denote that we doesn't need postprocess. Preprocess happens after setting the original textures of the model, and postprocess happens after drawing elements and before unbinding vertex buffers.
 

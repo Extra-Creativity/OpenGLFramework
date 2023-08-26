@@ -74,7 +74,8 @@ int main()
 
 		const auto [width, height] = mainWindow.GetWidthAndHeight();
 		float near = 0.1f, far = 100.0f;
-		SetMVP(width, height, near, far, floor, camera, normalMapShader);
+		SetMVP(static_cast<float>(width), static_cast<float>(height),
+			near, far, floor, camera, normalMapShader);
 
 		normalMapShader.SetVec3("lightPos", lightPosition);
 		normalMapShader.SetVec3("viewPos", camera.GetPosition());

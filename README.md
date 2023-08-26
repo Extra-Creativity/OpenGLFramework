@@ -13,11 +13,8 @@ In simple scenes, most of the code we write in OpenGL is drab and dreary and bas
 * [Usage](#usage)
 * [Advantages](#advantages)
 * [Build Tool](#build-tool)
-* [Customized Builder](#builder)
 * [Dependencies](#dependencies)
 * [Compiler requirements](#compiler-requirements)
-  + [C++20](#cpp20)
-  + [C++17](#cpp17)
 * [Update Information](#Update-Information)
 * [TODO](#TODO)
 * [Copyrights](#copyrights)
@@ -68,7 +65,7 @@ xrepo install assimp
 
 > Catch2 is needed only if you want to run unit tests.
 
-After it prompts `build ok!`, you can enter `xmake run overall.test` to run the program and you get : 
+After it prompts `build ok!`, you can enter `xmake run overall.test` to run the program and will get: 
 
 ![](result.png)
 
@@ -76,7 +73,7 @@ Model credits : miHoYo and [观海子](https://space.bilibili.com/17466365?spm_i
 
 ## Usage
 
-We write docs for exmample programs in `exmaples/Docs`. See it for practical usage.
+We write docs for exmample programs in `exmaples/Docs`. See it for practical usage. The first document is [BlinnPhong.md](./examples/Docs/BlinnPhong.md).
 
 ## Advantages
 
@@ -88,9 +85,9 @@ We write docs for exmample programs in `exmaples/Docs`. See it for practical usa
    | Ours, v1.0, release  | 0.72038s   | 0.645622s    |
    | Ours, v1.1, release  | 0.662553s  | 0.521885s*   |
    
-   > *: Sometimes it can be even as low as ~0.35 seconds.
+   > *: Since v1.3, sometimes it can be even as low as ~0.35 seconds.
 
-   Note that our CPU is Intel Core i7 and the model has 61434 vertices and 20478 facets. It indicates that we make it at least four to five times faster than the baseline in the latest version.
+   Note that our CPU is Intel Core i7, GPU is NVIDIA GTX 1650 and the model has 61434 vertices and 20478 facets. It indicates that we make it at least four to five times faster than the baseline in the latest version.
 
 
 2. Easier-to-use interface: We wrap the OpenGL code in RAII style, hiding trivial and boring inner details for the most common features. You can dive into writing proper shaders.
@@ -99,7 +96,30 @@ We write docs for exmample programs in `exmaples/Docs`. See it for practical usa
 
 4. Support UTF-8 path : learnOpenGL may only supports ASCII path; we support UTF-8 path. In fact, the example model has textures that have Chinese characters.
 
-5. Dynamic configuration: we support `.ini` configuration file format, so you can load them in run time and minimize the re-compilation when you want to change them.
+5. File-based configuration: we support `.ini` configuration file format, so you can load them in run time and minimize the re-compilation when you want to change them.
+
+6. Dynamic vertex attribute configuration: besides the most basic components of vertex attributes(i.e. normals and texture coordinates), we allow the user to add attributes as much as they like. For example, in the example of `NormalMap`, we need tangent and bitangent in attributes, which can be easily extended by:
+
+   ```c++ 
+   struct VertAttribWithTan
+   {
+   	glm::vec3 normalCoord;
+   	glm::vec2 textureCoord;
+   	glm::vec3 tanCoord;
+   	glm::vec3 bitanCoord;
+   };
+   
+   BEGIN_REFLECT(VertAttribWithTan)
+   REFLECT(1, float, normalCoord) // layout, primitive type, name
+   REFLECT(2, float, textureCoord)
+   REFLECT(3, float, tanCoord)
+   REFLECT(4, float, bitanCoord)
+   END_REFLECT(4) // max considered layout.
+   ```
+
+   After this, the only function that needs to be defined is how to copy attributes from the `aiMesh` of assimp. This is dramatically easy compared with writing lots of `glVertexAttribPointer` manually, as many other frameworks have to do.
+
+7. Easy and safe configuration for framebuffer.
 
 ## Build Tool
 
