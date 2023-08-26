@@ -25,6 +25,11 @@ class Framebuffer
         .maxFilter = TextureParamConfig::MaxFilterType::Nearest
     };
 
+    inline const static RenderBufferConfig c_colorBufferDefaultConfig_ = {
+        .bufferType = RenderBufferConfig::RenderBufferType::RGBA,
+        .attachmentType = RenderBufferConfig::AttachmentType::Color
+    };
+
     inline const static TextureParamConfig c_colorTextureDefaultConfig_ = {
         .minFilter = TextureParamConfig::MinFilterType::Linear,
         .wrapS = TextureParamConfig::WrapType::ClampToEdge,
@@ -43,6 +48,7 @@ class Framebuffer
     }
 
 public:
+    using ConfigType = std::variant<RenderBufferConfigCRef, TexParamConfigCRef>;
     static const auto& GetDepthTextureDefaultParamConfig() { 
         return c_depthTextureDefaultConfig_; 
     }
@@ -51,6 +57,9 @@ public:
     }
     static const auto& GetColorTextureDefaultParamConfig() { 
         return c_colorTextureDefaultConfig_;
+    }
+    static const auto& GetColorRenderBufferDefaultConfig() {
+        return c_colorBufferDefaultConfig_;
     }
 
     glm::vec4 backgroundColor{ 1.0f, 1.0f, 1.0f, 1.0f };
@@ -62,8 +71,7 @@ public:
         unsigned int init_height = s_randomLen_,
         std::variant<std::monostate, RenderBufferConfigCRef, TexParamConfigCRef>
             depthConfig = c_depthBufferDefaultConfig_,
-        const std::vector<std::variant<RenderBufferConfigCRef, TexParamConfigCRef>>&
-            vec = { c_colorTextureDefaultConfig_ });
+        const std::vector<ConfigType>& vec = { c_colorTextureDefaultConfig_ });
 
     Framebuffer(const Framebuffer&) = delete;
     Framebuffer& operator=(const Framebuffer&) = delete;
@@ -84,6 +92,7 @@ public:
     unsigned int GetColorBuffer(size_t index = 0) const { 
         return GetBufferFromAttachType_(colorBuffers_.at(index));
     }
+    auto GetColorBufferNum() const { return colorBuffers_.size(); }
     
     bool HasColorBuffer() const { return !colorBuffers_.empty(); }
     void SetClearMode(std::initializer_list<BasicClearMode> modes) { 

@@ -56,14 +56,31 @@ void Framebuffer::GenerateAndAttachColorBuffer_(TexParamConfigCRef ref, int id) 
     colorBuffers_.push_back(RenderTexture{ buffer });
 };
 
+static std::vector<unsigned int> attachmentIDs;
+
 Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
     std::variant<std::monostate, RenderBufferConfigCRef, TexParamConfigCRef>
         depthConfig,
     const std::vector<std::variant<RenderBufferConfigCRef, TexParamConfigCRef>>&
         colorConfigs): width_{ init_width }, height_{ init_height }
 {
-    if (colorConfigs.size() > GL_MAX_COLOR_ATTACHMENTS ||
-        colorConfigs.size() > GL_MAX_DRAW_BUFFERS) [[unlikely]]
+    static int maxColorAttachments = []() {
+        int num = 0;
+        glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &num);
+        return num;
+    }();
+
+    static int maxDrawBuffers = []() {
+        int num = 0;
+        glGetIntegerv(GL_MAX_DRAW_BUFFERS, &num);
+        attachmentIDs.reserve(num);
+        for (int i = 0; i < num; i++)
+            attachmentIDs.push_back(GL_COLOR_ATTACHMENT0 + i);
+        return num;
+    }();
+
+    if (colorConfigs.size() > maxColorAttachments ||
+        colorConfigs.size() > maxDrawBuffers) [[unlikely]]
     {
         IOExtension::LogError("Too many color buffers.");
         return;
@@ -93,6 +110,9 @@ Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) 
         [[unlikely]]
         IOExtension::LogError("Framebuffer is not complete.");
+
+    if (auto attachmentNum = colorConfigs.size(); attachmentNum > 1)
+        glDrawBuffers(static_cast<GLsizei>(attachmentNum), attachmentIDs.data());
 
     using enum BasicClearMode;
     SetClearMode({ DepthClear, ColorClear });
