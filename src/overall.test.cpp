@@ -80,7 +80,6 @@ int main()
 
 	mainWindow.Register(
 		[&shader, &model, &sideCamera, &frameBuffer, near, far]() {
-			frameBuffer.Clear();
 			ImGui::Begin("Side");
 			static bool init = true;
 			if (init)
@@ -104,7 +103,8 @@ int main()
 					static_cast<unsigned int>(subwindowSize.x),
 					static_cast<unsigned int>(subwindowSize.y)
 				};
-				SetMVP(subwindowSize.x, subwindowSize.y, near, far, model, 
+				frameBuffer.Clear();
+				SetMVP(subwindowSize.x, subwindowSize.y, near, far, model,
 					sideCamera, shader);
 				model.Draw(shader, frameBuffer);
 			}

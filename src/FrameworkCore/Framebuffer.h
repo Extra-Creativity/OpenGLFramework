@@ -63,7 +63,7 @@ public:
     }
 
     glm::vec4 backgroundColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-    enum class BasicClearMode : std::uint32_t { 
+    enum class BasicClearMode { 
         ColorClear = GL_COLOR_BUFFER_BIT, DepthClear = GL_DEPTH_BUFFER_BIT,
         StencilClear = GL_STENCIL_BUFFER_BIT
     };
@@ -100,7 +100,7 @@ public:
         BasicClearMode::DepthClear}, bool resetColor = true)
     {
         UseAsRenderTarget();
-        std::uint32_t clearMode = 0;
+        std::underlying_type_t<BasicClearMode> clearMode = 0;
         for (auto mode : modes)
             clearMode |= static_cast<decltype(clearMode)>(mode);
         if(resetColor)

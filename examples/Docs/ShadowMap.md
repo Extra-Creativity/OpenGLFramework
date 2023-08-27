@@ -97,7 +97,7 @@ We use this shader for projection view and `DirectDraw.frag` for orthogonal view
 
 ## Framebuffer
 
-Recall that we've assume the depth buffer is a texture in the screen shader. This is done by framebuffer; we can render the light space on the framebuffer, and attach its depth buffer to the shader. Particularly, there are two kinds of attachment in framebuffer: renderbuffer and texture. Renderbuffer is only writable, but usually more efficient; texture is readable, so it's more flexible. Here we need to read the depth buffer in another shader, so we need to use it as texture.
+Recall that we've assume the depth buffer is a texture in the screen shader. This is done by framebuffer; we can render the light space on the framebuffer, and attach its depth buffer to the shader. Particularly, there are two kinds of attachment in framebuffer: renderbuffer and texture. Renderbuffer is not able to be sampled(but you can still transfer it to other buffers; it's just like an unknown inner-format storage), but usually more efficient; texture is readable, so it's more flexible. Here we need to read the depth buffer in another shader, so we need to use it as texture.
 
 + `Core::Framebuffer` uses configuration type to determine which kind is used. If you provide `Core::TextureParamConfig` defined in `FrameCore/ConfigHelpers/TextureConfig.h`, then it's seen as texture; if it's `Core::RenderBufferConfig` defined in `FrameCore/ConfigHelpers/RenderBufferConfig.h`, then it's seen as renderbuffer. By default, a frame buffer will provide a color texture and a depth renderbuffer. In this section, we doesn't need color texture, and the depth buffer needs to be texture, so we need to adjust it:
 

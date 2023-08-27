@@ -4,8 +4,11 @@ In simple scenes, most of the code we write in OpenGL is drab and dreary and bas
 
 ## Annoucement
 
-1. Currently, you can see `examples/complex-examples/SoftShadow-Advanced` to see PCSS implemented by our framework.
-2. We're forging ahead for v1.3, where we'll dramatically refactor the code. There may be great breaking on APIs and docs to make it more convenient for users.
+We've finished our work on v1.3!
+
+1. We add documents at `examples/Docs`. The first document is [BlinnPhong.md](./examples/Docs/BlinnPhong.md) and we recommend you to read them thoroughly.
+2. You can see `examples/complex-examples/SoftShadow-Advanced` to see PCSS, VSSM implemented by our framework; `examples/NormalMap.cpp` to see dynamic vertex attributes, which surpasses many other frameworks.
+3. For all update information, see update information for [v1.3](#Latest).
 
 ## Table of Contents
 
@@ -85,7 +88,7 @@ We write docs for exmample programs in `exmaples/Docs`. See it for practical usa
    | Ours, v1.0, release  | 0.72038s   | 0.645622s    |
    | Ours, v1.1, release  | 0.662553s  | 0.521885s*   |
    
-   > *: Since v1.3, sometimes it can be even as low as ~0.35 seconds.
+   > *: Since v1.3, sometimes it can be even as low as ~0.35 seconds. For windows, it's quite unsteady and basically 0.75s on average.
 
    Note that our CPU is Intel Core i7, GPU is NVIDIA GTX 1650 and the model has 61434 vertices and 20478 facets. It indicates that we make it at least four to five times faster than the baseline in the latest version.
 
@@ -175,35 +178,51 @@ We requires the compiler to support C++20 (partially).
 + More powerful `MainWindow`, supporting more mouse events and screenshots.
 + Support screenshot of framebuffer.
 
+### <span id="Latest">v1.3 - 2023.8.27</span>
+
++ Support texture configuration and renderbuffer configuration.
++ More flexible MRT for framebuffer.
++ Add more special models, i.e. a quad model.
++ Fix severe bug on `Framebuffer`.
++ Delete `Framebuffer::Resize` for it's possibly not portable; use `=Framebuffer{xxx}` to resize it.
++ Support relative flexible vertex attributes.
++ Break the original `Framebuffer::ClearMode`; now `Framebuffer::Clear` should be used. It happens immediately instead of lazily like before, which can unify operations for users.
++ Add VSSM example, normal map example and MRT example.
++ Add documents. See `examples/Docs`.
++ Optimize `AssetLoader`, use heterogeneous methods.
++ Adjust header guards.
+
+> Note1: We've found bug in GCC 11.x in heterogeneous methods, which is documented there.
+>
+> Note2: After adding VSSM, if we choose the original option as `PCSS`, the program may crash on Windows. This is possibly due to limitation of driver in Windows 10, since we've tried to debug with various ways without success. Please contact us if you know why.
+
 ## <span id="TODO">TODO</span>
 
 + `std::optional` is unnecessary if `std::reference_wrapper` is nullable(but in fact it isn't). We kind of regard it as an artifact of the standard library, and we may change them to pointers.
-+ We may try to load meshes in parallel. This is not trivial for meshes will share textures so that `TexturePool` that uses STL is not thread-safe.
-+ We may try to load data for every single mesh in parallel. This is not deterministic for huge models are likely to be divided into relatively medium-level meshes, so that the cost of each mesh is not worthwhile to create threads. However, we still reserve such possibilities because we use many `std::for_each` so that `std::execution` may benefit the range-based loop when [P2408R5](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2408r5.html) for C++23 is implemented by all mainstream compilers.
++ We may try to load meshes in parallel. This is not trivial for OpenGL 3.x is not fit for paralleism.
 + `std::ranges::to<>` for convenient range conversion in C++23.
-+ More features like sky box and more complex example shaders.
++ More complex example shaders.
++ More configurations for textures and primitive types.
 
 ## <span id="copyrights">Copyrights</span>
 
 This project owns an MIT license in the public domain.
 
-For the model : 
+For the model(This is the translation of the original model README): 
 
-> This is the translation of the original model README.
->
 > Thanks for downloading this model!
 >
 > You can : 
 >
 > + improve the physical effects, correct possible bugs on model weights and facial expressions;
-> + Change the color and outfit properly, add spa, toon and so on.
->
+>+ Change the color and outfit properly, add spa, toon and so on.
+> 
 > You should NOT : 
 >
 > + distribute again, dispatch parts to use in other models; 
-> + use for 18+ works, extreme religious propagandas, sanguinary grisly strange works, assault and battery, and so on.
+>+ use for 18+ works, extreme religious propagandas, sanguinary grisly strange works, assault and battery, and so on.
 > + use for commercial purposes.
->
+> 
 > The responsibility of all possible negative outcomes resulted from others' use of this model will not be taken by HoYoverse and the model releaser, but taken by the user.
 >
 > model provider : HoYoverse
