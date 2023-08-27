@@ -46,6 +46,7 @@ int main()
     Framebuffer frameBuffer(400, 300);
     window.Register(
         [&shader, &model, &camera, &frameBuffer]() {
+            frameBuffer.Clear();
             shader.Activate();
 
             ImGui::Begin("Side");

@@ -80,6 +80,7 @@ int main()
 
 	mainWindow.Register(
 		[&shader, &model, &sideCamera, &frameBuffer, near, far]() {
+			frameBuffer.Clear();
 			ImGui::Begin("Side");
 			static bool init = true;
 			if (init)

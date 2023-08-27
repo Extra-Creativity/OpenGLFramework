@@ -33,8 +33,11 @@ int main()
 		Core::Framebuffer::GetDepthRenderBufferDefaultConfig(), vec	};
 
 	mainWindow.Register([&]() {
+		using enum Core::Framebuffer::BasicClearMode;
+		buffer.Clear();
+
 		MRTShader.Activate();
-		
+
 		const auto [width, height] = mainWindow.GetWidthAndHeight();
 		float near = 0.1f, far = 100.0f;
 		SetMVP(static_cast<float>(width), static_cast<float>(height),
@@ -47,17 +50,15 @@ int main()
 	});
 
 	mainWindow.Register([&]() {
-		glBindBuffer(GL_FRAMEBUFFER, 0);
-		glBindBuffer(GL_READ_BUFFER, buffer.GetFramebuffer());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.GetFramebuffer());
 		const auto [width, height] = mainWindow.GetWidthAndHeight();
 		const auto bufferWidth = buffer.GetWidth(), 
 			bufferHeight = buffer.GetHeight();
 
-		glReadBuffer(GL_COLOR_ATTACHMENT2);
-		std::cout << "aaa:" << glGetError() << '\n';
 		glBlitFramebuffer(0, 0, buffer.GetWidth(), buffer.GetHeight(),
 			0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-		std::cout << glGetError() << '\n';
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		//glReadBuffer(GL_DEPTH_ATTACHMENT);
 		//glBlitFramebuffer(0, 0, bufferWidth, bufferHeight,
 		//	0, 0, width / 2, height / 2, 0, 0);

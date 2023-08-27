@@ -4,6 +4,14 @@ The core of shadow in graphics is shadow map, i.e. prepare a virtual camera at t
 
 First, depth shouldn't be distorted by projection, which doesn't reflect the physical distance. However, to render it with visible meanings, we'll make it so currently. In the configuration file, `option = ortho` will render it in orthogonal view, other options will be projection view.
 
+- [Shadow Map](#shadow-map)
+  * [Shaders](#shaders)
+  * [Framebuffer](#framebuffer)
+  * [Special Models](#special-models)
+  * [Draw with preprocess](#draw-with-preprocess)
+
+Next doc can be found [here](BasicFilters.md).
+
 ## Shaders
 
 The shader itself is dramatically easy:
@@ -108,12 +116,14 @@ Recall that we've assume the depth buffer is a texture in the screen shader. Thi
   sucroseModel.Draw(shadowMapShader, buffer);
   ```
 
-+ You can designate how to clear the framebuffer, e.g. `None/DepthClear/ColorClear`. You can use `SetClearMode` to set them so that next `Draw` will clear them. For example:
++ You need to clear the framebuffer manually before drawing. Just like this:
 
   ```c++
   using enum Core::Framebuffer::BasicClearMode;
-  buffer.SetClearMode({ DepthClear}); // { DepthClear, ColorClear } for multiple clear mode.
+  buffer.Clear({ DepthClear}, false);
   ```
+  
+  The second `false` means no need to set clear color, since we only need have a depth buffer.
 
 ## Special Models
 

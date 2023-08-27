@@ -60,7 +60,7 @@ int main()
 	mainWindow.Register(
 		[&normalShader, &sucroseModel, &floor, &buffer, &frontCamera, &mainWindow,
 		 &depthConfig, near, far]() {
-			using enum Core::Framebuffer::BasicClearMode;
+			buffer.Clear();
 
 			normalShader.Activate();
 			const auto [width, height] = mainWindow.GetWidthAndHeight();
@@ -71,11 +71,9 @@ int main()
 				near, far, sucroseModel, frontCamera, normalShader);
 
 			normalShader.SetMat4("modelMat", sucroseModel.transform.GetModelMatrix());
-			buffer.SetClearMode({ DepthClear, ColorClear });
 			sucroseModel.Draw(normalShader, buffer);
 
 			normalShader.SetMat4("modelMat", floor.transform.GetModelMatrix());
-			buffer.SetClearMode({ None });
 			floor.Draw(normalShader, buffer);
 		});
 

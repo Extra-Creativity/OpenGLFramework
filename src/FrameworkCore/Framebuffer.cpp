@@ -114,8 +114,6 @@ Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
     if (auto attachmentNum = colorConfigs.size(); attachmentNum > 1)
         glDrawBuffers(static_cast<GLsizei>(attachmentNum), attachmentIDs.data());
 
-    using enum BasicClearMode;
-    SetClearMode({ DepthClear, ColorClear });
     // restore default option.
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return;
@@ -124,7 +122,7 @@ Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
 Framebuffer::Framebuffer(Framebuffer&& another) noexcept: 
     frameBuffer_(another.frameBuffer_), depthBuffer_(another.depthBuffer_),
     colorBuffers_(std::move(another.colorBuffers_)), width_(another.width_),
-    height_(another.height_), clearMode_(another.clearMode_)
+    height_(another.height_)
 {
     another.frameBuffer_ = 0;
     another.depthBuffer_ = RenderBuffer{ 0 };
@@ -178,19 +176,6 @@ Framebuffer::~Framebuffer()
 void Framebuffer::UseAsRenderTarget() const
 {
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer_);
-    if (GetDepthBuffer() != 0)
-    {
-        if (clearMode_ & static_cast<decltype(clearMode_)>(BasicClearMode::DepthClear))
-            glClear(GL_DEPTH_BUFFER_BIT);
-    }
-    else
-        glDisable(GL_DEPTH_TEST);
-    if (clearMode_ & static_cast<decltype(clearMode_)>(BasicClearMode::ColorClear))
-    {
-        auto& color = backgroundColor;
-        glClearColor(color.r, color.g, color.b, color.a);
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
     return;
 };
 

@@ -2,6 +2,13 @@
 
 Filter can be applied after we draw the whole scene as a kind of postprocess. To achieve it, we need to provide a color texture on a framebuffer, so that the shader can draw on it and we then attach it on the filter shader.
 
+- [Basic Filters](#basic-filters)
+  * [Shaders](#shaders)
+  * [Color Texture For Framebuffer](#color-texture-for-framebuffer)
+  * [Resize Framebuffer](#resize-framebuffer)
+
+Next doc can be found [here](Skybox.md).
+
 ## Shaders
 
 The shader that draws the whole scene normally is omitted; we talk about the filter shader.
@@ -169,6 +176,8 @@ quadOnScreen.Draw(basicQuadShader,
                           shader, buffer.GetDepthBuffer());
                   }, nullptr);
 ```
+
+**Of course, don't forget to clear the framebuffer before drawing**; we provide default parameters for colorbuffer + depthbuffer, i.e. you only need to call `buffer.Clear()`.
 
 ## Resize Framebuffer
 

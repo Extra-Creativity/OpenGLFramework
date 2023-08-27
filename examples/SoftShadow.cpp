@@ -141,10 +141,12 @@ Generator<int> ShowBasicInfo(Core::MainWindow& mainWindow)
 
 void RenderShadowMap(Core::Framebuffer& buffer, Core::Camera& lightSpaceCamera)
 {
+	using enum Core::Framebuffer::BasicClearMode;
+	buffer.Clear({ DepthClear }, false);
+
 	auto& shadowMapShader = shaders.find("shadow map")->second;
 	float near = 0.1f, far = 100.0f;
 
-	using enum Core::Framebuffer::BasicClearMode;
 	glm::mat4 projection = glm::perspective(glm::radians(lightSpaceCamera.fov),
 		buffer.GetAspect(), near, far);
 	glm::mat4 lightSpaceMat = projection * lightSpaceCamera.GetViewMatrix();
@@ -152,16 +154,9 @@ void RenderShadowMap(Core::Framebuffer& buffer, Core::Camera& lightSpaceCamera)
 	shadowMapShader.Activate();
 	shadowMapShader.SetMat4("lightSpaceMat", lightSpaceMat);
 
-	// The first drawn with clear depth.
-	auto& firstModel = models.begin()->second;
-	shadowMapShader.SetMat4("modelMat", firstModel.transform.GetModelMatrix());
-	buffer.SetClearMode({ DepthClear });
-	firstModel.Draw(shadowMapShader, buffer);
-	
-	for (auto& [name, model] : models | std::views::drop(1))
+	for (auto& [name, model] : models)
 	{
 		shadowMapShader.SetMat4("modelMat", model.transform.GetModelMatrix());
-		buffer.SetClearMode({ None });
 		model.Draw(shadowMapShader, buffer);
 	}
 

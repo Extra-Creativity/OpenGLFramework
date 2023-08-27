@@ -64,7 +64,8 @@ public:
 
     glm::vec4 backgroundColor{ 1.0f, 1.0f, 1.0f, 1.0f };
     enum class BasicClearMode : std::uint32_t { 
-        None = 0, ColorClear = 1, DepthClear = 2
+        ColorClear = GL_COLOR_BUFFER_BIT, DepthClear = GL_DEPTH_BUFFER_BIT,
+        StencilClear = GL_STENCIL_BUFFER_BIT
     };
 
     Framebuffer(unsigned int init_width = s_randomLen_,
@@ -95,10 +96,18 @@ public:
     auto GetColorBufferNum() const { return colorBuffers_.size(); }
     
     bool HasColorBuffer() const { return !colorBuffers_.empty(); }
-    void SetClearMode(std::initializer_list<BasicClearMode> modes) { 
-        clearMode_ = 0;
+    void Clear(std::initializer_list<BasicClearMode> modes = { BasicClearMode::ColorClear,
+        BasicClearMode::DepthClear}, bool resetColor = true)
+    {
+        UseAsRenderTarget();
+        std::uint32_t clearMode = 0;
         for (auto mode : modes)
-            clearMode_ |= static_cast<decltype(clearMode_)>(mode);
+            clearMode |= static_cast<decltype(clearMode)>(mode);
+        if(resetColor)
+            glClearColor(backgroundColor.r, backgroundColor.g,
+                backgroundColor.b, backgroundColor.a);
+        glClear(clearMode);
+        RestoreDefaultRenderTarget();
         return;
     }
     void UseAsRenderTarget() const;
@@ -111,8 +120,6 @@ private:
     unsigned int width_;
     unsigned int height_;
     static const unsigned int s_randomLen_ = 1000u;
-    // Note: this will be reset to all enabled in the ctor.
-    std::underlying_type_t<BasicClearMode> clearMode_ = 0;
 
     void GenerateAndAttachDepthBuffer_(RenderBufferConfigCRef ref);
     void GenerateAndAttachDepthBuffer_(TexParamConfigCRef ref);

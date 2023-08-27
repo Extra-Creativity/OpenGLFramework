@@ -2,7 +2,20 @@
 
 As the first doc in all examples, here we'll explain code in `examples/BlinnPhong.cpp` in detail so that you can grasp provided APIs quickly.
 
-[toc]
+- [Blinn Phong](#blinn-phong)
+  * [Shaders](#shaders)
+  * [Configuration](#configuration)
+  * [Transform](#transform)
+  * [Camera](#camera)
+  * [ContextManager](#contextmanager)
+  * [MainWindow](#mainwindow)
+  * [Shaders](#shaders-1)
+  * [Mesh and Model](#mesh-and-model)
+  * [Appendix](#appendix)
+    + [Basic bindings](#basic-bindings)
+    + [Additional methods of MainWindow](#additional-methods-of-mainwindow)
+
+Next doc can be found [here](ShadowMap.md).
 
 ## Shaders
 

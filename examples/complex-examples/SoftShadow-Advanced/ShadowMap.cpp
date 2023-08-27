@@ -28,15 +28,11 @@ void ShadowMap::UpdateLightSpaceMat_()
 void ShadowMap::Render_(ExampleBase::AssetLoader::ModelContainer& models)
 {
 	using enum Core::Framebuffer::BasicClearMode;
-	auto& firstModel = models.begin()->second;
-	shadowMapShader_.SetMat4("modelMat", firstModel.transform.GetModelMatrix());
-	buffer_.SetClearMode({ DepthClear });
-	firstModel.Draw(shadowMapShader_, buffer_);
+	buffer_.Clear({ DepthClear }, false);
 
-	for (auto& [name, model] : models | std::views::drop(1))
+	for (auto& [name, model] : models)
 	{
 		shadowMapShader_.SetMat4("modelMat", model.transform.GetModelMatrix());
-		buffer_.SetClearMode({ None });
 		model.Draw(shadowMapShader_, buffer_);
 	}
 }
