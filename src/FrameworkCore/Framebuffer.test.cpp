@@ -46,7 +46,6 @@ int main()
     Framebuffer frameBuffer(400, 300);
     window.Register(
         [&shader, &model, &camera, &frameBuffer]() {
-            frameBuffer.Clear();
             shader.Activate();
 
             ImGui::Begin("Side");
@@ -72,6 +71,7 @@ int main()
                     static_cast<unsigned int>(subwindowSize.x),
                     static_cast<unsigned int>(subwindowSize.y)
                 };
+                frameBuffer.Clear();
                 SetMVP(subwindowSize.x, subwindowSize.y, 4, 10, model,
                     camera, shader);
                 model.Draw(shader, frameBuffer);
