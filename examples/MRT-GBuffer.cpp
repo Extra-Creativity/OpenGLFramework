@@ -26,7 +26,7 @@ int main()
 	};
 
 	Core::Camera frontCamera{ { 0, 10, 35}, {0, 1, 0}, {0, 0, -1} };
-	std::vector<Core::Framebuffer::ConfigType> vec(3,
+	std::vector<Core::Framebuffer::ConfigType> vec(4,
 		Core::Framebuffer::GetColorRenderBufferDefaultConfig());
 
 	Core::Framebuffer buffer{ width, height,
@@ -56,24 +56,25 @@ int main()
 		const auto bufferWidth = buffer.GetWidth(), 
 			bufferHeight = buffer.GetHeight();
 
-		glBlitFramebuffer(0, 0, buffer.GetWidth(), buffer.GetHeight(),
-			0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		// Transferring depth buffer usually uses this way, but we need to visualize
+		// it, so here we don't do so. This will just set another depth buffer,
+		// which can affact future depth testing.
+		// glBlitFramebuffer(0, 0, bufferWidth, bufferHeight,
+		//	 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_LINEAR);
+
+		// left-bottom(pos) -> right-bottom(normal) -> left-top(color) -> right-top(depth)
+		const std::pair<int, int> beginCoords[]{ { 0, 0 }, {width / 2, 0},
+			{0, height / 2}, {width / 2, height / 2} };
+
+		for (int i = 0; i < std::size(beginCoords); i++)
+		{
+			glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
+			glBlitFramebuffer(0, 0, buffer.GetWidth(), buffer.GetHeight(),
+				beginCoords[i].first, beginCoords[i].second, 
+				beginCoords[i].first + width / 2, beginCoords[i].second + height / 2,
+				GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glReadBuffer(GL_DEPTH_ATTACHMENT);
-		//glBlitFramebuffer(0, 0, bufferWidth, bufferHeight,
-		//	0, 0, width / 2, height / 2, 0, 0);
-
-		//const std::pair<int, int> beginCoords[]{ {width / 2, 0}, {0, height / 2},
-		//	{width / 2, height / 2} };
-
-		//for (int i = 0; i < 3; i++)
-		//{
-		//	glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
-		//	glBlitFramebuffer(0, 0, buffer.GetWidth(), buffer.GetHeight(),
-		//		beginCoords[i].first, beginCoords[i].second, 
-		//		beginCoords[i].first + width / 2, beginCoords[i].second + height / 2,
-		//		0, 0);
-		//}
 	});
 
 	mainWindow.MainLoop({ 0.0, 0.0, 0.0, 0.0 });
