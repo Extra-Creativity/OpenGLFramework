@@ -49,11 +49,15 @@ int main()
 	Core::Camera frontCamera{ {0, 10, 35}, {0, 1, 0}, {0, 0, -1} };
 	SetBasicKeyBindings(mainWindow, frontCamera);
 	SetBasicButtonBindings(mainWindow, frontCamera);
-
-	const auto depthConfig = Core::TextureParamConfig{
-		.wrapS = Core::TextureParamConfig::WrapType::ClampToEdge,
-		.wrapT = Core::TextureParamConfig::WrapType::ClampToEdge
-	};	// To eliminate top grey shadow in filter.
+	
+    const auto depthParamConfig = Core::TextureParamConfig{
+        .wrapS = Core::TextureParamConfig::WrapType::ClampToEdge,
+        .wrapT = Core::TextureParamConfig::WrapType::ClampToEdge
+    };// To eliminate top grey shadow in filter.
+	const Core::TextureConfigCRef depthConfig{ 
+		Core::Framebuffer::GetDepthTextureDefaultConfig().first,
+		depthParamConfig
+	};
 	Core::Framebuffer buffer{ width, height, depthConfig };
 
 	auto quadOnScreen = Core::Quad::GetBasicTriRenderModel();

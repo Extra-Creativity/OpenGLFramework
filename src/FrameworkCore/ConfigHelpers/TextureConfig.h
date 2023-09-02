@@ -1,5 +1,8 @@
 #pragma once
+#include "../../Utility/GLHelper/TypeMapping.h"
 #include <glad/glad.h>
+#include <utility>
+#include <functional>
 
 namespace OpenGLFramework::Core
 {
@@ -19,22 +22,18 @@ enum class TextureType {
 
 struct TextureGenConfig
 {
-    // We may introduce sized pixel format in the future.
-    enum class GPUPixelFormat {
-        R = GL_RED, RG = GL_RG, RGB = GL_RGB, RGBA = GL_RGBA,
-        Depth = GL_DEPTH_COMPONENT, DepthStencil = GL_DEPTH_STENCIL
-    } gpuPixelFormat = GPUPixelFormat::RGB;
+    GLHelper::GPUInternalFormat gpuPixelFormat = 
+        GLHelper::ColorInternalFormat<GLHelper::ColorComponents::RGB>::safe_value;
 
     enum class CPUPixelFormat {
         R = GL_RED, RG = GL_RG, RGB = GL_RGB,
         BGR = GL_BGR, RGBA = GL_RGBA, BGRA = GL_BGRA,
-        Depth = GL_DEPTH_COMPONENT
+        Depth = GL_DEPTH_COMPONENT, DepthStencil = GL_DEPTH_STENCIL,
+        Stencil = GL_STENCIL_INDEX
     } cpuPixelFormat = CPUPixelFormat::RGB;
 
     // specify the element type of pixel.
-    enum class RawDataType {
-        UByte = GL_UNSIGNED_BYTE, Float = GL_FLOAT
-    } rawDataType = RawDataType::UByte;
+    GLHelper::RawDataType rawDataType = GLHelper::ToGLType<std::uint8_t>::safe_value;
 
     void Apply(TextureType type, unsigned int width,
         unsigned int height, void* data) const;
@@ -46,9 +45,8 @@ inline TextureGenConfig GetDefaultTextureGenConfig(GLenum gpuChannel)
     // cpuPixelFormat is assigned to gpuChannel since it's passed into OpenGL,
     // and their macros are just same.
     return {
-        .gpuPixelFormat = static_cast<TextureGenConfig::GPUPixelFormat>(gpuChannel),
-        .cpuPixelFormat = static_cast<TextureGenConfig::CPUPixelFormat>(gpuChannel),
-        .rawDataType = static_cast<TextureGenConfig::RawDataType>(GL_UNSIGNED_BYTE)
+        .gpuPixelFormat = static_cast<GLHelper::GPUInternalFormat>(gpuChannel),
+        .cpuPixelFormat = static_cast<TextureGenConfig::CPUPixelFormat>(gpuChannel)
     };
 }
 
@@ -81,5 +79,8 @@ struct TextureParamConfig
     void(*auxHandle)() = nullptr;
     void Apply() const;
 };
+using TextureConfig = std::pair<TextureGenConfig, TextureParamConfig>;
+using TextureConfigCRef = std::pair<std::reference_wrapper<const TextureGenConfig>, 
+    std::reference_wrapper<const TextureParamConfig>>;
 
 }

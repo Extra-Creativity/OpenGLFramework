@@ -13,19 +13,28 @@ protected:
 
     using FrameBuffer = OpenGLFramework::Core::Framebuffer;
     using TextureParamConfig = OpenGLFramework::Core::TextureParamConfig;
+    using TextureConfigCRef = OpenGLFramework::Core::TextureConfigCRef;
 private:
-    inline static const TextureParamConfig c_config_ = {
+    inline static const TextureParamConfig c_param_config_ = {
         .minFilter = TextureParamConfig::MinFilterType::Linear,
         .wrapS = TextureParamConfig::WrapType::ClampToBorder,
         .wrapT = TextureParamConfig::WrapType::ClampToBorder,
         .wrapR = TextureParamConfig::WrapType::ClampToBorder,
         .auxHandle = Handle_{}
     };
+
+    inline static TextureConfigCRef c_config_{ 
+        FrameBuffer::GetColorTextureDefaultConfig().first, c_param_config_
+    };
+
 public:
     ShadowMap(unsigned int init_width, unsigned int init_height,
         ExampleBase::AssetLoader& loader) : ShadowMap{ 
-            { init_width, init_height, c_config_, {} }, loader 
+            { init_width, init_height, c_config_, {} 
+        }, 
+            loader
     } {}
+    virtual ~ShadowMap() = default;
 
     static void Render(ShadowMap& shadowMap, 
         ExampleBase::AssetLoader::ModelContainer&);
@@ -69,7 +78,7 @@ class ShadowMapForVSSM : public ShadowMap
 {
     using FrameBuffer = OpenGLFramework::Core::Framebuffer;
     using TextureParamConfig = OpenGLFramework::Core::TextureParamConfig;
-    inline static const TextureParamConfig c_config = {
+    inline static const TextureParamConfig c_param_config_ = {
         .minFilter = TextureParamConfig::MinFilterType::LinearAfterMIPMAPLinear,
         .wrapS = TextureParamConfig::WrapType::ClampToBorder,
         .wrapT = TextureParamConfig::WrapType::ClampToBorder,
@@ -77,18 +86,22 @@ class ShadowMapForVSSM : public ShadowMap
         .auxHandle = Handle_{}
     };
 
+    inline static TextureConfigCRef c_config_{
+        FrameBuffer::GetColorTextureDefaultConfig().first, c_param_config_
+    };
+
 public:
     ShadowMapForVSSM(unsigned int init_width, unsigned int init_height,
         ExampleBase::AssetLoader& loader) : ShadowMap{
             { init_width, init_height,
-              FrameBuffer::GetDepthRenderBufferDefaultConfig(), { c_config }
+              FrameBuffer::GetDepthRenderBufferDefaultConfig(), { c_config_ }
             }, loader, "shadow map for vssm"
     } {}
 
     void ResizeBuffer(unsigned int width, unsigned int height) override
     {
         buffer_ = OpenGLFramework::Core::Framebuffer{ width, height,
-            FrameBuffer::GetDepthRenderBufferDefaultConfig(), { c_config }
+            FrameBuffer::GetDepthRenderBufferDefaultConfig(), { c_config_ }
         };
     }
 

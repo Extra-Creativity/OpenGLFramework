@@ -167,15 +167,18 @@ void RenderShadowMap(Core::Framebuffer& buffer, Core::Camera& lightSpaceCamera)
 	return;
 }
 
-Core::TextureParamConfig depthConfig = {
-	.minFilter = Core::TextureParamConfig::MinFilterType::Linear,
-	.wrapS = Core::TextureParamConfig::WrapType::ClampToBorder,
-	.wrapT = Core::TextureParamConfig::WrapType::ClampToBorder,
-	.wrapR = Core::TextureParamConfig::WrapType::ClampToBorder,
-	.auxHandle = [] {
-		float border[] = { 1.0,1.0,1.0,1.0 };
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
-	}
+auto depthConfig = Core::TextureConfig{
+	Core::Framebuffer::GetColorTextureDefaultConfig().first,
+	Core::TextureParamConfig{
+		.minFilter = Core::TextureParamConfig::MinFilterType::Linear,
+		.wrapS = Core::TextureParamConfig::WrapType::ClampToBorder,
+		.wrapT = Core::TextureParamConfig::WrapType::ClampToBorder,
+		.wrapR = Core::TextureParamConfig::WrapType::ClampToBorder,
+		.auxHandle = [] {
+			float border[] = { 1.0,1.0,1.0,1.0 };
+			glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border);
+		}
+	} 
 };
 
 void ResizeBufferToScreen(Core::MainWindow& mainWindow,

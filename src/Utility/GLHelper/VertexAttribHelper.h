@@ -24,6 +24,7 @@ concept VertexAttribContainer = requires() {
         && VATag<typename Container::value_type>::flag;
 };
 
+
 template<typename T>
 void CopyVertexAttributes(T&, const aiMesh*);
 
@@ -92,8 +93,9 @@ struct Reflect<id, T>{\
     static inline void Bind(size_t initOffset){\
         glEnableVertexAttribArray(id);\
         glVertexAttribPointer(\
-            id, sizeof(Type) / sizeof(RawType), ToGLType<rawType>::value,\
-            GL_FALSE, sizeof(VertexAttrib), reinterpret_cast<void*>(\
+            id, sizeof(Type) / sizeof(RawType),\
+            OpenGLFramework::GLHelper::ToGLType<rawType>::value, GL_FALSE,\
+            sizeof(VertexAttrib), reinterpret_cast<void*>(\
                 initOffset + offsetof(VertexAttrib, member)));\
     }\
 };

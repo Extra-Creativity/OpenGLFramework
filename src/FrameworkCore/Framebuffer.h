@@ -12,34 +12,41 @@
 
 namespace OpenGLFramework::Core
 {
-
 class Framebuffer
 {
     inline const static RenderBufferConfig c_depthBufferDefaultConfig_ = {
-        .bufferType = RenderBufferConfig::RenderBufferType::Depth,
+        .bufferType = GLHelper::SpecialInternalFormat<
+            GLHelper::SpecialComponents::D24>::safe_value,
         .attachmentType = RenderBufferConfig::AttachmentType::Depth
     };
 
-    inline const static TextureParamConfig c_depthTextureDefaultConfig_ = {
+    inline const static TextureGenConfig c_depthTexGenDefaultConfig_ = {
+        .gpuPixelFormat = GLHelper::SpecialInternalFormat<
+            GLHelper::SpecialComponents::Depth>::safe_value,
+        .cpuPixelFormat = TextureGenConfig::CPUPixelFormat::Depth
+    };
+
+    inline const static TextureParamConfig c_depthTexParamDefaultConfig_ = {
         .minFilter = TextureParamConfig::MinFilterType::Nearest,
         .maxFilter = TextureParamConfig::MaxFilterType::Nearest
     };
 
     inline const static RenderBufferConfig c_colorBufferDefaultConfig_ = {
-        .bufferType = RenderBufferConfig::RenderBufferType::RGBA,
+        .bufferType = GLHelper::ColorInternalFormat<
+            GLHelper::ColorComponents::RGBA>::safe_value,
         .attachmentType = RenderBufferConfig::AttachmentType::Color
     };
 
-    inline const static TextureParamConfig c_colorTextureDefaultConfig_ = {
+    inline const static TextureGenConfig c_colorTexGenDefaultConfig_{};
+
+    inline const static TextureParamConfig c_colorTexParamDefaultConfig_ = {
         .minFilter = TextureParamConfig::MinFilterType::Linear,
         .wrapS = TextureParamConfig::WrapType::ClampToEdge,
         .wrapT = TextureParamConfig::WrapType::ClampToEdge,
         .wrapR = TextureParamConfig::WrapType::ClampToEdge
     };
 
-    using TexParamConfigCRef = std::reference_wrapper<const TextureParamConfig>;
     using RenderBufferConfigCRef = std::reference_wrapper<const RenderBufferConfig>;
-
     struct RenderBuffer { unsigned int buffer; };
     struct RenderTexture { unsigned int buffer; };
     using AttachType = std::variant<RenderBuffer, RenderTexture>;
@@ -48,15 +55,15 @@ class Framebuffer
     }
 
 public:
-    using ConfigType = std::variant<RenderBufferConfigCRef, TexParamConfigCRef>;
-    static const auto& GetDepthTextureDefaultParamConfig() { 
-        return c_depthTextureDefaultConfig_; 
+    using ConfigType = std::variant<RenderBufferConfigCRef, TextureConfigCRef>;
+    static TextureConfigCRef GetDepthTextureDefaultConfig() { 
+        return { c_depthTexGenDefaultConfig_, c_depthTexParamDefaultConfig_ };
     }
     static const auto& GetDepthRenderBufferDefaultConfig() { 
         return c_depthBufferDefaultConfig_; 
     }
-    static const auto& GetColorTextureDefaultParamConfig() { 
-        return c_colorTextureDefaultConfig_;
+    static TextureConfigCRef GetColorTextureDefaultConfig() {
+        return { c_colorTexGenDefaultConfig_, c_colorTexParamDefaultConfig_ };
     }
     static const auto& GetColorRenderBufferDefaultConfig() {
         return c_colorBufferDefaultConfig_;
@@ -70,9 +77,9 @@ public:
 
     Framebuffer(unsigned int init_width = s_randomLen_,
         unsigned int init_height = s_randomLen_,
-        std::variant<std::monostate, RenderBufferConfigCRef, TexParamConfigCRef>
+        std::variant<std::monostate, RenderBufferConfigCRef, TextureConfigCRef>
             depthConfig = c_depthBufferDefaultConfig_,
-        const std::vector<ConfigType>& vec = { c_colorTextureDefaultConfig_ });
+        const std::vector<ConfigType>& vec = { GetColorTextureDefaultConfig() });
 
     Framebuffer(const Framebuffer&) = delete;
     Framebuffer& operator=(const Framebuffer&) = delete;
@@ -122,10 +129,10 @@ private:
     static const unsigned int s_randomLen_ = 1000u;
 
     void GenerateAndAttachDepthBuffer_(RenderBufferConfigCRef ref);
-    void GenerateAndAttachDepthBuffer_(TexParamConfigCRef ref);
+    void GenerateAndAttachDepthBuffer_(TextureConfigCRef ref);
 
     void GenerateAndAttachColorBuffer_(RenderBufferConfigCRef ref, int);
-    void GenerateAndAttachColorBuffer_(TexParamConfigCRef ref, int);
+    void GenerateAndAttachColorBuffer_(TextureConfigCRef ref, int);
     void ReleaseResources_();
 };
 

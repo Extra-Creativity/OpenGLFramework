@@ -13,19 +13,34 @@ void Framebuffer::GenerateAndAttachDepthBuffer_(RenderBufferConfigCRef ref)
     return;
 }
 
-void Framebuffer::GenerateAndAttachDepthBuffer_(TexParamConfigCRef ref)
+void Framebuffer::GenerateAndAttachDepthBuffer_(TextureConfigCRef config)
 {
     unsigned int buffer = 0;
     glGenTextures(1, &buffer);
     glBindTexture(GL_TEXTURE_2D, buffer);
-    TextureGenConfig{
-        .gpuPixelFormat = TextureGenConfig::GPUPixelFormat::Depth,
-        .cpuPixelFormat = TextureGenConfig::CPUPixelFormat::Depth,
-        .rawDataType = TextureGenConfig::RawDataType::Float
-    }.Apply(TextureType::Texture2D, width_, height_, nullptr);
-    ref.get().Apply();
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-        GL_TEXTURE_2D, buffer, 0);
+    auto& genConfig = config.first.get();
+    genConfig.Apply(TextureType::Texture2D, width_, height_, nullptr);
+    config.second.get().Apply();
+
+    GLenum attachment;
+    switch (genConfig.cpuPixelFormat)
+    {
+        using enum TextureGenConfig::CPUPixelFormat;
+    default:
+        IOExtension::LogError("Unknown cpu pixel format for depth buffer,"
+            "use depth attachment by default.");
+        [[fallthrough]];
+    [[likely]] case Depth:
+        attachment = GL_DEPTH_ATTACHMENT;
+        break;
+    [[likely]] case DepthStencil:
+        attachment = GL_DEPTH_STENCIL_ATTACHMENT;
+        break;
+    case Stencil:
+        attachment = GL_STENCIL_ATTACHMENT;
+        break;
+    };
+    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, buffer, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     depthBuffer_ = RenderTexture{ buffer };
     return;
@@ -41,14 +56,13 @@ void Framebuffer::GenerateAndAttachColorBuffer_(RenderBufferConfigCRef ref, int 
     return;
 };
 
-void Framebuffer::GenerateAndAttachColorBuffer_(TexParamConfigCRef ref, int id) {
+void Framebuffer::GenerateAndAttachColorBuffer_(TextureConfigCRef config, int id) {
     unsigned int buffer = 0;
     glGenTextures(1, &buffer);
     glBindTexture(GL_TEXTURE_2D, buffer);
 
-    GetDefaultTextureGenConfig(GL_RGB).Apply(TextureType::Texture2D,
-        width_, height_, nullptr);
-    ref.get().Apply();
+    config.first.get().Apply(TextureType::Texture2D, width_, height_, nullptr);
+    config.second.get().Apply();
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + id,
         GL_TEXTURE_2D, buffer, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -59,9 +73,9 @@ void Framebuffer::GenerateAndAttachColorBuffer_(TexParamConfigCRef ref, int id) 
 static std::vector<unsigned int> attachmentIDs;
 
 Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
-    std::variant<std::monostate, RenderBufferConfigCRef, TexParamConfigCRef>
+    std::variant<std::monostate, RenderBufferConfigCRef, TextureConfigCRef>
         depthConfig,
-    const std::vector<std::variant<RenderBufferConfigCRef, TexParamConfigCRef>>&
+    const std::vector<std::variant<RenderBufferConfigCRef, TextureConfigCRef>>&
         colorConfigs): width_{ init_width }, height_{ init_height }
 {
     static int maxColorAttachments = []() {
