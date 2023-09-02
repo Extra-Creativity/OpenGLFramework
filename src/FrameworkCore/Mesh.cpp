@@ -91,7 +91,7 @@ void BasicTriRenderMesh::SetupRenderResource_()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    verticesAttributes_.AllocateAndBind(sizeof(glm::vec3), vertices.size());
+    verticesAttributes_->AllocateAndBind(sizeof(glm::vec3), vertices.size());
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * vertices.size(),
         vertices.data());
     glEnableVertexAttribArray(0);
@@ -111,7 +111,7 @@ void BasicTriRenderMesh::SetupRenderResource_()
 
 void BasicTriRenderMesh::CopyAttributes_(const aiMesh* mesh)
 {
-    verticesAttributes_.CopyFromMesh(mesh);
+    verticesAttributes_->CopyFromMesh(mesh);
     return;
 }
 
@@ -149,8 +149,9 @@ void BasicTriRenderMesh::AddAllTexturesToPoolAndFillRefs_(
 
 BasicTriRenderMesh::BasicTriRenderMesh(const aiMesh* mesh,
     const aiMaterial* material, TexturePool& texturePool,
-    const std::filesystem::path& rootPath, GLHelper::IVertexAttribContainer c):
-    BasicTriMesh{ mesh }, verticesAttributes_{ std::move(c) }
+    const std::filesystem::path& rootPath,
+    std::unique_ptr<GLHelper::IVertexAttribContainer> ptr):
+    BasicTriMesh{ mesh }, verticesAttributes_{ std::move(ptr) }
 {
     CopyAttributes_(mesh);
     SetupRenderResource_();
@@ -165,14 +166,17 @@ BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
     std::vector<BasicVertexAttribute> attribs(init_normals.size());
     for (size_t i = 0; i < attribs.size(); i++)
         attribs[i].normalCoord = init_normals[i];
-    verticesAttributes_ = std::move(attribs);
+    verticesAttributes_ = 
+        std::make_unique<BasicVertAttribContainer>(std::move(attribs));
     SetupRenderResource_();
     return;
 };
 
 BasicTriRenderMesh::BasicTriRenderMesh(BasicTriMesh mesh,
     std::vector<BasicVertexAttribute> attrs) :
-    BasicTriMesh{ std::move(mesh) }, verticesAttributes_{ std::move(attrs) }
+    BasicTriMesh{ std::move(mesh) }, verticesAttributes_{ 
+        std::make_unique<BasicVertAttribContainer>(std::move(attrs))
+    }
 {
     SetupRenderResource_();
     return;

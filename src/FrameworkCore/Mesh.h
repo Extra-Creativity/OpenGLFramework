@@ -24,15 +24,10 @@
 #include <vector>
 #include <array>
 #include <span>
+#include <memory>
 
 namespace OpenGLFramework::Core
 {
-struct BasicVertexAttribute
-{
-    glm::vec3 normalCoord;
-    glm::vec2 textureCoord;
-};
-
 template<int N, typename T>
 void CopyAiVecToGLMVec(aiVector3D& aiVec, glm::vec<N, T>& vec)
 {
@@ -40,6 +35,12 @@ void CopyAiVecToGLMVec(aiVector3D& aiVec, glm::vec<N, T>& vec)
     for (int i = 0; i < limit; i++)
         vec[i] = aiVec[i];
 }
+
+struct BasicVertexAttribute
+{
+    glm::vec3 normalCoord;
+    glm::vec2 textureCoord;
+};
 
 template<typename T>
 void CopyBasicAttributes(std::span<T> verticesAttributes_, const aiMesh* mesh)
@@ -55,20 +56,31 @@ void CopyBasicAttributes(std::span<T> verticesAttributes_, const aiMesh* mesh)
             dstVertAttribute.textureCoord = { 0.f, 0.f };
     }
 }
-}
 
-BEGIN_REFLECT(OpenGLFramework::Core::BasicVertexAttribute);
-REFLECT(1, float, normalCoord);
-REFLECT(2, float, textureCoord);
-END_REFLECT(2);
-
-VERTEX_ATTRIB_SPECIALIZE_COPY(
-    std::vector<OpenGLFramework::Core::BasicVertexAttribute>& attribs,
-    const aiMesh* mesh)
+class BasicVertAttribContainer : public GLHelper::IVertexAttribContainer
 {
-    attribs.resize(mesh->mNumVertices);
-    std::span attribSpan = attribs;
-    OpenGLFramework::Core::CopyBasicAttributes(attribSpan, mesh);
+public:
+    BasicVertAttribContainer() = default;
+    BasicVertAttribContainer(std::vector<BasicVertexAttribute> v) :
+        container_{ std::move(v) } {}
+
+    void AllocateAndBind(size_t posSize, size_t vertexNum) final {
+        IVertexAttribContainer::AllocateAttributes_(container_, posSize, vertexNum);
+        BEGIN_BIND(BasicVertexAttribute, posSize, vertexNum);
+        BIND_VERTEX_ATTRIB(1, float, normalCoord);
+        BIND_VERTEX_ATTRIB(2, float, textureCoord);
+        END_BIND;
+    };
+
+    void CopyFromMesh(const aiMesh* mesh) final {
+        container_.resize(mesh->mNumVertices);
+        std::span attribSpan = container_;
+        OpenGLFramework::Core::CopyBasicAttributes(attribSpan, mesh);
+    }
+private:
+    std::vector<BasicVertexAttribute> container_;
+};
+
 }
 
 namespace OpenGLFramework::Core
@@ -106,7 +118,7 @@ public:
     BasicTriRenderMesh(BasicTriMesh mesh, std::vector<BasicVertexAttribute> attrs);
     BasicTriRenderMesh(const aiMesh* mesh, const aiMaterial* material, 
         TexturePool& texturePool, const std::filesystem::path& rootPath,
-        GLHelper::IVertexAttribContainer);
+        std::unique_ptr<GLHelper::IVertexAttribContainer>);
     BasicTriRenderMesh(const BasicTriRenderMesh&) = delete;
     BasicTriRenderMesh& operator=(const BasicTriRenderMesh&) = delete;
     BasicTriRenderMesh(BasicTriRenderMesh&&) noexcept;
@@ -122,7 +134,7 @@ public:
         const std::function<void(int, const Shader&)>& preprocess,
         const std::function<void(void)>& postprocess) const;
 private:
-    GLHelper::IVertexAttribContainer verticesAttributes_;
+    std::unique_ptr<GLHelper::IVertexAttribContainer> verticesAttributes_;
     std::vector<std::reference_wrapper<Texture>> diffuseTextureRefs_;
     std::vector<std::reference_wrapper<Texture>> specularTextureRefs_;
     GLuint VAO, VBO, IBO;

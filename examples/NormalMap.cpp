@@ -12,32 +12,41 @@ struct VertAttribWithTan
 	glm::vec3 bitanCoord;
 };
 
-BEGIN_REFLECT(VertAttribWithTan)
-REFLECT(1, float, normalCoord)
-REFLECT(2, float, textureCoord)
-REFLECT(3, float, tanCoord)
-REFLECT(4, float, bitanCoord)
-END_REFLECT(4)
-
-VERTEX_ATTRIB_SPECIALIZE_COPY(std::vector<VertAttribWithTan>& verticesAttributes_,
-	const aiMesh* mesh)
+class BasicVertAttribContainer : public GLHelper::IVertexAttribContainer
 {
-	verticesAttributes_.resize(mesh->mNumVertices);
-	for (size_t id = 0; id < verticesAttributes_.size(); id++)
+public:
+	void AllocateAndBind(size_t posSize, size_t vertexNum) final {
+		IVertexAttribContainer::AllocateAttributes_(container_, posSize, vertexNum);
+		BEGIN_BIND(VertAttribWithTan, posSize, vertexNum);
+		BIND_VERTEX_ATTRIB(1, float, normalCoord)
+		BIND_VERTEX_ATTRIB(2, float, textureCoord)
+		BIND_VERTEX_ATTRIB(3, float, tanCoord)
+		BIND_VERTEX_ATTRIB(4, float, bitanCoord)
+		END_BIND;
+	};
+
+	void CopyFromMesh(const aiMesh* mesh) final 
 	{
-		auto& dstVertAttribute = verticesAttributes_[id];
-		Core::CopyAiVecToGLMVec(mesh->mNormals[id], dstVertAttribute.normalCoord);
+		container_.resize(mesh->mNumVertices);
+		for (size_t id = 0; id < container_.size(); id++)
+		{
+			auto& dstVertAttribute = container_[id];
+			Core::CopyAiVecToGLMVec(mesh->mNormals[id], dstVertAttribute.normalCoord);
 
-		if (auto srcTextureCoords = mesh->mTextureCoords[0]) [[likely]]
-			Core::CopyAiVecToGLMVec(srcTextureCoords[id], dstVertAttribute.textureCoord);
-		else
-			dstVertAttribute.textureCoord = { 0.f, 0.f };
+			if (auto srcTextureCoords = mesh->mTextureCoords[0]) [[likely]]
+				Core::CopyAiVecToGLMVec(srcTextureCoords[id], dstVertAttribute.textureCoord);
+			else
+				dstVertAttribute.textureCoord = { 0.f, 0.f };
 
-		Core::CopyAiVecToGLMVec(mesh->mTangents[id], dstVertAttribute.tanCoord);
-		Core::CopyAiVecToGLMVec(mesh->mBitangents[id], dstVertAttribute.bitanCoord);
+			Core::CopyAiVecToGLMVec(mesh->mTangents[id], dstVertAttribute.tanCoord);
+			Core::CopyAiVecToGLMVec(mesh->mBitangents[id], dstVertAttribute.bitanCoord);
+		}
+		return;
 	}
-	return;
-}
+private:
+	std::vector<VertAttribWithTan> container_;
+};
+
 
 int main()
 {
@@ -53,10 +62,9 @@ int main()
 
 	[[maybe_unused]] auto& contextManager = Core::ContextManager::GetInstance();
 	Core::MainWindow mainWindow{ width, height, windowName.c_str() };
-
-	Core::BasicTriRenderModel floor{ pathsSection("plane_resource_dir"),
-		std::vector<VertAttribWithTan>{}, true
-	};
+	
+	GLHelper::NaiveVACFactory<BasicVertAttribContainer> factory{};
+	Core::BasicTriRenderModel floor{ pathsSection("plane_resource_dir"), factory, true };
 	floor.transform.scale = { 0.1, 0.1, 0.1 };
 	Core::Texture normalMap{ pathsSection("normal_map_dir") };
 	Core::Shader normalMapShader{

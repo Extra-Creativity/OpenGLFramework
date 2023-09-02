@@ -52,40 +52,20 @@ void BasicTriModel::LoadResources_(const aiScene* model)
 
 void BasicTriRenderModel::LoadResources_(const aiScene* model, 
     const std::filesystem::path& resourceRootPath, bool textureNeedFlip,
-    const GLHelper::IVertexAttribContainer& container)
+    GLHelper::IVertexAttibContainerFactory& factory)
 {
     stbi_set_flip_vertically_on_load(textureNeedFlip);
 
     LoadResourcesDecorator_(model, 
         [this](const aiMesh* mesh, const aiScene* model,
             const std::filesystem::path& resourceRootPath,
-            const GLHelper::IVertexAttribContainer& c) 
+            GLHelper::IVertexAttibContainerFactory& factory)
         {
             aiMaterial* material = model->mMaterials[mesh->mMaterialIndex];
             // construct triangle mesh.
             this->meshes.emplace_back(mesh, material, this->texturePool_, 
-                resourceRootPath, c);
-        }, model, resourceRootPath, container);
-
-    stbi_set_flip_vertically_on_load(false);
-}
-
-void BasicTriRenderModel::LoadResourcesFromCollection_(const aiScene* model,
-    const std::filesystem::path& resourceRootPath, bool textureNeedFlip,
-    std::vector<GLHelper::IVertexAttribContainer>& collection)
-{
-    stbi_set_flip_vertically_on_load(textureNeedFlip);
-
-    LoadResourcesDecorator_(model,
-        [this, id = 0](const aiMesh* mesh, const aiScene* model,
-            const std::filesystem::path& resourceRootPath,
-            std::vector<GLHelper::IVertexAttribContainer>& collection) mutable
-        {
-            aiMaterial* material = model->mMaterials[mesh->mMaterialIndex];
-            // construct triangle mesh.
-            this->meshes.emplace_back(mesh, material, this->texturePool_,
-                resourceRootPath, std::move(collection[id++]));
-        }, model, resourceRootPath, collection);
+                resourceRootPath, factory.Create());
+        }, model, resourceRootPath, factory);
 
     stbi_set_flip_vertically_on_load(false);
 }
@@ -95,7 +75,7 @@ BasicTriRenderModel::BasicTriRenderModel(std::vector<BasicTriRenderMesh>
 { };
 
 BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath, 
-    const GLHelper::IVertexAttribContainer& container, bool needTBN,
+    GLHelper::IVertexAttibContainerFactory& factory, bool needTBN,
     bool textureNeedFlip)
 {
     Assimp::Importer importer;
@@ -105,24 +85,7 @@ BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
         LoadModelFromPath<>(importer, modelPath); model != nullptr)
     {// NOTICE that we assume the model is at the root path.
         const std::filesystem::path resourceRootPath = modelPath.parent_path();
-        LoadResources_(model, resourceRootPath, textureNeedFlip, container);
-    }
-    return;
-}
-
-BasicTriRenderModel::BasicTriRenderModel(const std::filesystem::path& modelPath,
-    std::vector<GLHelper::IVertexAttribContainer> collection, bool needTBN, 
-    bool textureNeedFlip)
-{
-    Assimp::Importer importer;
-    if (auto model = needTBN ?
-        LoadModelFromPath<c_defaultPostProcess | aiProcess_CalcTangentSpace>(
-            importer, modelPath) :
-        LoadModelFromPath<>(importer, modelPath); model != nullptr)
-    {// NOTICE that we assume the model is at the root path.
-        const std::filesystem::path resourceRootPath = modelPath.parent_path();
-        LoadResourcesFromCollection_(model, resourceRootPath, textureNeedFlip,
-            collection);
+        LoadResources_(model, resourceRootPath, textureNeedFlip, factory);
     }
     return;
 }

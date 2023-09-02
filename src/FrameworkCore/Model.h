@@ -53,16 +53,14 @@ private:
 
 class BasicTriRenderModel
 {
+    static inline GLHelper::NaiveVACFactory<BasicVertAttribContainer> defaultFactory_{};
 public:
     std::vector<BasicTriRenderMesh> meshes;
     Transform transform;
 
     BasicTriRenderModel(std::vector<BasicTriRenderMesh> init_meshes);
     BasicTriRenderModel(const std::filesystem::path& modelPath,
-        const GLHelper::IVertexAttribContainer& = std::vector<BasicVertexAttribute>{},
-        bool needTBN = false, bool textureNeedFlip = false);
-    BasicTriRenderModel(const std::filesystem::path& modelPath,
-        std::vector<GLHelper::IVertexAttribContainer> collection,
+        GLHelper::IVertexAttibContainerFactory & = defaultFactory_,
         bool needTBN = false, bool textureNeedFlip = false);
 
     void AttachTexture(const std::filesystem::path& path,
@@ -77,10 +75,8 @@ public:
         const std::function<void(void)>& postprocess) const;
 private:
     void LoadResources_(const aiScene* model, const std::filesystem::path& 
-        resourceRootPath, bool textureNeedFlip, const GLHelper::IVertexAttribContainer&);
-    void LoadResourcesFromCollection_(const aiScene* model,
-        const std::filesystem::path& resourceRootPath, bool textureNeedFlip,
-        std::vector<GLHelper::IVertexAttribContainer>& container);
+        resourceRootPath, bool textureNeedFlip,
+        GLHelper::IVertexAttibContainerFactory&);
     TexturePool texturePool_;
 };
 
