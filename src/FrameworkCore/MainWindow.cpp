@@ -23,8 +23,9 @@ MainWindow::MainWindow() : deltaTime_(0.0f), currTime_(0.0f), window_(nullptr)
 {}
 
 MainWindow::MainWindow(unsigned int init_width, unsigned int init_height, 
-    const char* title, bool visible) : 
-    deltaTime_(0.0f), currTime_(0.0f), window_(nullptr)
+    const char* title, bool visible,
+    std::unique_ptr<IRoutineFactory> init_factory) : deltaTime_(0.0f),
+    currTime_(0.0f), window_(nullptr), factory_{ std::move(init_factory) }
 {
     assert((init_width < std::numeric_limits<unsigned int>::max() 
         && init_height < std::numeric_limits<unsigned int>::max()));
@@ -70,7 +71,8 @@ MainWindow::~MainWindow()
 
 MainWindow::MainWindow(MainWindow&& another) noexcept:
     deltaTime_{ 0.0f }, currTime_{0.0f},
-    window_{ another.window_ }, routineList_{std::move(routineList_)},
+    window_{ another.window_ }, factory_{ std::move(factory_)},
+    routineList_{ std::move(routineList_) },
     pressedList_{ std::move(another.pressedList_) }, 
     pressingList_{ std::move(another.pressingList_) },
     releasedList_{std::move(another.releasedList_)},
@@ -85,6 +87,7 @@ MainWindow& MainWindow::operator=(MainWindow&& another) noexcept
 
     window_ = another.window_;
     another.window_ = nullptr;
+    factory_ = std::move(another.factory_);
     routineList_ = std::move(routineList_);
     pressedList_ = std::move(another.pressedList_);
     pressingList_ = std::move(another.pressingList_);
@@ -113,11 +116,14 @@ void MainWindow::MainLoop(const glm::vec4& backgroundColor)
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        currRoutineID_ = 0;
         for (auto& func : routineList_)
         {
             std::invoke(func);
-            currRoutineID_++;
+        }
+        if (factory_->ShouldCreate())
+        {
+            routineList_ = factory_->CreateRoutines();
+            factory_->ShouldCreate() = false;
         }
 
         for (auto& list : pressedList_)
@@ -160,15 +166,10 @@ void MainWindow::MainLoop(const glm::vec4& backgroundColor)
     return;
 };
 
-void MainWindow::Register(UpdateFunc&& func)
+void MainWindow::Register(IRoutineFactory::Routine func)
 {
     routineList_.push_back(std::move(func));
 }
-
-void MainWindow::Register(UpdateFunc& func)
-{
-    routineList_.push_back(func);
-};
 
 void MainWindow::ClearRoutines()
 {

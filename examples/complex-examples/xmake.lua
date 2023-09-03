@@ -19,3 +19,18 @@ target("SoftShadow-Advanced")
     add_deps("ExampleBase")
     add_files("SoftShadow-Advanced/*.cpp")
     add_headerfiles("SoftShadow-Advanced/*.h")
+
+target("Scene-Switch")
+    set_kind("binary")
+    config_dir = path.join(os.curdir(), "Scene-Switch", "Config"):gsub("\\", "/")
+    shader_dir = path.join(os.curdir(), "Scene-Switch", "Shaders"):gsub("\\", "/")
+    model_dir = path.join(os.projectdir(), "Resources", "Models"):gsub("\\", "/")
+
+    add_defines(
+        "CONFIG_DIR=\"" .. config_dir .. "\"", 
+        "SHADER_DIR=\"" .. shader_dir .. "\"", 
+        "MODEL_DIR=\"" .. model_dir .. "\"")
+    add_includedirs("../../src/")
+    add_deps("ExampleBase")
+    add_files("Scene-Switch/*.cpp")
+    add_headerfiles("Scene-Switch/*.h")
