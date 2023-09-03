@@ -26,8 +26,12 @@ int main()
 	};
 
 	Core::Camera frontCamera{ { 0, 10, 35}, {0, 1, 0}, {0, 0, -1} };
-	std::vector<Core::Framebuffer::ConfigType> vec(4,
-		Core::Framebuffer::GetColorRenderBufferDefaultConfig());
+	Core::RenderBufferConfig config{
+		.bufferType = GLHelper::ColorInternalFormat<GLHelper::ColorComponents::RGBA,
+			GLHelper::GPUColorComponentSizeTag::All8>::safe_value,
+		.attachmentType = Core::RenderBufferConfig::AttachmentType::Color
+	};
+	std::vector<Core::Framebuffer::ConfigType> vec(4, config);
 
 	Core::Framebuffer buffer{ width, height,
 		Core::Framebuffer::GetDepthRenderBufferDefaultConfig(), vec	};
@@ -58,7 +62,7 @@ int main()
 
 		// Transferring depth buffer usually uses this way, but we need to visualize
 		// it, so here we don't do so. This will just set another depth buffer,
-		// which can affact future depth testing.
+		// which can affect future depth testing.
 		// glBlitFramebuffer(0, 0, bufferWidth, bufferHeight,
 		//	 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_LINEAR);
 

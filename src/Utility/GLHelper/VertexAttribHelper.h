@@ -47,7 +47,7 @@ class IVertexAttibContainerFactory
 {
 public:
     virtual std::unique_ptr<IVertexAttribContainer> Create() = 0;
-    ~IVertexAttibContainerFactory() = default;
+    virtual ~IVertexAttibContainerFactory() = default;
 };
 
 template<std::derived_from<IVertexAttribContainer> VAC>
@@ -59,3 +59,35 @@ public:
 };
 
 }
+
+// NOTICE: It's more flexible for memory to define like this, but we don't 
+// optimize that much because we focus on graphics algoriths mostly.
+// 
+//class IVertexAttibContainerFactory
+//{
+//public:
+//    virtual void Destroy(IVertexAttribContainer* ptr) = 0;
+//    class FactoryDeleter
+//    {
+//    public:
+//        FactoryDeleter(IVertexAttibContainerFactory* init) : deleter{ init } {}
+//        void operator()(IVertexAttribContainer* ptr) { deleter->Destroy(ptr); }
+//    private:
+//        IVertexAttibContainerFactory* deleter;
+//    };
+//
+//    virtual std::unique_ptr<IVertexAttribContainer, FactoryDeleter> Create() = 0;
+//    virtual ~IVertexAttibContainerFactory() = default;
+//};
+//
+//using VACUniquePtr = std::unique_ptr<IVertexAttribContainer,
+//    IVertexAttibContainerFactory::FactoryDeleter>;
+//
+//template<std::derived_from<IVertexAttribContainer> VAC>
+//class NaiveVACFactory : public IVertexAttibContainerFactory {
+//public:
+//    virtual void Destroy(IVertexAttribContainer* ptr) { delete ptr; };
+//    VACUniquePtr Create() override {
+//        return std::unique_ptr<VAC, FactoryDeleter>{ new VAC{}, FactoryDeleter{ this }};
+//    }
+//};
