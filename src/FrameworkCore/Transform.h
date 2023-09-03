@@ -16,7 +16,11 @@ public:
 
     glm::mat4 GetModelMatrix() const
     {
-        return glm::translate(glm::scale(glm::toMat4(rotation), scale), position);
+        auto result = glm::scale(glm::toMat4(rotation), scale);
+        result[3] = { position, 1 };
+        // Or scale * rot * translate(I, position), since these functions
+        // right multiply, and this will get TRS correctly.
+        return result;
     }
 
     void Rotate(glm::vec3 eulerAngles) {
@@ -32,7 +36,7 @@ public:
 
     void Rotate(float angle, glm::vec3 axis)
     {
-        glm::quat rotation = glm::angleAxis(angle, axis);
+        glm::quat rotation = glm::angleAxis(glm::radians(angle), axis);
         Rotate(rotation);
     }
 

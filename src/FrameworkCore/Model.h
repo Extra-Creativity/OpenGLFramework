@@ -62,6 +62,8 @@ public:
     BasicTriRenderModel(const std::filesystem::path& modelPath,
         GLHelper::IVertexAttibContainerFactory & = defaultFactory_,
         bool needTBN = false, bool textureNeedFlip = false);
+    // We regard std::unordered_map as nothrow move constructible.
+    BasicTriRenderModel(BasicTriRenderModel&&) noexcept = default;
 
     void AttachTexture(const std::filesystem::path& path,
         std::initializer_list<int> attachIDs, bool isSpecular = false);

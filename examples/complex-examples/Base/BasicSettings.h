@@ -10,7 +10,7 @@
 using namespace OpenGLFramework;
 
 template<typename Model>
-void SetMVP(float width, float height, float near, float far, 
+void SetMVP(float aspect, float near, float far, 
 	Model& model, Core::Camera& camera, Core::Shader& shader)
 {
 	auto modelMat = model.transform.GetModelMatrix();
@@ -20,10 +20,17 @@ void SetMVP(float width, float height, float near, float far,
 	shader.SetMat4("view", viewMat);
 
 	auto projectionMat = glm::perspective(glm::radians(camera.fov), 
-		width / height, near, far);
+		aspect, near, far);
 	shader.SetMat4("projection", projectionMat);
 
 	return;
+}
+
+template<typename Model>
+void SetMVP(float width, float height, float near, float far,
+	Model& model, Core::Camera& camera, Core::Shader& shader)
+{
+	SetMVP(width / height, near, far, model, camera, shader);
 }
 
 inline void SetBasicKeyBindings(Core::MainWindow& mainWindow, Core::Camera& camera)
