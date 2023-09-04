@@ -24,7 +24,7 @@ private:
     };
 
     inline static TextureConfigCRef c_config_{ 
-        FrameBuffer::GetColorTextureDefaultConfig().first, c_param_config_
+        FrameBuffer::GetDepthTextureDefaultConfig().first, c_param_config_
     };
 
 public:

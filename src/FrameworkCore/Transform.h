@@ -23,27 +23,27 @@ public:
         return result;
     }
 
-    void Rotate(glm::vec3 eulerAngles) {
+    Transform& Rotate(glm::vec3 eulerAngles) {
         glm::quat rotation = glm::quat(eulerAngles);
-        Rotate(rotation);
-        return;
+        return Rotate(rotation);
     };
 
-    void Rotate(glm::quat newRotation)
+    Transform& Rotate(glm::quat newRotation)
     {
         rotation = newRotation * rotation;
+        return *this;
     }
 
-    void Rotate(float angle, glm::vec3 axis)
+    Transform& Rotate(float angle, glm::vec3 axis)
     {
         glm::quat rotation = glm::angleAxis(glm::radians(angle), axis);
-        Rotate(rotation);
+        return Rotate(rotation);
     }
 
-    void Translate(glm::vec3 vec)
+    Transform& Translate(glm::vec3 vec)
     {
         position += vec;
-        return;
+        return *this;
     }
 };
 
