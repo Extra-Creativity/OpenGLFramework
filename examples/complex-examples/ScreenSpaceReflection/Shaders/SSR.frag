@@ -112,7 +112,7 @@ vec3 GetIllum(float seed)
     {
         vec3 hitPos; float _;
         if(RayMarch(worldPos, reflect(normalize(worldPos - LightPos), worldNormal), hitPos))
-            return EvalDiffuse(wi, wo, texCoord) * GetColor(WorldPosToScreenPos(hitPos, _)) * lightRadiance + L_d;
+            return EvalDiffuse(wi, wo, WorldPosToScreenPos(hitPos, _)) * lightRadiance + L_d;
     }
 
     // Direct & Diffuse.
