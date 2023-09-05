@@ -13,6 +13,7 @@ uniform sampler2D WorldPosAndDepth; // alpha stores depth.
 
 uniform vec3 LightPos;
 uniform mat4 ScreenMat;
+uniform int Option;
 
 out vec4 FragColor;
 
@@ -36,15 +37,16 @@ bool RayMarch(vec3 beginPos, vec3 outDir, out vec3 hitPos)
     float depth;
     for(int i = 0; i < 100; i++)
     {
-        vec3 newPos = beginPos + outDir * i * 0.01;
+        vec3 newPos = beginPos + outDir * i * 0.1;
         vec2 screenPos = WorldPosToScreenPos(newPos, depth);
-        if(depth > GetDepth(screenPos))
+        float newDepth = GetDepth(screenPos);
+        if(depth > newDepth * 1.01)
         {
             hitPos = newPos;
-            return false;
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 float Rand1(inout float p) {
@@ -96,13 +98,26 @@ vec3 EvalDiffuse(vec3 wi, vec3 wo, vec2 uv)
 
 #define SAMPLE_NUM 10
 
-vec3 GetIndirectIllum(float seed)
+vec3 GetIllum(float seed)
 {
     vec3 worldPos = GetWorldPos(texCoord);
+    vec3 wi = normalize(LightPos - worldPos), wo = vec3(1);
+    vec3 L_d = EvalDiffuse(wi, wo, texCoord) * lightRadiance;
+    if(Option == 0) // Only direct illum.
+        return L_d;
+
     vec3 worldNormal = GetWorldNormal(texCoord);
-    vec3 L_ind = vec3(0.0);
+
+    if(Option == 1)  // Direct & Specular.
+    {
+        vec3 hitPos; float _;
+        if(RayMarch(worldPos, reflect(normalize(worldPos - LightPos), worldNormal), hitPos))
+            return EvalDiffuse(wi, wo, texCoord) * GetColor(WorldPosToScreenPos(hitPos, _)) * lightRadiance + L_d;
+    }
+
+    // Direct & Diffuse.
+    vec3 L_ind = vec3(0);
     vec3 x, y;
-    vec3 wi = LightPos - worldPos, wo = vec3(1);
     FrisvadONB(worldNormal, x, y);
     for(int i = 0; i < SAMPLE_NUM; i++){
         float pdf;
@@ -116,13 +131,15 @@ vec3 GetIndirectIllum(float seed)
         }
     }
     L_ind /= float(SAMPLE_NUM);
-    return L_ind;
+    return L_ind + L_d;
 }
-
 
 void main()
 {
+    if(GetDepth(texCoord) > 0.99)
+    { discard; return; }
+
     float seed = GetRandSeed(texCoord);
-    FragColor = vec4(GetIndirectIllum(seed), 1);
+    FragColor = vec4(GetIllum(seed), 1);
     return;
 }

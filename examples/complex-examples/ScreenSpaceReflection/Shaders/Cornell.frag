@@ -24,11 +24,11 @@ void SetProjCoords()
 void main()
 {
     SetProjCoords();
-    if(texture(shadowMap, projCoords.xy).r < projCoords.z - 0.001)
+    if(texture(shadowMap, projCoords.xy).r < projCoords.z - 0.01)
         FragColor = vec4(0, 0, 0, 1);
     else
         FragColor = vec4(color, 1);
-    OutNormal = Normal;
+    OutNormal = normalize(Normal);
     WorldPos = vec4(FragPos, Depth);
     return;
 }

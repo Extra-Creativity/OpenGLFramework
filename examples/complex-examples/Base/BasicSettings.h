@@ -62,11 +62,11 @@ inline void SetBasicKeyBindings(Core::MainWindow& mainWindow, Core::Camera& came
 
 	mainWindow.BindKeyPressing<GLFW_KEY_UP>([&camera, &mainWindow]() {
 		camera.Rotate(
-			mainWindow.GetDeltaTime() * camera.rotationSpeed, { 1, 0, 0 });
+			mainWindow.GetDeltaTime() * camera.rotationSpeed, camera.Right());
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_DOWN>([&camera, &mainWindow]() {
 		camera.Rotate(
-			-mainWindow.GetDeltaTime() * camera.rotationSpeed, { 1, 0, 0 });
+			-mainWindow.GetDeltaTime() * camera.rotationSpeed, camera.Right());
 	});
 	mainWindow.BindKeyPressing<GLFW_KEY_LEFT>([&camera, &mainWindow]() {
 		camera.Rotate(

@@ -32,10 +32,10 @@ public:
         ExampleBase::AssetLoader& loader) : 
         buffer_{ init_width, init_height, c_config_, {}},
         shadowMapShader_{ loader.GetShader("shadow map") },
-        lightSpaceCamera_{ {0, 4, 0}, {0, 0, 1}, {0, -1, 0} },
-        lightSpaceMat_{} 
+        lightSpaceCamera_{ {-2, 2, 8}, {0, 1, 0}, {0.1, 0, -0.9} },
+        lightSpaceMat_{}
     {
-        lightSpaceCamera_.fov = 135;
+        lightSpaceCamera_.fov = 90;
     }
 
     static void Render(ShadowMap& shadowMap,

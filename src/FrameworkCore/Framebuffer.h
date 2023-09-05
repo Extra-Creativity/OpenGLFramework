@@ -104,7 +104,7 @@ public:
     
     bool HasColorBuffer() const { return !colorBuffers_.empty(); }
     void Clear(std::initializer_list<BasicClearMode> modes = { BasicClearMode::ColorClear,
-        BasicClearMode::DepthClear}, bool resetColor = true)
+        BasicClearMode::DepthClear}, bool resetColor = true) const
     {
         UseAsRenderTarget();
         std::underlying_type_t<BasicClearMode> clearMode = 0;

@@ -192,26 +192,26 @@ public:
             std::move(func), glfwGetMouseButton);
     }
 
-    std::pair<unsigned int, unsigned int> GetWidthAndHeight()
+    std::pair<unsigned int, unsigned int> GetWidthAndHeight() const
     {
         int width, height;
         glfwGetWindowSize(window_, &width, &height);
         return { width, height };
     }
     
-    float GetAspect() { 
+    float GetAspect() const { 
         auto [width, height] = GetWidthAndHeight();
         return static_cast<float>(width) / height;
     }
 
-    std::pair<float, float> GetCursorPos()
+    std::pair<float, float> GetCursorPos() const
     {
         double xPos, yPos;
         glfwGetCursorPos(window_, &xPos, &yPos);
         return { static_cast<float>(xPos), static_cast<float>(yPos) };
     }
 
-    int GetKeyState(int keycode) { return glfwGetKey(window_, keycode); }
+    int GetKeyState(int keycode) const { return glfwGetKey(window_, keycode); }
     void SetInputMode(int mode, int value) const {
         glfwSetInputMode(window_, mode, value);
     }
