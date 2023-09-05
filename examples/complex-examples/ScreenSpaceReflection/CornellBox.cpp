@@ -18,7 +18,7 @@ CornellBox::CornellBox(OpenGLFramework::Core::Shader& init):
     };
 
     InsertNewQuad(90, { 0, 1, 0 }, { -5, 0, 0 }); // left wall
-    InsertNewQuad(90, { 0, 1, 0 }, { 5, 0, 0 }); // right wall
+    InsertNewQuad(90, { 0, -1, 0 }, { 5, 0, 0 }); // right wall
     InsertNewQuad(90, { 1, 0, 0 }, { 0, 5, 0 }); // ceil
     InsertNewQuad(90, { -1, 0, 0 }, { 0, -5, 0 }); // floor
     InsertNewQuad(0, { 0, 1, 0 }, { 0, 0, -5 }); // back
@@ -36,7 +36,7 @@ CornellBox::CornellBox(OpenGLFramework::Core::Shader& init):
     InsertCube(15, { 0,1,0 }, { -3.2,-5,-1.1 }, glm::vec3{ 3, 6, 3 });
 }
 
-#ifdef CORNELL_DEBUG
+#ifndef CORNELL_DEBUG
 
 void CornellBox::Draw(float aspect, float near, float far, Camera& camera,
     ShadowMap& shadowMap)

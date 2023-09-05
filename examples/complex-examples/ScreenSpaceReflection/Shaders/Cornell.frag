@@ -3,8 +3,11 @@
 in vec3 Normal;
 in vec3 FragPos;
 in vec4 FragPosInLightSpace;
+in float Depth;
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec3 OutNormal;
+layout(location = 2) out vec4 WorldPos; // alpha stores depth.
 
 uniform vec3 color;
 uniform sampler2D shadowMap;
@@ -25,5 +28,7 @@ void main()
         FragColor = vec4(0, 0, 0, 1);
     else
         FragColor = vec4(color, 1);
+    OutNormal = Normal;
+    WorldPos = vec4(FragPos, Depth);
     return;
 }

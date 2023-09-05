@@ -10,6 +10,7 @@ uniform mat4 lightSpaceMat;
 out vec3 Normal;
 out vec3 FragPos;
 out vec4 FragPosInLightSpace;
+out float Depth;
 
 void main()
 {
@@ -17,5 +18,6 @@ void main()
     FragPos = vec3(model * vec4(aPos, 1.0));
     Normal = transpose(inverse(mat3(model))) * aNormal;
     FragPosInLightSpace = lightSpaceMat * vec4(FragPos, 1.0);
+    Depth = gl_Position.z / gl_Position.w;
     return;
 }
