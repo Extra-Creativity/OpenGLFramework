@@ -78,19 +78,21 @@ Framebuffer::Framebuffer(unsigned int init_width, unsigned int init_height,
     const std::vector<std::variant<RenderBufferConfigCRef, TextureConfigCRef>>&
         colorConfigs): width_{ init_width }, height_{ init_height }
 {
-    static int maxColorAttachments = []() {
+    static unsigned int maxColorAttachments = []() {
         int num = 0;
         glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &num);
-        return num;
+        return num < 0 ? 0u : static_cast<unsigned int>(num);
     }();
 
-    static int maxDrawBuffers = []() {
+    static unsigned int maxDrawBuffers = []() {
         int num = 0;
         glGetIntegerv(GL_MAX_DRAW_BUFFERS, &num);
+        if(num < 0)
+            return 0u;
         attachmentIDs.reserve(num);
         for (int i = 0; i < num; i++)
             attachmentIDs.push_back(GL_COLOR_ATTACHMENT0 + i);
-        return num;
+        return static_cast<unsigned int>(num);
     }();
 
     if (colorConfigs.size() > maxColorAttachments ||

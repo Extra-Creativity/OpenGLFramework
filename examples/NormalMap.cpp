@@ -53,7 +53,6 @@ int main()
 	std::filesystem::path configPath = "../../../../../Resources/Configs/NormalMapConfig.ini";
 	IOExtension::IniFile file{ configPath };
 
-	bool useOrtho = (file.rootSection("option") == "ortho");
 	auto& pathsSection = file.rootSection.GetSubsection("paths")->get();
 	auto& windowSection = file.rootSection.GetSubsection("window")->get();
 	std::string windowName = windowSection("name");

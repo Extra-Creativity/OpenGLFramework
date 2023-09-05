@@ -70,10 +70,10 @@ int main()
 		const std::pair<int, int> beginCoords[]{ { 0, 0 }, {width / 2, 0},
 			{0, height / 2}, {width / 2, height / 2} };
 
-		for (int i = 0; i < std::size(beginCoords); i++)
+		for (size_t i = 0; i < std::size(beginCoords); i++)
 		{
 			glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
-			glBlitFramebuffer(0, 0, buffer.GetWidth(), buffer.GetHeight(),
+			glBlitFramebuffer(0, 0, bufferWidth, bufferHeight,
 				beginCoords[i].first, beginCoords[i].second, 
 				beginCoords[i].first + width / 2, beginCoords[i].second + height / 2,
 				GL_COLOR_BUFFER_BIT, GL_LINEAR);
