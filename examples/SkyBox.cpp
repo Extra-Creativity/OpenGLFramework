@@ -28,7 +28,7 @@ int main()
 	};
 	Core::BasicTriRenderModel cube = Core::Cube::GetBasicTriRenderModel();
 	cube.transform.scale = { 10, 10, 10 };
-	cube.transform.Translate({ -0.5,-0.5,-0.5 });
+	cube.transform.Translate({ -5,-5,-5 });
 
 	Core::BasicTriRenderModel sucroseModel{ pathsSection("sucrose") };
 	Core::Shader sucroseShader{
