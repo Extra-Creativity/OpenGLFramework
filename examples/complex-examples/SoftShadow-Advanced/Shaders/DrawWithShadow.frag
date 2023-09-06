@@ -20,6 +20,7 @@ vec3 projCoords;
 // Legs have artifacts now; if goes up to 50, soft shadow appears there.
 #define LIGHT_WIDTH 20
 #define BLOCKER_SEARCH_WIDTH 5
+#define MAX_PCF_RANGE 10
 
 void SetProjCoords()
 {
@@ -116,7 +117,7 @@ vec3 GetColorWithPCSS()
     float currentDepth = projCoords.z;
     float sampleWidth = float(LIGHT_WIDTH) *
         (currentDepth - blockerDepth) / blockerDepth;
-    int range = int(sampleWidth / 2);
+    int range = clamp(int(sampleWidth / 2), 0, MAX_PCF_RANGE);
     return GetColorWithPCFShadow(range);
 }
 

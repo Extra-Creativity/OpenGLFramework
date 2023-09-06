@@ -11,7 +11,7 @@
 
 struct ShadowOptionData
 {
-	int option = 4;
+	int option = 3;
 	const std::array<const char*, 5> optionList{
 		"Hard Shadow(No bias)",
 		"Hard Shadow(Add bias)",
