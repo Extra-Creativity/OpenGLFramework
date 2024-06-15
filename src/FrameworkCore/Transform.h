@@ -2,7 +2,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 namespace OpenGLFramework::Core
 {
@@ -16,7 +15,11 @@ public:
 
     glm::mat4 GetModelMatrix() const
     {
-        return glm::translate(glm::scale(glm::toMat4(rotation), scale), position);
+        auto result = glm::scale(glm::mat4_cast(rotation), scale);
+        result[3] = { position, 1 };
+        // Or scale * rot * translate(I, position), since these functions
+        // right multiply, and this will get TRS correctly.
+        return result;
     }
 
     void Rotate(glm::vec3 eulerAngles) {

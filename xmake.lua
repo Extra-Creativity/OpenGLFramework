@@ -1,8 +1,8 @@
-set_project("OpenGLFramework")
+﻿set_project("OpenGLFramework")
 set_version("1.1")
 set_xmakever("2.6.1")
 
-add_rules("mode.debug", "mode.release")
+add_rules("mode.debug", "mode.release", "mode.releasedbg")
 add_rules("plugin.vsxmake.autoupdate")
 set_languages("cxx20")
 add_cxxflags("-Wall")
